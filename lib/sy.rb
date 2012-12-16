@@ -360,12 +360,14 @@ module SY
     include Comparable
 
     def self.of qnt, oo
-      is_a_ꜧ = oo.respond_to? :keys
-      n = is_a_ꜧ ? oo[:number] || oo[:n] : oj
-      raise ArgumentError, "#{ɴ}#of constructor must have a number given" unless
-        n.is_a? Numeric
-      oj = { quantity: qnt, n: n }
-      ( n < 0 ? SignedMagnitude : self ).new is_a_ꜧ ? oo.merge( oj ) : oj
+      oo = { n: oo } unless oo.is_a? Hash
+      n = oo[:number] || oo[:n] or raise AE, "Magnitude number not given!"
+      named_args = { quantity: qnt }.merge! case n
+                                            when Numeric then { n: n }
+                                            else { n: n.to_f } end
+      if n < 0 then
+        SignedMagnitude.new oo.merge( named_args ).merge!( sign: :- )
+      else new oo.merge( named_args ) end
     end
     
     attr_reader :quantity, :number
@@ -441,11 +443,19 @@ module SY
     # Gives the magnitude as a numeric value in a given unit. Of course,
     # the unit must be of the same quantity and dimension.
     def numeric_value_in other
+      case other
+      when Symbol, String then
+        other = other.to_s.split( '.' ).reduce 1 do |pipe, sym| pipe.send sym end
+      end
       aE_same_quantity( other )
       self.n / other.number
     end
-    alias :number_in :numeric_value_in
-    alias :n_in :numeric_value_in
+    alias :in :numeric_value_in
+
+    def numeric_value_in_basic_unit
+      numeric_value_in BASIC_UNITS[self.quantity]
+    end
+    alias :to_f :numeric_value_in_basic_unit
 
     # Changes the quantity of the magnitude, provided that the dimensions
     # match.
@@ -455,7 +465,7 @@ module SY
       @quantity = qnt
       return self
     end
-    alias :q! :is_actually!
+    alias call is_actually!
 
     #Gives a string expressing the magnitude in given units.
     def string_in_unit unit

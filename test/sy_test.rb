@@ -1,6 +1,5 @@
-# -*- coding: utf-8 -*-
-#! /usr/bin/ruby
 #encoding: utf-8
+#! /usr/bin/ruby
 
 # **************************************************************************
 # THIS IS SPEC-STYLE TEST FILE FOR SY PHYSICAL UNITS LIBRARY
@@ -685,25 +684,27 @@ describe SY do
       end
       
       it "should delegate dimension method to quantity" do
-
         @m1.dimension.must_equal @m1.quantity.dimension
       end
 
       it "has #inspect and #to_s methods" do
-
         @m1.inspect.must_equal "magnitude 3.3.m.s⁻¹ of Speed (L.T⁻¹)"
         @m1.to_s.must_equal "3.3.m.s⁻¹"
       end
       
       it "has #numeric_value_in working with magnitudes of the same " +
         "quantity and returning a number" do
-
         m = Magnitude.of @q_speed, number: 9.9
         m.numeric_value_in( @m1 ).must_be_within_epsilon 3.0, 1e-6
       end
 
-      it "should be capable of arithmetics" do
+      it "has #numeric_value_in_basic_unit alias #to_f method" do
+        m = Magnitude.of @q_speed, number: 6.6
+        m.numeric_value_in_basic_unit.must_equal 6.6
+        m.to_f.must_equal 6.6
+      end
 
+      it "should be capable of arithmetics" do
         m = Magnitude.of @q_speed, number: 1.0
         ( m + @m1 ).number.must_equal 4.3
         ( @m1 - m ).number.must_equal 2.3
@@ -713,15 +714,12 @@ describe SY do
       end
 
       it "should be comparable" do
-        
         m = Magnitude.of @q_speed, number: 1.0
         ( @m1 == m * 3.3 ).must_equal true
       end
       
       describe "class methods" do
-        
         it "should have #of constructor" do
-
           # I already did this above:
           # 
           m = Magnitude.of @q_speed, number: 1
@@ -733,7 +731,6 @@ describe SY do
 
     describe "Unit class" do
       before do
-
         @u = SY::Unit.new( quantity: @q_speed,
                            number: 0.1,
                            name: "snail",
@@ -742,7 +739,6 @@ describe SY do
 
       describe "instance methods" do
         it "should have #name and #symbol" do
-
           @u.name.must_equal "snail"
           @u.symbol.must_equal "sn"
         end
@@ -750,10 +746,8 @@ describe SY do
 
       describe "class methods" do
         it "should have #basic constructor" do
-
           q = SY::Quantity.new of: "T⁻¹"
           u = SY::Unit.basic of: q, name: "hertz", symbol: "Hz"
-          
           q.basic_unit.must_equal u
         end
       end
@@ -883,6 +877,7 @@ describe SY do
 
       # joule
       ( 1.N * 1.m ).is_actually!( ENERGY ).must_equal 1.J
+      1e-23.J.K⁻¹.must_equal 1.0e-20.mJ.K⁻¹
 
       # pascal
       ( 1.N / 1.m ** 2 ).is_actually!( PRESSURE ).must_be_within_epsilon 1.Pa, 1e-9
