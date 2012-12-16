@@ -117,8 +117,10 @@ module SY
       key.size == 1 ? nil : key.each_char.map{|c| ꜧ[c] }.join
     else
       ꜧ[key.to_s]
-    end
-  }.merge! SUPERSCRIPT.invert
+    end }
+    .merge!( SUPERSCRIPT.invert )
+    .merge!( '¯' => '-',
+             '´' => '/' )
   
   # SPS stands for "superscripted product string"    
   SPS = lambda { |ßs, exps|
@@ -501,12 +503,13 @@ module SY
     def aE_same_quantity other
       raise ArgumentError unless other.kind_of? Magnitude
       unless self.dimension == other.dimension
-        raise ArgumentError, "magnitudes not of the same dimension " +
-          "(#{dimension} vs. #{other.dimension})"
+        raise ArgumentError, "Magnitudes not of the same dimension " +
+          "(#{dimension} vs. #{other.dimension})."
       end
       unless self.quantity == other.quantity
-        warn "Warning: Mixing different quantities with same dimension!\n" +
-          "(#{quantity.inspect} vs. #{other.quantity.inspect})"
+        raise ArgumentError, "Although the dimensions of the magnitudes " +
+          "match, they are not the same quantity " +
+          "(#{quantity.inspect} vs. #{other.quantity.inspect})."
       end
     end
     alias :aE_same_quantity :aE_same_quantity

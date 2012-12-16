@@ -865,7 +865,7 @@ describe SY do
       # even if their dimensions match)
 
       30.Hz
-        .must_equal 30.s⁻¹.q!( FREQUENCY )
+        .must_equal 30.s⁻¹.( FREQUENCY )
 
       # Dalton * Avogadro must be 1 gram
       ( 1.Da * Nᴀ )
