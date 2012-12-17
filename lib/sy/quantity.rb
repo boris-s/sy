@@ -51,7 +51,7 @@ module SY
     # Standard constructor of a metrological quantity. A quantity may have
     # a name and a dimension.
     # 
-    def initialize args
+    def initialize *args
       ꜧ = args.extract_options!
       @dimension = Dimension.new ꜧ[:dimension] || ꜧ[:of]
       ɴ = ꜧ[:name] || ꜧ[:ɴ]
