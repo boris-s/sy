@@ -66,9 +66,9 @@ module SY
     # 
     def name_basic_unit( name, hash=nil )
       BASIC_UNITS[self] = Unit.basic( if hash.respond_to?(:keys) then
-                                        hash.merge( of: self, ɴ: ɴ )
+                                        hash.merge( of: self, ɴ: name )
                                       else # second type syntax
-                                        { of: self, ɴ: ɴ, abbr: hash }
+                                        { of: self, ɴ: name, abbr: hash }
                                       end )
     end
     alias :ɴ_basic_unit :name_basic_unit
