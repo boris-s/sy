@@ -196,13 +196,13 @@ describe SY do
         # 
         d = SY::Dimension.new L: 1, T: -1 # using named parameters
         d.inspect
-          .must_equal "dimension L.T⁻¹"
+          .must_equal "#<Dimension: L.T⁻¹ >"
 
         # And by providing a superscripted product string:
         # 
         d = SY::Dimension.new "Θ.L³.T⁻¹" # using SPS
         d.inspect
-          .must_equal "dimension L³.T⁻¹.Θ"
+          .must_equal "#<Dimension: L³.T⁻¹.Θ >"
       end
 
       it "should have readers of the basic dim. components" do
@@ -389,12 +389,12 @@ describe SY do
         # Inspect method serves the purpose of making beautiful text
         # representation of the object.
         # 
-        @dim_l_per_t.inspect.must_equal "dimension L.T⁻¹"
-        @dim_l_per_temperature.inspect.must_equal "dimension L.Θ⁻¹"
+        @dim_l_per_t.inspect.must_equal "#<Dimension: L.T⁻¹ >"
+        @dim_l_per_temperature.inspect.must_equal "#<Dimension: L.Θ⁻¹ >"
         
         # And now there is specialy, null dimension will introduce itself as
         # 
-        @dim_null.inspect.must_equal "zero dimension"
+        @dim_null.inspect.must_equal "#<Dimension: zero >"
       end
     end
 
@@ -704,7 +704,7 @@ describe SY do
         m.to_f.must_equal 6.6
       end
 
-      it "should be capable of arithmetics" do
+      it "should be capable of arithmetic" do
         m = Magnitude.of @q_speed, number: 1.0
         ( m + @m1 ).number.must_equal 4.3
         ( @m1 - m ).number.must_equal 2.3

@@ -142,8 +142,8 @@ module SY
     end
 
     def inspect                      # :nodoc:
-      if zero? then "Zero Dimension" else
-        "Dimension[ #{self} ]"
+      if zero? then "#<Dimension: zero >" else
+        "#<Dimension: #{self} >"
       end
     end
 
