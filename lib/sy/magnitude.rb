@@ -144,7 +144,7 @@ module SY
     # #inspect
     def inspect
       "#<Magnitude: #{to_s} of %s >" %
-        ( quantity.name || "unnamed quantity (#{dimension})" )
+        ( quantity.name || "unnamed quantity" )
     end
 
     private

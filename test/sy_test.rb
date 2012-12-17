@@ -688,7 +688,7 @@ describe SY do
       end
 
       it "has #inspect and #to_s methods" do
-        @m1.inspect.must_equal "magnitude 3.3.m.s⁻¹ of Speed (L.T⁻¹)"
+        @m1.inspect.must_equal "#<Magnitude: 3.3.m.s⁻¹ of Speed >"
         @m1.to_s.must_equal "3.3.m.s⁻¹"
       end
       
@@ -709,8 +709,10 @@ describe SY do
         ( m + @m1 ).number.must_equal 4.3
         ( @m1 - m ).number.must_equal 2.3
 
-        ( @m1 * @m2 ).inspect.must_equal "magnitude 3.3.m².s⁻¹.K⁻¹ of quantity (L².T⁻¹.Θ⁻¹)"
-        ( @m1 / @m2 ).inspect.must_equal "magnitude 3.3.s⁻¹.K of quantity (T⁻¹.Θ)"
+        ( @m1 * @m2 ).inspect
+          .must_equal "#<Magnitude 3.3.m².s⁻¹.K⁻¹ of unnamed quantity"
+        ( @m1 / @m2 ).inspect
+          .must_equal "#<Magnitude 3.3.s⁻¹.K of unnamed quantity"
       end
 
       it "should be comparable" do
