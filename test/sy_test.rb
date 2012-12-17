@@ -495,18 +495,18 @@ describe SY do
 
         # Should know its dimension:
         # 
-        @q_speed.dimension.inspect.must_equal "dimension L.T⁻¹"
-        @q_thermal_distension.dimension.inspect.must_equal "dimension L.Θ⁻¹"
-        @q_dimensionless.dimension.inspect.must_equal "zero dimension"
+        @q_speed.dimension.inspect.must_equal "#<Dimension: L.T⁻¹ >"
+        @q_thermal_distension.dimension.inspect.must_equal "#<Dimension: L.Θ⁻¹ >"
+        @q_dimensionless.dimension.inspect.must_equal "#<Dimension: zero >"
 
         # Should know its basic unit
         # 
         @q_speed.basic_unit.inspect
-          .must_equal "magnitude 1.m.s⁻¹ of Speed (L.T⁻¹)"
+          .must_equal "#<Magnitude: 1.m.s⁻¹ of Speed >"
         @q_thermal_distension.basic_unit.inspect
-          .must_equal "magnitude 1.m.K⁻¹ of Thermal distension (L.Θ⁻¹)"
+          .must_equal "#<Magnitude: 1.m.K⁻¹ of Thermal distension >"
         @q_dimensionless.basic_unit.inspect
-          .must_equal "magnitude 1 of Some dimensionless quantity (∅)"
+          .must_equal "#<Magnitude: 1 of Some dimensionless quantity >"
 
         # Should know its name
         # 
@@ -521,7 +521,7 @@ describe SY do
         # exponent vectors.
         # 
         ( @q_speed * @q_thermal_distension ).dimension.inspect
-          .must_equal "dimension L².T⁻¹.Θ⁻¹"
+          .must_equal "#<Dimension: L².T⁻¹.Θ⁻¹ >"
       end
 
       it "should have working / operator" do
@@ -530,7 +530,7 @@ describe SY do
         # vectors.
         # 
         ( @q_speed / @q_thermal_distension ).dimension.inspect
-          .must_equal "dimension T⁻¹.Θ"
+          .must_equal "#<Dimension: T⁻¹.Θ >"
       end
 
       it "should have working ** operator" do
@@ -539,7 +539,7 @@ describe SY do
         # dimension by that integer.
         # 
         ( @q_speed ** 2 ).dimension.inspect
-          .must_equal "dimension L².T⁻²"
+          .must_equal "#<Dimension: L².T⁻² >"
       end
       
       it "should have #name_basic_unit, #inspect, #to_s" do
@@ -566,16 +566,16 @@ describe SY do
 
         # Now, let's write expectation about the #inspect method
         # 
-        @q_speed.inspect.must_equal 'quantity "Speed" (L.T⁻¹)'
+        @q_speed.inspect.must_equal '#<Quantity: Speed >'
 
         # Expectation about the #to_s (conversion to string)
         # 
-        @q_speed.to_s.must_equal 'Speed (L.T⁻¹)'
+        @q_speed.to_s.must_equal '#<Quantity: Speed >'
 
         # Expectation about #inspect of a quantity without name:
         # 
         SY::Quantity.new( dimension: SY::Dimension.new("L⁻¹") ).inspect
-          .must_equal "unnamed quantity (L⁻¹)"
+          .must_equal "#<Quantity: L⁻¹ >"
       end
 
       it "should have #set_as_standard method" do
@@ -629,7 +629,7 @@ describe SY do
         # Expectation about #of class method
         # 
         new_quantity = SY::Quantity.of "L.T⁻¹", ɴ: "growth rate" 
-        new_quantity.dimension.inspect.must_equal "dimension L.T⁻¹"
+        new_quantity.dimension.inspect.must_equal "#<Dimension: L.T⁻¹ >"
       end
 
       it "should have dimensionless quantity constructor" do
@@ -638,7 +638,7 @@ describe SY do
         # 
         new_quantity = SY::Quantity.zero name: "happiness"
         new_quantity.inspect
-          .must_equal 'quantity "Happiness" (∅)'
+          .must_equal '#<Quantity: Happiness >'
       end
     end
 
