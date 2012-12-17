@@ -4,7 +4,7 @@ require 'active_support/core_ext/object/blank'
 require 'active_support/core_ext/module/delegation'
 require 'active_support/core_ext/hash/reverse_merge'
 
-module SY
+nmodule SY
   def self.included( receiver )
     ::Numeric.module_exec do
       include UnitMethodsMixin
@@ -12,74 +12,110 @@ module SY
   end
   
   module UnitMethodsMixin
-    def method_missing( mτ_id, *args, &block )
-      # Check whether mτ_id is registered in the table of units:
+    # This method will cause a class to accept methods whose symbols
+    # correspond to the metrological units.
+    # 
+    def method_missing( method_ß, *args, &block )
+      # Check whether method_ß is registered in the table of units:
       begin
-        pfxs, units, exps =
-          ::SY::SPS_PARSER.( mτ_id.to_s, ::SY::UNITS_WITHOUT_PREFIX.keys,
+        prefixes, units, exponents =
+          ::SY::SPS_PARSER.( method_ß.to_s,
+                             ::SY::UNITS_WITHOUT_PREFIX.keys,
                              ::SY::PREFIXES.keys )
-      rescue ArgumentError # SPS_PARSER fails with AE if mτ_id not registered,
-        super         # in which case, #method_missing is forwarded higher
+      rescue ArgumentError
+        # SPS_PARSER fails with ArgumentError if method_ß is not recognized,
+        super     # in which case, #method_missing will be forwarded higher
       end
-      # mτ_id is a unit method; gonna define it. Definition skeleton:
-      dϝ = "def #{mτ_id}\n" +         # def line
-        "%s\n" +                   # method body
-        "end"                      # end
-      # Parser output >> elements to be multiplied together:
-      elementj = pfxs.zip(units).zip(exps).map{|ab, c| ab + [c] }.map{|row|
-        pfx, u, exp = row          # prefix, basic unit, exponent
-        pfx = PREFIXES[pfx][:full]
-        str = pfx == "" ? "::SY::UNITS_WITHOUT_PREFIX['#{u}']" :
-        "::SY::UNITS_WITHOUT_PREFIX['#{u}'].#{pfx}"
-        str += ( exp == 1 ? "" : " ** #{exp}" )
-      }
-      # Method body is constructed as a product of the elements:
-      mτ_bodyς = elementj.reduce "self" do |acc, ς| "%s * \n" % ς + acc end
-      # Finally, method is defined for the class on which it was called...
-      self.class.module_eval dϝ % mτ_bodyς
-      # ...and invoked
-      send mτ_id, *args, &block
+      # method_ß is a method that takes a number (the receiver) and creates
+      # a metrological Magnitude instance out of it. We are going to define
+      # that method here. The definition skeleton will be:
+      definition_skeleton = "def #{method_ß}\n" + # def line
+                            "%s\n" +              # method body
+                            "end"                 # end
+      # Now let us take a look at the output of the SPS_PARSER, which we
+      # called earlier, and convert it to the array of factors:
+      factors = [ prefixes, units, exponents ].transpose.map { |triple|
+        prefix, unit, exponent = triple
+        # convert prefix into the full form
+        prefix = PREFIXES[ prefix ][ :full ]
+        # reference the unit (with or without prefix)
+        ς = if prefix == "" then
+              "::SY::UNITS_WITHOUT_PREFIX['#{unit}']"
+            else
+              "::SY::UNITS_WITHOUT_PREFIX['#{unit}'].#{prefix}"
+            end
+        # and exponentiate it if exponent requires it
+        ς += if exp == 1 then "" else " ** #{exponent}" end
+      } # map
+      # method body will contain the product of these factors:
+      method_body = factors.reduce "self" do |accumulator, ς|
+        "%s * \n" % ς + accumulator
+      end
+      # finally, teh finished method will be defined for that class,
+      # on which it was called:
+      self.class.module_eval definition_skeleton % method_body
+      # and invoked:
+      send method_ß, *args, &block
     end # def method_missing
     
-    def respond_to_missing?( mτ_id, include_private = false )
-      # Check whether mτ_id is registered in the table of units:
+    def respond_to_missing?( method_ß, include_private = false )
+      # Check whether method_ß is registered in the table of units:
       begin
-        pfxs, units, exps =
-          ::SY::SPS_PARSER.( mτ_id.to_s, ::SY::UNITS_WITHOUT_PREFIX.keys,
+        prefixes, units, exponents =
+          ::SY::SPS_PARSER.( method_ß.to_s,
+                             ::SY::UNITS_WITHOUT_PREFIX.keys,
                              ::SY::PREFIXES.keys )
-      rescue ArgumentError # SPS_PARSER fails with AE if mτ_id not registered,
-        super         # in which case, #respond_to_missing is sent higher
+      rescue ArgumentError
+        # SPS_PARSER fails with ArgumentError if method_ß is not registered,
+        super # in which case, #respond_to_missing is sent up the lookup chain
       end
     end
 
-    def °C; Magnitude.of ABSOLUTE_TEMPERATURE, n: self + 273.15 end
+    # Units with offset are not supported by SY. The only exception is made
+    # for degrees of Celsius, for which #°C and #celsius method is provided,
+    # constructing ABSOLUTE_TEMPERATURE n + 273.15. Use of degrees of Celsius
+    # is generally discouraged for relative temperatures (ie. temperature
+    # differences), use kelvins instead.
+    # 
+    def celsius
+      Magnitude.of ABSOLUTE_TEMPERATURE, n: self + 273.15
+    end
+    alias :°C :celsius
   end # UnitMethodsMixin
 
-  # Basic dimensions of physical quantities
+  # Basic dimensions of physical quantities.
+  # 
   BASIC_DIMENSIONS =
     { L: :LENGTH, M: :MASS, T: :TIME, Q: :ELECTRIC_CHARGE, Θ: :TEMPERATURE }
   
-  # Basic dimension symbols (letters)
+  # Basic dimension symbols (letters).
+  # 
   DIM_L = BASIC_DIMENSIONS.keys
   
   # Dimensions more or less have their standard quantities,
   # which, once defined, will be held in this hash table as pairs
-  # of { dimension array => standard quantity }
+  # of { dimension array => standard quantity }.
+  # 
   QUANTITIES = {}
 
-  # Defined units { unit_name => unit_instance } and
+  # Unit table. Defined units { unit_name => unit_instance } and
   # { unit_abbreviation ("symbol") => unit_instance }
+  # 
   UNITS_WITHOUT_PREFIX = {}
 
-  # Basic units of quantities
-  # (hash of { quantity => basic_unit })
+  # Basic units for metrological quantities.
+  # (Hash of { metrological_quantity => basic_unit }.)
+  # 
   BASIC_UNITS = Hash.new {|hsh, qnt| Unit.basic of: qnt }
 
-  # Apart from basic units, other units are commonly favored
-  # (hash of { quantity => [ array of favored units ] })
+  # Apart from basic units, it commonly happens that other units are favored.
+  # They are held in this hash as pairs of
+  # { metrological_quantity => [ array of favored units ] }.
+  # 
   FAV_UNITS = Hash.new []
 
-  # Table of prefixes and their corresponding unit multiples
+  # Table of prefixes and their corresponding unit multiples.
+  # 
   PREFIX_TABLE = [ { full: "exa", short: "E", factor: 1e18 },
                    { full: "peta", short: "P", factor: 1e15 },
                    { full: "tera", short: "T", factor: 1e12 },
@@ -98,11 +134,13 @@ module SY
                    { full: "femto", short: "f", factor: 1e-15 },
                    { full: "atto", short: "a", factor: 1e-18 } ]
   
-  # Valid prefixes as a list (simple array)
+  # Valid prefixes as a list (simple array).
+  # 
   PREFIXES = PREFIX_TABLE.each_with_object( Hash.new ) {|row, ꜧ| ꜧ[row[:full]] = row
                                                     ꜧ[row[:short]] = row }
   
-  # Unicode superscript exponents 
+  # Unicode superscript exponents.
+  # 
   SUPERSCRIPT = Hash.new { |ꜧ, key|
     if key.is_a? String then
       key.size <= 1 ? nil : key.each_char.map{|c| ꜧ[c] }.join
@@ -111,7 +149,8 @@ module SY
     end
   }.merge! Hash[ '-/0123456789'.each_char.zip( '⁻⎖⁰¹²³⁴⁵⁶⁷⁸⁹'.each_char ) ]
   
-  # Reverse conversion (from exponent strings to fixnums)
+  # Reverse conversion (from exponent strings to fixnums).
+  # 
   SUPERSCRIPT_DOWN = Hash.new { |ꜧ, key|
     if key.is_a? String then
       key.size == 1 ? nil : key.each_char.map{|c| ꜧ[c] }.join
@@ -122,7 +161,8 @@ module SY
     .merge!( '¯' => '-',
              '´' => '/' )
   
-  # SPS stands for "superscripted product string"    
+  # SPS stands for "superscripted product string".
+  # 
   SPS = lambda { |ßs, exps|
     raise ArgumentError unless ßs.size == exps.size
     exps = exps.map{|e| Integer e }
@@ -131,14 +171,18 @@ module SY
     # omit exponents equal to 1:
     clean.map{|ß, exp| "#{ß}#{exp == 1 ? "" : SUPERSCRIPT[exp]}" }.join "."
   }
+
+  # Singleton #inspect method for SPS.
+  # 
   def SPS.inspect
     "Superscripted product string constructor lambda." +
       "Takes 2 arguments. Example: [:a, :b], [-1, 2] #=> a⁻¹b²."
   end
   
-  # SPS parser takes 3 parameters: a string, an array of acceptable symbols,
-  # and an array of acceptable prefixes. It returns 3 arrays: prefixes,
-  # symbols and exponents.
+  # This is a closure that takes 3 arguments: a string to be parsed,
+  # an array of acceptable symbols, and an array of acceptable prefixes.
+  # It returns 3 equal-sized arrays: prefixes, symbols and exponents.
+  # 
   SPS_PARSER = lambda { |input_string, ßs, prefixj = []|
     complaint = "unacceptable string: #{input_string}"
     # argument grooming
@@ -186,6 +230,9 @@ module SY
       memo[0] << prefix; memo[1] << ß; memo[2] << exp
     }
   }
+
+  # Singleton #inspect method for SPS_PARSER.
+  # 
   def SPS_PARSER.inspect; "Superscripted product string parser lambda. " +
       "Takes 2 compulsory and 1 optional argument. Example: " +
       '"kB.s⁻¹", [:g, :B, :s, :C], [:M, :k, :m, :µ] #=> ["k", ""], ' +
@@ -193,6 +240,7 @@ module SY
   end
   
   # Metrological dimension
+  # 
   class Dimension
     # Constructor for basic dimensions (given basic dim. symbol)
     def self.basic ß
@@ -500,6 +548,10 @@ module SY
 
     private
 
+    def same_dimension? other
+      case other
+        when Numeric then 
+
     def aE_same_quantity other
       raise ArgumentError unless other.kind_of? Magnitude
       unless self.dimension == other.dimension
@@ -692,7 +744,18 @@ module SY
 
   ABSOLUTE_TEMPERATURE =
     Quantity.of TEMPERATURE.dimension, ɴ: "Absolute temperature"
+  # monkey patch addition t1 + t2 to call
+  # t2.coerce t1 and if t1 is some sort of temperature (of temperature
+  # dimension), then return [ t1.( ABSOLUTE_TEMPERATURE ) t2.( TEMPERATURE_DIFFERENCE ) ]
+  # and then addition and subtraction should require temperature difference as their
+  # second parameter.
+  # Coerce should should be able to convert TEMPERATURE into ABSOLUTE as well as
+  # RELATIVE TEMPERATURE, also convert TEMPERATURE_DIFFERENCE into ABSOLUTE_TEMPERATURE,
+  # but should avoid the opposite, ie. converting ABSOLUTE_TEMPERATURE into TEMPERATURE
+  # DIFFERENCE - this should have to be done explicitly by .( TEMPERATURE )
   CELSIUS = Unit.of ABSOLUTE_TEMPERATURE, ɴ: "celsius", abbr: "°C", n: 1
+  TEMPERATURE_DIFFERENCE =
+    Quantity.of TEMPERATURE.dimension, name: "Relative temperature"
 
   FREQUENCY = Quantity.of "T⁻¹", name: "Frequency" 
   HERTZ = FREQUENCY.name_basic_unit "hertz", short: "Hz"
