@@ -3,12 +3,7 @@ require "sy/version"
 require 'active_support/core_ext/object/blank'
 require 'active_support/core_ext/module/delegation'
 require 'active_support/core_ext/hash/reverse_merge'
-
-require_relative 'sy/unit_methods_mixin'
-require_relative 'sy/dimension'
-require_relative 'sy/quantity'
-require_relative 'sy/magnitude'
-require_relative 'sy/unit'
+require 'active_support/core_ext/array/extract_options'
 
 module SY
   def self.included( receiver )
@@ -17,6 +12,8 @@ module SY
     end
   end
 
+  require_relative 'sy/unit_methods_mixin'
+
   # Basic dimensions of physical quantities.
   # 
   BASIC_DIMENSIONS =
@@ -24,7 +21,7 @@ module SY
   
   # Basic dimension symbols (letters).
   # 
-  DIM_L = BASIC_DIMENSIONS.keys
+  DIMENSION_LETTERS = BASIC_DIMENSIONS.keys
   
   # Dimensions more or less have their standard quantities,
   # which, once defined, will be held in this hash table as pairs
@@ -174,6 +171,10 @@ module SY
       '["B", "s"], [1, -1]'
   end
 
+  require_relative 'sy/dimension'
+  require_relative 'sy/quantity'
+  require_relative 'sy/magnitude'
+  require_relative 'sy/unit'
 
   # Constants
   Nᴀ = AVOGADRO_CONSTANT = 6.02214e23
