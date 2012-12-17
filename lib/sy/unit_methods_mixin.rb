@@ -38,7 +38,7 @@ module SY
               "::SY::UNITS_WITHOUT_PREFIX['#{unit}'].#{prefix}"
             end
         # and exponentiate it if exponent requires it
-        ς += if exp == 1 then "" else " ** #{exponent}" end
+        ς += if exponent == 1 then "" else " ** #{exponent}" end
       } # map
       # method body will contain the product of these factors:
       method_body = factors.reduce "self" do |accumulator, ς|

@@ -678,9 +678,9 @@ describe SY do
 
       it "should know #quantity, #number, #basic_unit" do
         
-        @m1.quantity.inspect.must_equal 'quantity "Speed" (L.T⁻¹)'
+        @m1.quantity.inspect.must_equal '#<Quantity: Speed >'
         @m1.number.must_equal 3.3
-        @m1.basic_unit.inspect.must_equal "magnitude 1.m.s⁻¹ of Speed (L.T⁻¹)"
+        @m1.basic_unit.inspect.must_equal "#<Magnitude: 1.m.s⁻¹ of Speed >"
       end
       
       it "should delegate dimension method to quantity" do
@@ -710,9 +710,9 @@ describe SY do
         ( @m1 - m ).number.must_equal 2.3
 
         ( @m1 * @m2 ).inspect
-          .must_equal "#<Magnitude 3.3.m².s⁻¹.K⁻¹ of unnamed quantity"
+          .must_equal "#<Magnitude: 3.3.m².s⁻¹.K⁻¹ of unnamed quantity >"
         ( @m1 / @m2 ).inspect
-          .must_equal "#<Magnitude 3.3.s⁻¹.K of unnamed quantity"
+          .must_equal "#<Magnitude: 3.3.s⁻¹.K of unnamed quantity >"
       end
 
       it "should be comparable" do
