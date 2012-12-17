@@ -160,24 +160,28 @@ module SY
 
     def same_quantity? other
       case other
-        when Magnitude then 
-
-    def aE_same_quantity other
-      raise ArgumentError unless other.kind_of? Magnitude
-      unless self.dimension == other.dimension
-        raise ArgumentError, "Magnitudes not of the same dimension " +
-          "(#{dimension} vs. #{other.dimension})."
-      end
-      unless self.quantity == other.quantity
-        raise ArgumentError, "Although the dimensions of the magnitudes " +
-          "match, they are not the same quantity " +
-          "(#{quantity.inspect} vs. #{other.quantity.inspect})."
+      when Magnitude then quantity == other.quantity
+      when Quantity then quantity == other
+      else
+        raise ArgumentError, "The object (#{other.class} class) does not " +
+          "have quantity (SY::Quantity)"
       end
     end
-    alias :aE_same_quantity :aE_same_quantity
+
+    def aE_same_dimension other
+      raise ArgumentError, "Magnitude not of the same dimension as " +
+        "#{other}" unless same_dimension? other
+    end
+
+    def aE_same_quantity other
+      raise ArgumentError, "Magnitude not of the same quantity as " +
+        "#{other}" unless same_quantity? other
+    end
   end # class Magnitude
-  
-  # SignedMagnitude allows its number to be negative
+
+  # Magnitude is generally an absolute value. SignedMagnitude allows magnitude
+  # to carry a +/- sign, allowing it to stand in for negative numbers.
+  # 
   class SignedMagnitude < Magnitude
     def initialize oo
       @quantity = oo[:quantity] || oo[:of]
