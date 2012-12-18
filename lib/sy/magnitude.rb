@@ -23,50 +23,97 @@ module SY
     delegate :dimension, :basic_unit, :fav_units, to: :quantity
 
     # A magnitude is basically a pair [quantity, number].
+    # 
     def initialize oj
       @quantity = oj[:quantity] || oj[:of]
       raise ArgumentError unless @quantity.kind_of? Quantity
       @number = oj[:number] || oj[:n]
-      raise ArgumentError, "Negative number of the magnitude: #@number" unless
-        @number >= 0
+      raise NegativeMagnitudeError, "Negative number of the magnitude: " +
+        "#@number" unless @number >= 0
     end
     # idea: for more complicated units (offsetted, logarithmic etc.),
     # conversion closures from_basic_unit, to_basic_unit
 
-    # SAME QUANTITY magnitudes compare by their numbers
+    # Magnitudes compare by their numbers. Compared magnitudes must be of
+    # the same quantity.
+    # 
     def <=> other
-      aE_same_quantity( other )
-      self.n <=> other.n
+      case other
+      when Magnitude then
+        aE_same_quantity other
+        self.n <=> other.n
+      else
+        raise ArgumentError,
+          "A Magnitude cannot be compared with a #{other.class}"
+      end
     end
-
-    # #abs absolute value - Magnitude with number.abs
-    def abs; self.class.of quantity, number: n.abs end
       
-    # addition
+    # Addition.
+    # 
     def + other
-      aE_same_quantity( other )
-      self.class.of( quantity, n: self.n + other.n )
+      case other
+      when Magnitude then
+        aE_same_dimension( other )
+        if same_quantity?( other ) then
+          begin
+            self.class.of( quantity, n: self.n + other.n )
+          rescue NegativeMagnitudeError
+            raise MagnitudeSubtractionError,
+              "Attempt to subtract greater magnitude from a smaller one."
+          end
+        else
+          compatible_quantity_1, compatible_quantity_2 =
+            other.quantity.coerce( self.quantity )
+          self.class.of( compatible_quantity_1, n: self.n ) +
+            other.class.of( compatible_quantity_2, n: other.n )
+        end
+      else
+        raise ArgumentError, "Magnitudes can only be added to compatible " +
+          "other magnitudes."
+      end
     end
 
-    # subtraction
+    # Subtraction.
+    # 
     def - other
-      aE_same_quantity( other )
-      self.class.of( quantity, n: self.n - other.n )
+      case other
+      when Magnitude then
+        aE_same_dimension( other )
+        if same_quantity?( other ) then
+          begin
+            self.class.of( quantity, n: self.n - other.n )
+          rescue NegativeMagnitudeError
+            raise MagnitudeSubtractionError,
+              "Attempt to subtract greater magnitude from a smaller one."
+          end
+        else
+          compatible_quantity_1, compatible_quantity_2 =
+            other.quantity.coerce( self.quantity )
+          self.class.of( compatible_quantity_1, n: self.n ) +
+            other.class.of( compatible_quantity_2, n: other.n )
+        end
+      else
+        raise ArgumentError, "Magnitudes can only be subtracted from " +
+          "compatible other magnitudes."
+      end
     end
 
-    # multiplication
+    # Multiplication.
+    # 
     def * other
       case other
-      when Magnitude
+      when Magnitude then
         self.class.of( quantity * other.quantity, n: self.n * other.n )
       when Numeric then [1, other]
         self.class.of( quantity, n: self.n * other )
       else
-        raise ArgumentError, "magnitudes only multiply with magnitudes and numbers"
+        raise ArgumentError,
+          "Magnitudes only multiply with other magnitudes and numbers."
       end
     end
 
-    # division
+    # Division.
+    # 
     def / other
       case other
       when Magnitude
@@ -74,32 +121,45 @@ module SY
       when Numeric then [1, other]
         self.class.of( quantity, n: self.n / other )
       else
-        raise ArgumentError, "magnitudes only divide by magnitudes and numbers"
+        raise ArgumentError,
+          "Magnitudes only divide by magnitudes and numbers."
       end
     end
 
-    # power
-    def ** arg
-      return case arg
-             when Magnitude then self.n ** arg.n
-             else
-               raise ArgumentError unless arg.is_a? Numeric
-               self.class.of( quantity ** arg, n: self.n ** arg )
-             end
+    # Exponentiation.
+    # 
+    def ** exponent
+      raise ArgumentError, "Magnitudes can only be exponentiated " +
+        "to numbers." unless arg.is_a? Numeric
+      self.class.of( quantity ** arg, n: self.n ** arg )
     end
 
-    # Gives the magnitude as a numeric value in a given unit. Of course,
-    # the unit must be of the same quantity and dimension.
+    # Gives the magnitude as a numeric value in a given unit. The 'unit' must
+    # be a magnitude of the same dimension and of quantity compatible with
+    # the receiver.
+    # 
     def numeric_value_in other
       case other
       when Symbol, String then
-        other = other.to_s.split( '.' ).reduce 1 do |pipe, sym| pipe.send sym end
+        other = other.to_s.split( '.' ).reduce 1 do |pipe, sym|
+          pipe.send sym
+        end
       end
-      aE_same_quantity( other )
-      self.n / other.number
+      aE_same_dimension( other )
+      if same_quantity?( other ) then
+        self.number / other.number
+      else
+        comp_quantity_1, comp_quantity_2 =
+          other.quantity.coerce( self.quantity )
+        self.class.of( comp_quantity_1, n: self.number ).
+          numeric_value_in other.class.of( comp_quantity_2, n: other.number )
+      end
     end
     alias :in :numeric_value_in
 
+    # Gives the magnitude as a numeric value in the basic unit of the
+    # quantity of this magnitude.
+    # 
     def numeric_value_in_basic_unit
       numeric_value_in BASIC_UNITS[self.quantity]
     end
@@ -107,26 +167,61 @@ module SY
 
     # Changes the quantity of the magnitude, provided that the dimensions
     # match.
-    def is_actually! qnt
+    # 
+    def is_actually! other_quantity
       raise ArgumentError, "supplied quantity dimension must match!" unless
-        qnt.dimension == self.dimension
-      @quantity = qnt
+        same_dimension? other_quantity
+      # perform the quantity change:
+      self.class.of( other_quantity, n: self.number )
       return self
     end
     alias call is_actually!
 
-    #Gives a string expressing the magnitude in given units.
-    def string_in_unit unit
-      if unit.nil? then
-        number.to_s
-      else
-        str = ( unit.symbol || unit.name ).to_s
-        ( str == "" ? "%.2g" : "%.2g.#{str}" ) % numeric_value_in( unit )
-      end
+    # Gives a string expressing the magnitude in given compatible units.
+    #
+    def string_in unit=BASIC_UNITS[self.quantity]
+      str = ( unit.symbol || unit.name ).to_s
+      ( str == "" ? "%" : "%.#{str}" ) % numeric_value_in( unit )
+    end
+
+    # Returns a SignedMagnitude instance with same value and positive sign.
+    # 
+    def +@
+      SignedMagnitude.plus quantity, number: n
+    end
+
+    # Returns a SignedMagnitude instance with same absolute value, but
+    # negative sign.
+    # 
+    def -@
+      SignedMagnitude.minus quantity, number: n
+    end
+
+    # Magnitude of the same quantity, whose number was subjected to #abs call.
+    # 
+    def abs
+      self.class.of quantity, number: n.abs
+    end
+
+    # Inquirer whether the number of the magnitude is greater of equal than
+    # zero. Always true for Magnitude instances, false for negatively signed
+    # SignedMagnitude instances.
+    # 
+    def nonnegative?
+      number >= 0
+    end
+
+    # Inquirer whether the number of the magnitude is smaller than zero. Always
+    # false for Magnitude instances, true for negatively signed SignedMagnitude
+    # instances.
+    # 
+    def negative?
+      number < 0
     end
 
     # #to_s converter gives the magnitude in its most favored units
-    def to_s
+    # 
+    def to_s                         # :nodoc:
       unit = fav_units[0]
       str = if unit then string_in_unit( unit )
             else # use fav_units of basic dimensions
@@ -141,10 +236,25 @@ module SY
             end
     end
 
-    # #inspect
-    def inspect
+    def inspect                      # :nodoc:
       "#<Magnitude: #{to_s} of %s >" %
         ( quantity.name || "unnamed quantity" )
+    end
+
+    def coerce other                 # :nodoc:
+      case other
+      when Numeric then
+        return self.class.of( Quantity.dimensionless, n: other ), self
+      when Magnitude then
+        aE_same_dimension other
+        compatible_quantity_1, compatible_quantity_2 =
+          other.quantity.coerce( self.quantity )
+        return self.class.of( compatible_quantity_1, n: self.number ),
+               other.class.of( compatible_quantity_2, n: other.number )
+      else
+        raise ArgumentError, "Object #{other} cannot be coerced into a " +
+          "compatible magnitude."
+      end
     end
 
     private

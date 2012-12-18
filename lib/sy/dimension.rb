@@ -154,5 +154,19 @@ module SY
     end
 
     delegate :fav_units, to: :standard_quantity
+
+    def coerce other                 # :nodoc:
+      case other
+      when Quantity then
+        if same_dimension?( other ) then
+          return self, self
+        else
+          raise "#{other} has different dimension and cannot be " +
+            "coerced into #{self}"
+        end
+      else
+        raise "A #{other.class} cannot be coerced into a #{self.class}."
+      end
+    end
   end # class Dimension
 end # module SY

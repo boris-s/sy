@@ -800,10 +800,10 @@ describe SY do
         .must_equal "0.001.m"
 
       1.mm.inspect
-        .must_equal "magnitude 0.001.m of Length (L)"
+        .must_equal "#<Magnitude: 0.001.m of Length >"
 
       1.µs.inspect
-        .must_equal "magnitude 1e-06.s of Time (T)"
+        .must_equal "#<Magnitude: 1e-06.s of Time >"
 
       SY::AMPERE.name
         .must_equal "ampere"
@@ -833,13 +833,25 @@ describe SY do
         .must_equal "A"
 
       1.A.inspect
-        .must_equal "magnitude 1.A of Electric current (T⁻¹.Q)"
+        .must_equal "#<Magnitude: 1.A of Electric current >"
 
       1.molar
         .must_equal (UNIT * Nᴀ / LITRE).is_actually!( MOLARITY )
 
       7.µM
         .must_be_within_epsilon( 5.µM + 2.µM, 1e-9 )
+
+      +1.s
+        .must_equal 1.s
+
+      -1.s
+        .must_equal -1 * 1.s
+
+      ( 1 / 1.s )
+        .must_equal 1.s⁻¹
+
+      ( 1.s⁻¹.( FREQUENCY ) )
+        .must_equal 1.Hz
 
        7.°C
          .must_equal 8.°C - 1.K
