@@ -178,7 +178,7 @@ module SY
 
   # Custom error class for attempt to subtract more than there is.
   # 
-  class NegativeMagnitudeError < StandardError; end
+  class MagnitudeSubtractionError < StandardError; end
 
 
   require_relative 'sy/dimension'
