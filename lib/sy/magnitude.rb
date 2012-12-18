@@ -223,7 +223,7 @@ module SY
     # 
     def to_s                         # :nodoc:
       unit = fav_units[0]
-      str = if unit then string_in_unit( unit )
+      str = if unit then string_in( unit )
             else # use fav_units of basic dimensions
               hsh = dimension.to_hash
               symbols, exponents = hsh.each_with_object Hash.new do |pair, memo|
