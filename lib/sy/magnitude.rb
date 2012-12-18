@@ -181,7 +181,7 @@ module SY
     #
     def string_in unit=BASIC_UNITS[self.quantity]
       str = ( unit.symbol || unit.name ).to_s
-      ( str == "" ? "%" : "%.#{str}" ) % numeric_value_in( unit )
+      ( str == "" ? "%.2g" : "%.2g.#{str}" ) % numeric_value_in( unit )
     end
 
     # Returns a SignedMagnitude instance with same value and positive sign.
