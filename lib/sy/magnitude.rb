@@ -30,7 +30,8 @@ module SY
       @quantity = ꜧ[:quantity] || ꜧ[:of]
       raise ArgumentError unless @quantity.kind_of? Quantity
       @number = ꜧ[:number] || ꜧ[:n]
-      raise NegativeMagnitudeError, "Attempt to create a magnitude " +
+      raise ArgumentError, # NegativeMagnitudeError,
+      "Attempt to create a magnitude " +
         "with negative number (#@number)." unless @number >= 0
     end
     # idea: for more complicated units (offsetted, logarithmic etc.),
