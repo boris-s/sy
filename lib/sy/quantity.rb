@@ -150,5 +150,19 @@ module SY
           "a quantity"
       end
     end
+
+    private
+
+    def same_dimension? other
+      case other
+      when Dimension then dimension == other
+      when Quantity then dimension == other.dimension
+      when Magnitude then dimension == other.dimension
+      when Numeric then dimensionless?
+      else
+        raise ArgumentError, "The object (#{other.class} class) does not " +
+          "have defined dimension comparable to SY::Dimension."
+      end
+    end
   end # class Quantity
 end # module SY
