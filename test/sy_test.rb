@@ -787,105 +787,105 @@ describe SY do
       1.mm
         .must_be_kind_of SY::Magnitude
 
-      1.mm.fav_units[0].dimension.to_s
-        .must_equal "L"
+      # 1.mm.fav_units[0].dimension.to_s
+      #   .must_equal "L"
       
-      1.mm.fav_units[0].number
-        .must_equal 1
+      # 1.mm.fav_units[0].number
+      #   .must_equal 1
 
-      1.mm.fav_units[0].name
-        .must_equal "metre"
+      # 1.mm.fav_units[0].name
+      #   .must_equal "metre"
 
-      1.mm.to_s
-        .must_equal "0.001.m"
+      # 1.mm.to_s
+      #   .must_equal "0.001.m"
 
-      1.mm.inspect
-        .must_equal "#<Magnitude: 0.001.m of Length >"
+      # 1.mm.inspect
+      #   .must_equal "#<Magnitude: 0.001.m of Length >"
 
-      1.µs.inspect
-        .must_equal "#<Magnitude: 1e-06.s of Time >"
+      # 1.µs.inspect
+      #   .must_equal "#<Magnitude: 1e-06.s of Time >"
 
-      SY::AMPERE.name
-        .must_equal "ampere"
+      # SY::AMPERE.name
+      #   .must_equal "ampere"
 
-      SY::AMPERE.symbol
-        .must_equal "A"
+      # SY::AMPERE.symbol
+      #   .must_equal "A"
 
-      SY::AMPERE.dimension
-        .must_equal 1.A.dimension
+      # SY::AMPERE.dimension
+      #   .must_equal 1.A.dimension
 
-      1.A.fav_units[0].number
-        .must_equal 1
+      # 1.A.fav_units[0].number
+      #   .must_equal 1
 
-      SY::Magnitude.new( of: SY::ELECTRIC_CURRENT, n: 1 )
-        .must_equal 1.A
+      # SY::Magnitude.new( of: SY::ELECTRIC_CURRENT, n: 1 )
+      #   .must_equal 1.A
 
-      1.A.fav_units[0].name
-        .must_equal "ampere"
+      # 1.A.fav_units[0].name
+      #   .must_equal "ampere"
 
-      1.A.to_s
-        .must_equal "1.A"
+      # 1.A.to_s
+      #   .must_equal "1.A"
 
-      1.A.number
-        .must_equal 1
+      # 1.A.number
+      #   .must_equal 1
       
-      1.A.basic_unit.symbol
-        .must_equal "A"
+      # 1.A.basic_unit.symbol
+      #   .must_equal "A"
 
-      1.A.inspect
-        .must_equal "#<Magnitude: 1.A of Electric current >"
+      # 1.A.inspect
+      #   .must_equal "#<Magnitude: 1.A of Electric current >"
 
-      1.l⁻¹.( MOLARITY ).quantity.must_equal MOLARITY
+      # 1.l⁻¹.( MOLARITY ).quantity.must_equal MOLARITY
 
-      1.molar
-        .must_equal ( UNIT * Nᴀ / LITRE ).is_actually!( MOLARITY )
+      # 1.molar
+      #   .must_equal ( UNIT * Nᴀ / LITRE ).is_actually!( MOLARITY )
 
-      7.µM
-        .must_be_within_epsilon( 5.µM + 2.µM, 1e-9 )
+      # 7.µM
+      #   .must_be_within_epsilon( 5.µM + 2.µM, 1e-9 )
 
-      +1.s
-        .must_equal 1.s
+      # +1.s
+      #   .must_equal 1.s
 
-      -1.s
-        .must_equal -1 * 1.s
+      # -1.s
+      #   .must_equal -1 * 1.s
 
-      ( 1 / 1.s )
-        .must_equal 1.s⁻¹
+      # ( 1 / 1.s )
+      #   .must_equal 1.s⁻¹
 
-      ( 1.s⁻¹.( FREQUENCY ) )
-        .must_equal 1.Hz
+      # ( 1.s⁻¹.( FREQUENCY ) )
+      #   .must_equal 1.Hz
 
-       7.°C
-         .must_equal 8.°C - 1.K
+      #  7.°C
+      #    .must_equal 8.°C - 1.K
 
-       -15.°C
-         .must_equal 258.15.K
+      #  -15.°C
+      #    .must_equal 258.15.K
 
-      7000.µM
-        .must_equal 7.mM
+      # 7000.µM
+      #   .must_equal 7.mM
 
-      SY::UNITS_WITHOUT_PREFIX.keys
-        .must_include "M"
+      # SY::UNITS_WITHOUT_PREFIX.keys
+      #   .must_include "M"
 
-      SY::UNITS_WITHOUT_PREFIX.keys
-        .must_include "mol"
+      # SY::UNITS_WITHOUT_PREFIX.keys
+      #   .must_include "mol"
 
-      # Avogadro's number is defined directly in SY
-      1.mol
-        .must_equal SY::Nᴀ.unit
+      # # Avogadro's number is defined directly in SY
+      # 1.mol
+      #   .must_equal SY::Nᴀ.unit
 
-      0.7.M
-        .must_equal( 0.7.mol.l⁻¹.is_actually!( MOLARITY ) )
-      # (if #is_actually! conversion method is not used, current
-      # implementation will refuse to compare different quantities,
-      # even if their dimensions match)
+      # 0.7.M
+      #   .must_equal( 0.7.mol.l⁻¹.is_actually!( MOLARITY ) )
+      # # (if #is_actually! conversion method is not used, current
+      # # implementation will refuse to compare different quantities,
+      # # even if their dimensions match)
 
-      30.Hz
-        .must_equal 30.s⁻¹.( FREQUENCY )
+      # 30.Hz
+      #   .must_equal 30.s⁻¹.( FREQUENCY )
 
-      # Dalton * Avogadro must be 1 gram
-      ( 1.Da * Nᴀ )
-        .must_be_within_epsilon( 1.g, 1e-6 )
+      # # Dalton * Avogadro must be 1 gram
+      # ( 1.Da * Nᴀ )
+      #   .must_be_within_epsilon( 1.g, 1e-6 )
 
       # kilogram
       1.kg.must_equal 1000.g
