@@ -117,6 +117,12 @@ module SY
       self.class.of self.dimension * Integer( number )
     end
 
+    # Inquirer whether the quantity is dimensionless.
+    # 
+    def dimensionless?
+      dimension.zero?
+    end
+
     # Make this quantity the standard quantity for its dimension.
     # 
     def set_as_standard
@@ -134,7 +140,11 @@ module SY
 
     def coerce other                 # :nodoc:
       case other
-      when Numeric then return Quantity.dimensionless, self
+      when Numeric then
+        if dimensionless? then return self, self else
+          raise ArgumentError, "Attempting to coerce a number to a " +
+            "quantity that is not dimensionless."
+        end
       when Quantity then
         if same_dimension? other then return self, self else
           raise ArgumentError, "Quantities with different dimension " +
