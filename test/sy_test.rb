@@ -835,8 +835,10 @@ describe SY do
       1.A.inspect
         .must_equal "#<Magnitude: 1.A of Electric current >"
 
+      1.l⁻¹.( MOLARITY ).inspect.must_equal "koko"
+
       1.molar
-        .must_equal (UNIT * Nᴀ / LITRE).is_actually!( MOLARITY )
+        .must_equal ( UNIT * Nᴀ / LITRE ).is_actually!( MOLARITY )
 
       7.µM
         .must_be_within_epsilon( 5.µM + 2.µM, 1e-9 )

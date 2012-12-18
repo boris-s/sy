@@ -237,8 +237,7 @@ module SY
     end
 
     def inspect                      # :nodoc:
-      "#<Magnitude: #{to_s} of %s >" %
-        ( quantity.name || "unnamed quantity" )
+      "#<Magnitude: #{to_s} of #{quantity} >"
     end
 
     def coerce other                 # :nodoc:
