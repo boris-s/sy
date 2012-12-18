@@ -171,6 +171,16 @@ module SY
       '["B", "s"], [1, -1]'
   end
 
+
+  # Custom error class for attempt to create negative magnitudes.
+  # 
+  class NegativeMagnitudeError < StandardError; end
+
+  # Custom error class for attempt to subtract more than there is.
+  # 
+  class NegativeMagnitudeError < StandardError; end
+
+
   require_relative 'sy/dimension'
   require_relative 'sy/quantity'
   require_relative 'sy/magnitude'

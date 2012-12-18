@@ -837,8 +837,6 @@ describe SY do
 
       1.l⁻¹.( MOLARITY ).quantity.must_equal MOLARITY
 
-      1.l⁻¹.( MOLARITY ).inspect.must_equal "koko"
-
       1.molar
         .must_equal ( UNIT * Nᴀ / LITRE ).is_actually!( MOLARITY )
 
