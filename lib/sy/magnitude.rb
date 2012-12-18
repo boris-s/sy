@@ -85,7 +85,8 @@ module SY
           begin
             self.class.of( quantity, n: self.n - other.n )
           rescue NegativeMagnitudeError
-            raise MagnitudeSubtractionError,
+            # raise MagnitudeSubtractionError,
+            raise ArgumentError,
               "Attempt to subtract greater magnitude from a smaller one."
           end
         else
