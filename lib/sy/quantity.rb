@@ -124,6 +124,10 @@ module SY
     end
 
     def to_s                         # :nodoc:
+      if name.nil? then dimension.to_s else name.to_s end
+    end
+
+    def inspect                      # :nodoc:
       "#<Quantity: #{name.nil? ? dimension : name} >"
     end
   end # class Quantity
