@@ -570,7 +570,7 @@ describe SY do
 
         # Expectation about the #to_s (conversion to string)
         # 
-        @q_speed.to_s.must_equal '#<Quantity: Speed >'
+        @q_speed.to_s.must_equal 'Speed'
 
         # Expectation about #inspect of a quantity without name:
         # 
@@ -710,9 +710,9 @@ describe SY do
         ( @m1 - m ).number.must_equal 2.3
 
         ( @m1 * @m2 ).inspect
-          .must_equal "#<Magnitude: 3.3.m².s⁻¹.K⁻¹ of unnamed quantity >"
+          .must_equal "#<Magnitude: 3.3.m².s⁻¹.K⁻¹ of L².T⁻¹.Θ⁻¹ >"
         ( @m1 / @m2 ).inspect
-          .must_equal "#<Magnitude: 3.3.s⁻¹.K of unnamed quantity >"
+          .must_equal "#<Magnitude: 3.3.s⁻¹.K of T⁻¹.Θ >"
       end
 
       it "should be comparable" do
@@ -834,6 +834,8 @@ describe SY do
 
       1.A.inspect
         .must_equal "#<Magnitude: 1.A of Electric current >"
+
+      1.l⁻¹.( MOLARITY ).quantity.must_equal MOLARITY
 
       1.l⁻¹.( MOLARITY ).inspect.must_equal "koko"
 

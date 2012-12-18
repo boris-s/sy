@@ -259,7 +259,7 @@ module SY
   # DIFFERENCE - this should have to be done explicitly by .( TEMPERATURE )
   CELSIUS = Unit.of ABSOLUTE_TEMPERATURE, ɴ: "celsius", abbr: "°C", n: 1
   TEMPERATURE_DIFFERENCE =
-    Quantity.of TEMPERATURE.dimension, name: "Relative temperature"
+    Quantity.of TEMPERATURE.dimension, name: "Temperature difference"
 
   FREQUENCY = Quantity.of "T⁻¹", name: "Frequency" 
   HERTZ = FREQUENCY.name_basic_unit "hertz", short: "Hz"
