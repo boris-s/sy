@@ -11,7 +11,7 @@ module SY
     # 
     def self.of *args
       ꜧ = args.extract_options!
-      num = ꜧ.delete( :number ) or ꜧ.delete( :n )
+      num = ꜧ[:number] or ꜧ[:n]
       qnt = ꜧ.delete( :quantity )
       case args.size
       when 0 then
