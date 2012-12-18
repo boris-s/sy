@@ -245,6 +245,7 @@ module SY
     end
 
     def coerce other                 # :nodoc:
+      puts "Hello from Magnitude#coerce"
       case other
       when Numeric then
         return self.class.of( Quantity.dimensionless, n: other ), self
