@@ -47,7 +47,7 @@ module SY
       case other
       when Magnitude then
         aE_same_quantity other
-        self.number <=> other.number
+        self.number == other.number
       else
         raise ArgumentError,
           "A Magnitude cannot be compared with a #{other.class}"
