@@ -11,18 +11,9 @@ module SY
     # 
     def self.of *args
       ꜧ = args.extract_options!
-      num = ꜧ[:number] or ꜧ[:n]
-      qnt = ꜧ.delete( :quantity )
       case args.size
-      when 0 then
-        ( num < 0 ? SignedMagnitude : Magnitude )
-          .new number: num, quantity: qnt
-      when 1 then
-        ( num < 0 ? SignedMagnitude : Magnitude )
-          .new quantity: args[0], number: num
-      when 2 then
-        ( args[1] < 0 ? SignedMagnitude : Magnitude )
-          .new quantity: args[0], number: args[1]
+      when 0 then new ꜧ
+      when 1 then new ꜧ.merge! quantity: args[0]
       else
         raise ArgumentError, "Too many ordered arguments."
       end
