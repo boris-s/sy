@@ -40,16 +40,20 @@ module SY
     # the same quantity.
     # 
     def <=> other
+    end
+
+    def == other
+      puts "hello from #=="
       case other
       when Magnitude then
         aE_same_quantity other
-        self.n <=> other.n
+        self.number <=> other.number
       else
         raise ArgumentError,
           "A Magnitude cannot be compared with a #{other.class}"
       end
     end
-      
+
     # Addition.
     # 
     def + other
