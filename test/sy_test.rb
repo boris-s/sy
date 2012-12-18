@@ -230,15 +230,14 @@ describe SY do
         # Test that both @dim_l_per_temperature and @dim_null respond to all
         # five letters:
         # 
-        [ @dim_l_per_temperature, @dim_null ]
-          .each{ |dimension|
-                 dimension.must_respond_to :L
-                 dimension.must_respond_to :M
-                 dimension.must_respond_to :T
-                 dimension.must_respond_to :Q
-                 dimension.must_respond_to :Θ
-               }
-        
+        [ @dim_l_per_temperature, @dim_null ].each{ |dimension|
+          dimension.must_respond_to :L
+          dimension.must_respond_to :M
+          dimension.must_respond_to :T
+          dimension.must_respond_to :Q
+          dimension.must_respond_to :Θ
+        }
+
         # Test that the five letters return correct exponents for
         # @dim_l_per_temperature:
         # 
@@ -383,7 +382,6 @@ describe SY do
           .must_equal @quantity_3
       end
 
-
       it "should have nice #inspect" do
         
         # Inspect method serves the purpose of making beautiful text
@@ -395,6 +393,16 @@ describe SY do
         # And now there is specialy, null dimension will introduce itself as
         # 
         @dim_null.inspect.must_equal "#<Dimension: zero >"
+      end
+
+      it "should have #coerce" do
+
+        # Coerce method takes another object or quantity as its argument and
+        # returns a pair [ compatible_object_other, compatible_object_self ]
+        # usable for arithmetic, comparison and such.
+        # 
+        @dim_null.standard_quantity.coerce( 1 )
+          .must_equal [ Quantity.dimensionless, @dim_null.standard_quantity ]
       end
     end
 
@@ -887,23 +895,23 @@ describe SY do
       # ( 1.Da * Nᴀ )
       #   .must_be_within_epsilon( 1.g, 1e-6 )
 
-      # kilogram
-      1.kg.must_equal 1000.g
-      ( 1.kg * 1.m.s⁻² ).is_actually!( FORCE ).must_be_within_epsilon 1.N, 1e-9
+      # # kilogram
+      # 1.kg.must_equal 1000.g
+      # ( 1.kg * 1.m.s⁻² ).is_actually!( FORCE ).must_be_within_epsilon 1.N, 1e-9
 
-      # joule
-      ( 1.N * 1.m ).is_actually!( ENERGY ).must_equal 1.J
-      1e-23.J.K⁻¹.must_equal 1.0e-20.mJ.K⁻¹
+      # # joule
+      # ( 1.N * 1.m ).is_actually!( ENERGY ).must_equal 1.J
+      # 1e-23.J.K⁻¹.must_equal 1.0e-20.mJ.K⁻¹
 
-      # pascal
-      ( 1.N / 1.m ** 2 ).is_actually!( PRESSURE ).must_be_within_epsilon 1.Pa, 1e-9
+      # # pascal
+      # ( 1.N / 1.m ** 2 ).is_actually!( PRESSURE ).must_be_within_epsilon 1.Pa, 1e-9
 
-      # watt
-      ( 1.V * 1.A ).is_actually!( POWER ).must_be_within_epsilon 1.W, 1e-9
+      # # watt
+      # ( 1.V * 1.A ).is_actually!( POWER ).must_be_within_epsilon 1.W, 1e-9
 
-      # pretty representation
-      ( 1.m / 3.s ).to_s.must_equal( "0.33.m.s⁻¹" )
-      ( 1.m / 7.01e7.s ).to_s.must_equal( "1.4e-08.m.s⁻¹" )
+      # # pretty representation
+      # ( 1.m / 3.s ).to_s.must_equal( "0.33.m.s⁻¹" )
+      # ( 1.m / 7.01e7.s ).to_s.must_equal( "1.4e-08.m.s⁻¹" )
     end
   end
 end

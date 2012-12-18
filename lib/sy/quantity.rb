@@ -1,5 +1,5 @@
 #encoding: utf-8
-    
+
 module SY
   # This class represents a metrological quantity.
   # 
@@ -47,7 +47,7 @@ module SY
     def name=( name )
       @name = if name.blank? then nil else name.to_s.capitalize end
     end
-    
+
     # Standard constructor of a metrological quantity. A quantity may have
     # a name and a dimension.
     # 
@@ -130,6 +130,20 @@ module SY
 
     def inspect                      # :nodoc:
       "#<Quantity: #{name.nil? ? dimension : name} >"
+    end
+
+    def coerce other                 # :nodoc:
+      case other
+      when Numeric then return Quantity.dimensionless, self
+      when Quantity then
+        if same_dimension? other then return self, self else
+          raise ArgumentError, "Quantities with different dimension " +
+            "cannot be coerced into each other."
+        end
+      else
+        raise ArgumentError, "Object #{other} cannot be coerced into " +
+          "a quantity"
+      end
     end
   end # class Quantity
 end # module SY

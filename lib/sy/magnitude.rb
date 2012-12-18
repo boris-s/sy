@@ -43,25 +43,30 @@ module SY
       puts "hello from #<=>"
       case other
       when Magnitude then
-        aE_same_quantity other
-        self.number <=> other.number
+        if same_quantity? other then
+          self.number <=> other.number
+        else
+          compatible_quantity_1, compatible_quantity_2 =
+            other.quantity.coerce( self.quantity )
+          self.( compatible_quantity_1 ) <=> other.( compatible_quantity_2 )
+        end
       else
         raise ArgumentError,
           "A Magnitude cannot be compared with a #{other.class}"
       end
     end
 
-    def == other
-      puts "hello from #=="
-      case other
-      when Magnitude then
-        aE_same_quantity other
-        self.number == other.number
-      else
-        raise ArgumentError,
-          "A Magnitude cannot be compared with a #{other.class}"
-      end
-    end
+    # def == other
+    #   puts "hello from #=="
+    #   case other
+    #   when Magnitude then
+    #     aE_same_quantity other
+    #     self.number == other.number
+    #   else
+    #     raise ArgumentError,
+    #       "A Magnitude cannot be compared with a #{other.class}"
+    #   end
+    # end
 
     # Addition.
     # 
