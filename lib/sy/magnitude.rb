@@ -7,15 +7,25 @@ module SY
     include UnitMethodsMixin
     include Comparable
 
-    def self.of qnt, oo
-      oo = { n: oo } unless oo.is_a? Hash
-      n = oo[:number] || oo[:n] or raise AE, "Magnitude number not given!"
-      named_args = { quantity: qnt }.merge! case n
-                                            when Numeric then { n: n }
-                                            else { n: n.to_f } end
-      if n < 0 then
-        SignedMagnitude.new oo.merge( named_args ).merge!( sign: :- )
-      else new oo.merge( named_args ) end
+    # Constructor of magnitudes of a given quantity.
+    # 
+    def self.of *args
+      ꜧ = args.extract_options!
+      num = ꜧ.delete( :number ) or ꜧ.delete( :n )
+      qnt = ꜧ.delete( :quantity )
+      case args.size
+      when 0 then
+        ( num < 0 ? SignedMagnitude : Magnitude )
+          .new number: num, quantity: qnt
+      when 1 then
+        ( num < 0 ? SignedMagnitude : Magnitude )
+          .new quantity: args[0], number: num
+      when 2 then
+        ( args[1] < 0 ? SignedMagnitude : Magnitude )
+          .new quantity: args[0], number: args[1]
+      else
+        raise ArgumentError, "Too many ordered arguments."
+      end
     end
     
     attr_reader :quantity, :number
@@ -24,12 +34,13 @@ module SY
 
     # A magnitude is basically a pair [quantity, number].
     # 
-    def initialize oj
-      @quantity = oj[:quantity] || oj[:of]
+    def initialize *args
+      ꜧ = args.extract_options!
+      @quantity = ꜧ[:quantity] || ꜧ[:of]
       raise ArgumentError unless @quantity.kind_of? Quantity
-      @number = oj[:number] || oj[:n]
-      raise NegativeMagnitudeError, "Negative number of the magnitude: " +
-        "#@number" unless @number >= 0
+      @number = ꜧ[:number] || ꜧ[:n]
+      raise NegativeMagnitudeError, "Attempt to create a magnitude " +
+        "with negative number (#@number)." unless @number >= 0
     end
     # idea: for more complicated units (offsetted, logarithmic etc.),
     # conversion closures from_basic_unit, to_basic_unit
