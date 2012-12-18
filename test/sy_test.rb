@@ -659,9 +659,9 @@ describe SY do
         @m2 = SY::Magnitude.new number: 1, quantity: @q_thermal_distension
         @m3 = SY::Magnitude.new number: 2.0, quantity: @q_dimensionless
       end
-      
+
       it "should have flexible initialization" do
-        
+
         # Instead of number:, we can just say n:
         # Instead of quantity:, we can just say of:
         # 

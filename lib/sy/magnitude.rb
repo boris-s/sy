@@ -40,7 +40,6 @@ module SY
     # the same quantity.
     # 
     def <=> other
-      puts "hello from #<=>"
       case other
       when Magnitude then
         if same_quantity? other then
@@ -57,7 +56,6 @@ module SY
     end
 
     # def == other
-    #   puts "hello from #=="
     #   case other
     #   when Magnitude then
     #     aE_same_quantity other
@@ -194,7 +192,6 @@ module SY
       raise ArgumentError, "supplied quantity dimension must match!" unless
         same_dimension? other_quantity
       # perform the quantity change:
-      puts "Hello! Other quantity is #{other_quantity}."
       self.class.of other_quantity, n: self.number
     end
     alias :call :is_actually!
@@ -263,7 +260,6 @@ module SY
     end
 
     def coerce other                 # :nodoc:
-      puts "Hello from Magnitude#coerce"
       case other
       when Numeric then
         return self.class.of( Quantity.dimensionless, n: other ), self
