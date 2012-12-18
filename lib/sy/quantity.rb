@@ -140,13 +140,8 @@ module SY
 
     def coerce other                 # :nodoc:
       case other
-      when Numeric then
-        if dimensionless? then return self, self else
-          raise ArgumentError, "Attempting to coerce a number to a " +
-            "quantity that is not dimensionless."
-        end
       when Quantity then
-        if same_dimension? other then return self, self else
+        if same_dimension? other then return other, other else
           raise ArgumentError, "Quantities with different dimension " +
             "cannot be coerced into each other."
         end

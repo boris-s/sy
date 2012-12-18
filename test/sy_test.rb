@@ -401,8 +401,8 @@ describe SY do
         # returns a pair [ compatible_object_other, compatible_object_self ]
         # usable for arithmetic, comparison and such.
         # 
-        @dim_null.standard_quantity.coerce( 1 )
-          .must_equal [ Quantity.dimensionless, @dim_null.standard_quantity ]
+        p, q = Quantity.dimensionless, Quantity.dimensionless
+        q.coerce( p ).must_equal [ p, p ]
       end
     end
 
