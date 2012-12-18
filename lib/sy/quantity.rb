@@ -130,7 +130,6 @@ module SY
     end
 
     def to_s                         # :nodoc:
-      puts "Hello, name of this quantity is #{name}, dim. #{dimension}"
       if name.nil? then dimension.to_s else name.to_s end
     end
 
