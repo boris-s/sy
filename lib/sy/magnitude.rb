@@ -175,7 +175,7 @@ module SY
         same_dimension? other_quantity
       # perform the quantity change:
       puts "Hello! Other quantity is #{other_quantity}."
-      self.class.of( other_quantity, n: self.number )
+      self.class.of other_quantity, n: self.number
       return self
     end
     alias :call :is_actually!
