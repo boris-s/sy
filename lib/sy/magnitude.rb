@@ -84,11 +84,12 @@ module SY
         if same_quantity?( other ) then
           begin
             self.class.of( quantity, n: self.n - other.n )
-          rescue NegativeMagnitudeError
-            # raise MagnitudeSubtractionError,
-            raise ArgumentError,
-              "Attempt to subtract greater magnitude from a smaller one."
           end
+          # rescue NegativeMagnitudeError
+          #   # raise MagnitudeSubtractionError,
+          #   # raise ArgumentError,
+          #   #   "Attempt to subtract greater magnitude from a smaller one."
+          # end
         else
           compatible_quantity_1, compatible_quantity_2 =
             other.quantity.coerce( self.quantity )
