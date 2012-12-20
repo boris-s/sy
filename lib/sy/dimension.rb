@@ -1,11 +1,12 @@
 #encoding: utf-8
 
 module SY
-  # This class represents a dimension of a metrological quantity.
+  # This class represents physical dimension of a metrological quantity.
   # 
   class Dimension
+
     # Constructor for basic dimensions. Symbol signifying the basic
-    # dimension is expected as the argument.
+    # physical dimension is expected as the argument.
     # 
     def self.basic ß
       raise ArgumentError, "Unknown basic dimension symbol: #{ß}" unless
@@ -19,34 +20,47 @@ module SY
       new
     end
 
-    # Constructor for zero dimension (as in "dimensionless").
-    # 
-    def self.null
-      new
-    end
-
     attr_accessor *DIMENSION_LETTERS
 
     # Dimension can be initialized either by supplying a hash
     # (such as Dimension.new L: 1, T: -2) or by supplying a SPS
     # (superscripted product string), such as Dimension.new( "L.T⁻²" ).
+    # It is also possible to supply a Dimension instance, which will
+    # result in a new Dimension instance equal to the supplied one.
     # 
-    def initialize arg = {}
-      # Make sure that in any case, arg is converted to ꜧ
-      ꜧ = if arg.respond_to? :keys then arg
-          elsif arg.is_a? self.class then arg.to_hash
-          else
-            # assuming that we got a superscripted product string,
-            # we will call SPS_PARSER on it (of course, no prefixes)
-            prefixes, dimension_symbols, exponents =
-              SPS_PARSER.( arg, DIMENSION_LETTERS )
-            Hash[ dimension_symbols.map( &:to_sym ).zip( exponents ) ]
-          end
-      # Use the hash to initialize the instance:
-      ꜧ = ꜧ.reverse_merge!( L: 0, M: 0, T: 0, Q: 0, Θ: 0 ).
-        each_with_object Hash.new do |pair, ꜧ|
-          ꜧ[pair[0]] = Integer( pair[1] )
+    def initialize *args
+      ꜧ = args.extract_options!
+      if not args.empty? then # rely on the hash of named arguments
+        # we got a superscripted product string or another Dimension
+        # instance, therefore, only one ordered argument is allowed:
+        unless args.size == 1
+          raise ArgumentError, "Too many ordered arguments!"
         end
+        # and no hash garbage is allowed:
+        unless ꜧ.empty?
+          raise ArgumentError, "When an ordered argument is supplied, " +
+            "no named arguments are allowed!"
+        end
+        # now we can safely extract the single ordered argument:
+        case arg = args[0]
+        when self.class then # it is a dimension instance
+          ꜧ = arg.to_hash    # make it into a hash
+        when String, Symbol then # it is a superscripted product string
+          # so let's unleash SPS_PARSER on it (of course, no prefixes)
+          prefixes, dimension_symbols, exponents =
+            SPS_PARSER.( arg.to_s, DIMENSION_LETTERS )
+          ꜧ = Hash[ dimension_symbols.map( &:to_sym ).zip( exponents ) ]
+        else
+          raise ArgumentError, "Wrong ordered argument type! (#{arg.class})"
+        end
+      end
+      # now that the argument field has been conformed into ꜧ, let use use it:
+      ꜧ = ꜧ.reverse_merge!( L: 0, M: 0, T: 0, Q: 0, Θ: 0 )
+        .each_with_object Hash.new do |pair, ꜧ|
+          ꜧ[pair[0]] = Integer pair[1]
+        end
+      # assigning the instance variebles corresponding to the basic physical
+      # dimensions:
       @L, @M, @T, @Q, @Θ = ꜧ[:L], ꜧ[:M], ꜧ[:T], ꜧ[:Q], ꜧ[:Θ]
     end
 
@@ -142,9 +156,7 @@ module SY
     end
 
     def inspect                      # :nodoc:
-      if zero? then "#<Dimension: zero >" else
-        "#<Dimension: #{self} >"
-      end
+      "#<Dimension: #{self} >"
     end
 
     # Returns dimension's standard quantity from the table.
@@ -169,4 +181,10 @@ module SY
       end
     end
   end # class Dimension
+
+  # Convenience constructor Dimension() (acts as alias for Dimension.new).
+  # 
+  def Dimension( *args, &block )
+    Dimension.new *args, &block
+  end
 end # module SY

@@ -1,9 +1,14 @@
 #encoding: utf-8
 require "sy/version"
-require 'active_support/core_ext/object/blank'
-require 'active_support/core_ext/module/delegation'
-require 'active_support/core_ext/hash/reverse_merge'
-require 'active_support/core_ext/array/extract_options'
+require 'y_support/name_magic'
+
+# These requires will be necessary as soon as y_support is made according
+# to the structure of active_support.
+# 
+# require 'y_support/core_ext/object/blank'
+# require 'y_support/core_ext/module/delegation'
+# require 'y_support/core_ext/hash/reverse_merge'
+# require 'y_support/core_ext/array/extract_options'
 
 module SY
   def self.included( receiver )
@@ -171,15 +176,9 @@ module SY
       '["B", "s"], [1, -1]'
   end
 
-
   # Custom error class for attempt to create negative magnitudes.
   # 
-  class NegativeMagnitudeError < StandardError; end
-
-  # Custom error class for attempt to subtract more than there is.
-  # 
-  class MagnitudeSubtractionError < StandardError; end
-
+  class NegativeAmountError < StandardError; end
 
   require_relative 'sy/dimension'
   require_relative 'sy/quantity'

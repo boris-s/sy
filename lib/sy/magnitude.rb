@@ -1,10 +1,11 @@
 #encoding: utf-8
 
 module SY
-  # This class represents a magnitude of a metrological quantity.
+  # This class represents a magnitude of a metrological quantity. A magnitude
+  # is basically a pair [quantity, amount].
   # 
   class Magnitude
-    include UnitMethodsMixin
+    include UnitMethodsMixin # ensuring that magnitudes respond to unit methods
     include Comparable
 
     # Constructor of magnitudes of a given quantity.
@@ -19,19 +20,18 @@ module SY
       end
     end
 
-    attr_reader :quantity, :number
-    alias :n :number
+    attr_reader :quantity, :amount
     delegate :dimension, :basic_unit, :fav_units, to: :quantity
 
     # A magnitude is basically a pair [quantity, number].
     # 
     def initialize *args
       ꜧ = args.extract_options!
-      @quantity = ꜧ[:quantity] || ꜧ[:of]
+      @quantity = ꜧ[:quantity]
       raise ArgumentError unless @quantity.kind_of? Quantity
-      @number = ꜧ[:number] || ꜧ[:n]
-      raise NegativeMagnitudeError, "Attempt to create a magnitude " +
-        "with negative number (#@number)." unless @number >= 0
+      @amount = ꜧ[:amount]
+      raise NegativeAmountError, "Attempt to create a magnitude " +
+        "with negative number (#@amount)." unless @amount >= 0
     end
 
     # Magnitudes compare by their numbers. Compared magnitudes must be of
@@ -58,10 +58,11 @@ module SY
     def + other
       case other
       when Magnitude then
-        aE_same_dimension( other )
-        if same_quantity?( other ) then
+        aE_same_dimension other # different dimensions absolutely do not mix
+        if same_quantity? other then
+          # same quantity magnitudes add freely
           begin
-            self.class.of( quantity, n: self.n + other.n )
+            self.class.of( quantity, n: amount + other.amount )
           rescue NegativeMagnitudeError
             raise MagnitudeSubtractionError,
               "Attempt to subtract greater magnitude from a smaller one."
@@ -83,7 +84,7 @@ module SY
     def - other
       case other
       when Magnitude then
-        aE_same_dimension( other )
+        aE_same_dimension other # different dimensions absolutely do not mix
         if same_quantity?( other ) then
           begin
             self.class.of( quantity, n: self.n - other.n )
@@ -306,12 +307,9 @@ module SY
     # number of the magnitude.
     # 
     def initialize *args
-      ꜧ = args.extract_options!
-      @quantity = ꜧ[:quantity] || ꜧ[:of]
-      raise ArgumentError unless @quantity.kind_of? Quantity
-      @number = ꜧ[:number] || ꜧ[:n]
-      raise NegativeMagnitudeError, "Attempt to create a magnitude " +
-        "with negative number (#@number)." unless @number >= 0
+      begin
+        super
+      rescue NegativeAmountError end # just swallow it silently,
+      # it's O.K. for a SignedMagnitude to have negative @amount
     end
   end
-end

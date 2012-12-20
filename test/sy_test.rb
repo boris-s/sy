@@ -402,7 +402,11 @@ describe SY do
         # usable for arithmetic, comparison and such.
         # 
         p, q = Quantity.dimensionless, Quantity.dimensionless
-        q.coerce( p ).must_equal [ p, p ]
+        assert_equal :AE_raised, begin
+                                   q.coerce( p )
+                                 rescue ArgumentError
+                                   :AE_raised
+                                 end
       end
     end
 
@@ -655,12 +659,12 @@ describe SY do
 
         # Let us set up 3 magnitudes of the 3 quantities defined earlier
         # 
-        @m1 = SY::Magnitude.new number: 3.3, quantity: @q_speed
-        @m2 = SY::Magnitude.new number: 1, quantity: @q_thermal_distension
-        @m3 = SY::Magnitude.new number: 2.0, quantity: @q_dimensionless
-        @sm1 = SY::SignedMagnitude.new number: 3.3, quantity: @q_speed
-        @sm2 = SY::SignedMagnitude.new number: -3.3, quantity: @q_speed
-        @sm3 = SY::SignedMagnitude.new number: 2.0, quantity: @q_dimensionless
+        @m1 = SY::Magnitude.new amount: 3.3, quantity: @q_speed
+        @m2 = SY::Magnitude.new amount: 1, quantity: @q_thermal_distension
+        @m3 = SY::Magnitude.new amount: 2.0, quantity: @q_dimensionless
+        @sm1 = SY::SignedMagnitude.new amount: 3.3, quantity: @q_speed
+        @sm2 = SY::SignedMagnitude.new amount: -3.3, quantity: @q_speed
+        @sm3 = SY::SignedMagnitude.new amount: 2.0, quantity: @q_dimensionless
       end
 
       it "should have flexible initialization" do

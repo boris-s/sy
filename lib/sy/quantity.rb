@@ -4,6 +4,12 @@ module SY
   # This class represents a metrological quantity.
   # 
   class Quantity
+    include NameMagic
+
+    # Dimension means physical dimension.
+    # 
+    attr_reader :dimension
+
     # Quantity constructor. Example:
     # <tt>Quantity.of Dimension.new( "L.T⁻²" )</tt>
     # 
@@ -12,14 +18,14 @@ module SY
       case args.size
       when 0 then new( ꜧ )
       when 1 then new( ꜧ.merge dimension: args[0] )
-      else raise ArgumentError, "too many arguments" end
+      else raise ArgumentError, "too many ordered arguments" end
     end
 
     # Standard quantity constructor. Example:
     # <tt>Quantity.standard of: Dimension.new( "L.T⁻²" )</tt>
     # 
     def self.standard *args
-      of( *args ).set_as_standard
+      new( *args ).set_as_standard
     end
 
     # Dimensionless quantity constructor.
@@ -40,8 +46,6 @@ module SY
       zero( hash )
     end
 
-    attr_reader :name, :dimension
-
     # Name writer.
     # 
     def name=( name )
@@ -53,9 +57,9 @@ module SY
     # 
     def initialize *args
       ꜧ = args.extract_options!
-      @dimension = Dimension.new ꜧ[:dimension] || ꜧ[:of]
-      ɴ = ꜧ[:name] || ꜧ[:ɴ]
-      @name = if ɴ.blank? then nil else ɴ.to_s.capitalize end
+      @dimension = Dimension.new ꜧ.must_have( :dimension, syn!: :of )
+      name = ꜧ[:name] || ꜧ[:ɴ]
+      @name = if name.blank? then nil else name.to_s.capitalize end
     end
 
     # Convenience shortcut to register a name of the basic unit of the
