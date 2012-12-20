@@ -140,9 +140,15 @@ module SY
     def coerce other                 # :nodoc:
       case other
       when Quantity then
-        if same_dimension? other then return other, other else
-          raise ArgumentError, "Quantities with different dimension " +
-            "cannot be coerced into each other."
+        # By default, coercion between quantities doesn't work:
+        # Quantities are quantities so as not to mix together, as in
+        # "you cannot sum pears with apples". But in some special cases,
+        # this could conceivably be overridden so that <em>some</em>
+        # quantities would be coercible to others.
+        # 
+        if other == self then return other, self else
+          raise ArgumentError, "Different quantities (up to exceptions) " +
+            "do not mix with each other."
         end
       else
         raise ArgumentError, "Object #{other} cannot be coerced into " +
@@ -159,8 +165,8 @@ module SY
       when Magnitude then dimension == other.dimension
       when Numeric then dimensionless?
       else
-        raise ArgumentError, "The object (#{other.class} class) does not " +
-          "have defined dimension comparable to SY::Dimension."
+        raise ArgumentError, "The object <#{other.class}:#{other.object_id}> " +
+          "cannot be coerced into quantity."
       end
     end
   end # class Quantity

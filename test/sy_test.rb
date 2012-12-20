@@ -32,7 +32,7 @@ describe SY do
                                                  [:Θ, :TEMPERATURE]].sort
       # (the ordering should not matter - therefore .sort)
     end
-    
+
     it "should have a prefix table" do
 
       # The following test ensures that SY has constant PREFIX_TABLE,
@@ -78,7 +78,7 @@ describe SY do
       # containing a hash able to convert superscripted strings back.
       # 
       SY::SUPERSCRIPT_DOWN['⁻⁰¹²³⁴⁵⁶⁷⁸⁹'].must_equal '-0123456789'
-      
+
       # The following test ensures, that SUPERSCRIPT_DOWN will not get
       # confused when passed an empty string and will return empty string
       # also:
@@ -97,7 +97,7 @@ describe SY do
       # construct and parse superscripted product string (SY::SPS is the
       # constructor, while SY::SPS_PARSER is the parser). The following
       # code tests that these closures are present and work.
-      
+
       # Given an array of symbols [:a, :b] and array of exponents [1, -1],
       # SPS constructor should produce string "a.b⁻¹":
       # 
@@ -167,7 +167,7 @@ describe SY do
       # Metrological unit is a defined magnitude of a metrol. quantity
       #
       SY::Unit.must_be_kind_of Class
-      
+
       # Unit must be a subclass of Magnitude
       # 
       SY::Unit.must_be :<, SY::Magnitude
@@ -209,7 +209,7 @@ describe SY do
 
         # A dimension should respond to five methods #L, #M, #T, #Q and #Θ
         # by returning its exponent in the corresponding basic dimension:
-        
+
         # Test that @dim_l_per_t responds to all five letters:
         # 
         @dim_l_per_t.must_respond_to :L
@@ -217,7 +217,7 @@ describe SY do
         @dim_l_per_t.must_respond_to :T
         @dim_l_per_t.must_respond_to :Q
         @dim_l_per_t.must_respond_to :Θ
-        
+
         # Test that each of the five letters used as method returns correct
         # exponent:
         # 
@@ -293,7 +293,7 @@ describe SY do
         # ... and for @dim_null
         # 
         ( @dim_null == SY::Dimension.new( "" ) ).must_equal true
-        
+
         # Let us also make negative test
         # 
         ( @dim_l_per_t == SY::Dimension.new( "M" ) ).must_equal false
@@ -321,7 +321,7 @@ describe SY do
       end
 
       it "should have +, -, *, / operators" do
-        
+
         # Dimension '+' means addition of the dimension vectors, '-' means
         # their subtraction. * and / only work with numbers, and mean
         # multiplication or division of the dimension vector by scalar.
@@ -383,13 +383,13 @@ describe SY do
       end
 
       it "should have nice #inspect" do
-        
+
         # Inspect method serves the purpose of making beautiful text
         # representation of the object.
         # 
         @dim_l_per_t.inspect.must_equal "#<Dimension: L.T⁻¹ >"
         @dim_l_per_temperature.inspect.must_equal "#<Dimension: L.Θ⁻¹ >"
-        
+
         # And now there is specialy, null dimension will introduce itself as
         # 
         @dim_null.inspect.must_equal "#<Dimension: zero >"
@@ -549,7 +549,7 @@ describe SY do
         ( @q_speed ** 2 ).dimension.inspect
           .must_equal "#<Dimension: L².T⁻² >"
       end
-      
+
       it "should have #name_basic_unit, #inspect, #to_s" do
 
         # Ever since a Quantity instance is born, it has its basic unit.
@@ -587,10 +587,10 @@ describe SY do
       end
 
       it "should have #set_as_standard method" do
-        
+
         # This method, which has already been used above, is here
         # defined formally by test expectations.
-        
+
         # Let us first set "Speed" as standard quantity for its dimension:
         # 
         @q_speed.set_as_standard
@@ -604,7 +604,7 @@ describe SY do
         new_dim.standard_quantity.must_equal @q_speed
         # (it must be "Speed")
       end
-      
+
       it "should have #fav_units reader" do
 
         # Each quantity should have its favored units. For example,
@@ -650,7 +650,7 @@ describe SY do
       end
     end
 
-    describe "Magnitude class" do
+    describe "Magnitude and SignedMagnitude classes" do
       before do
 
         # Let us set up 3 magnitudes of the 3 quantities defined earlier
@@ -658,6 +658,9 @@ describe SY do
         @m1 = SY::Magnitude.new number: 3.3, quantity: @q_speed
         @m2 = SY::Magnitude.new number: 1, quantity: @q_thermal_distension
         @m3 = SY::Magnitude.new number: 2.0, quantity: @q_dimensionless
+        @sm1 = SY::SignedMagnitude.new number: 3.3, quantity: @q_speed
+        @sm2 = SY::SignedMagnitude.new number: -3.3, quantity: @q_speed
+        @sm3 = SY::SignedMagnitude.new number: 2.0, quantity: @q_dimensionless
       end
 
       it "should have flexible initialization" do
@@ -669,19 +672,30 @@ describe SY do
       end
 
       it "should have comparison methods" do
-        
+
         ( SY::Magnitude.new of: @q_speed, n: 3 ).must_be :<, @m1
         ( SY::Magnitude.new of: @q_speed, n: 3.3 ).must_be :==, @m1
         ( SY::Magnitude.new of: @q_speed, n: 4 ).must_be :>, @m1
       end
-      
+
       it "should have #abs method" do
 
-        skip "this test will be skipped because the question" +
-          "of negative magnitudes has to be solved"
+        # Firstly, negative Magnitude proper doesn't exist.
+        # 
+        begin
+          SY::Magnitude.new of: @q_speed, n: -3
+        rescue NegativeMagnitudeError
+          :negative_magnitude_error_raised
+        end.must_equal :negative_magnitude_error_raised
 
-        ( SY::Magnitude.new of: @q_speed, n: -3 ).abs.to_s.
-          must_equal ""
+        # Secondly, for existing magnitudes, absolute value equals themselves.
+        # 
+        @m1.abs.must_equal @m1
+
+        # Thirdly, for signed magnitudes, it should work as expected.
+        assert_equal @sm3, @sm3.abs
+        assert_equal Magnitude.new( number: 3.3, quantity: @q_speed ), @sm1
+        assert_equal @sm1, @sm2.abs
       end
 
       it "should know #quantity, #number, #basic_unit" do

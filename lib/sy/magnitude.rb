@@ -18,7 +18,7 @@ module SY
         raise ArgumentError, "Too many ordered arguments."
       end
     end
-    
+
     attr_reader :quantity, :number
     alias :n :number
     delegate :dimension, :basic_unit, :fav_units, to: :quantity
@@ -33,8 +33,6 @@ module SY
       raise NegativeMagnitudeError, "Attempt to create a magnitude " +
         "with negative number (#@number)." unless @number >= 0
     end
-    # idea: for more complicated units (offsetted, logarithmic etc.),
-    # conversion closures from_basic_unit, to_basic_unit
 
     # Magnitudes compare by their numbers. Compared magnitudes must be of
     # the same quantity.
@@ -54,17 +52,6 @@ module SY
           "A Magnitude cannot be compared with a #{other.class}"
       end
     end
-
-    # def == other
-    #   case other
-    #   when Magnitude then
-    #     aE_same_quantity other
-    #     self.number == other.number
-    #   else
-    #     raise ArgumentError,
-    #       "A Magnitude cannot be compared with a #{other.class}"
-    #   end
-    # end
 
     # Addition.
     # 
@@ -314,10 +301,17 @@ module SY
   # to carry a +/- sign, allowing it to stand in for negative numbers.
   # 
   class SignedMagnitude < Magnitude
-    def initialize oo
-      @quantity = oo[:quantity] || oo[:of]
+
+    # SignedMagnitude has overriden #initialize method to allow negative
+    # number of the magnitude.
+    # 
+    def initialize *args
+      ꜧ = args.extract_options!
+      @quantity = ꜧ[:quantity] || ꜧ[:of]
       raise ArgumentError unless @quantity.kind_of? Quantity
-      @number = oo[:number] || oo[:n]
+      @number = ꜧ[:number] || ꜧ[:n]
+      raise NegativeMagnitudeError, "Attempt to create a magnitude " +
+        "with negative number (#@number)." unless @number >= 0
     end
   end
 end
