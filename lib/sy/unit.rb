@@ -12,7 +12,7 @@ module SY
     # 
     naming_hook { |ɴ, new_instance, old_name|
       conflicting_row = ::SY::PREFIX_TABLE.find { |row|
-        ɴ.start_with? row[:full] unless row[:full].empty?
+        ɴ.to_s.start_with? row[:full] unless row[:full].empty?
       }
       raise NameError, "Unit name may not start with standard prefix! (#{ɴ} " +
           "starts with #{conflicting_row[:full]} prefix)" if conflicting_row
