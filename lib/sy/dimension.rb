@@ -159,7 +159,7 @@ module SY
     def to_hash
       BASIC_DIMENSIONS.letters.each_with_object Hash.new do |letter, memo_hash|
         memo_hash[ letter ] = self[ letter ]
-      }
+      end
     end
 
     # Returns true if the dimension is zero ("dimensionless"), otherwise false.
