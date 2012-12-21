@@ -9,7 +9,7 @@ module SY
     # correspond to the metrological units.
     # 
     def method_missing( method_ß, *args, &block )
-      puts "Method missing: #{method_ß}"
+      puts "Method missing: #{method_ß}, caller: #{caller}"
       # Check whether method_ß is registered in the table of units:
       begin
         puts "About to ask about instances"
@@ -23,7 +23,7 @@ module SY
           ::SY::SPS_PARSER.( method_ß.to_s, unit_names, prefixes )
       rescue ArgumentError
         # SPS_PARSER fails with ArgumentError if method_ß is not recognized,
-        super     # in which case, #method_missing will be forwarded higher
+        super      # in which case, #method_missing will be forwarded higher
       end
       puts "About to define a method"
       # method_ß is a method that takes a number (the receiver) and creates
@@ -57,7 +57,7 @@ module SY
       # and invoked:
       send method_ß, *args, &block
     end # def method_missing
-    
+
     def respond_to_missing?( method_ß, include_private = false )
       # Check whether method_ß is registered in the table of units:
       begin
