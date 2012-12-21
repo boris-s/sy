@@ -56,7 +56,7 @@ module SY
       # 
       def standard_quantities
         return @standard_quantities ||=
-          Hash.new { |hash, instance| Quantity.of: instance }
+          Hash.new { |hash, instance| Quantity.of instance }
       end
     end
 
