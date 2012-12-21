@@ -1,5 +1,6 @@
 #encoding: utf-8
 require "sy/version"
+require 'y_support/name_magic'
 require 'y_support/all'
 
 # These requires will be necessary as soon as y_support is made according
