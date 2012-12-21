@@ -30,10 +30,11 @@ module SY
 
     # Eval is used to define all the prefix methods.
     # 
-    PREFIX_TABLE.map{|e| e[:full] }.each{ |full_pfx|
-      eval( "def #{full_pfx}\n" +
-            "self * #{PREFIXES[full_pfx][:factor]}\n" +
-            "end" ) unless full_pfx.empty?
+    ::SY::PREFIX_TABLE.full.each{ |full_prefix|
+      eval( "def #{full_prefix}\n" +
+            "  self * " +
+            "#{::SY::PREFIX_TABLE.hash_full[ full_prefix ][:factor]}\n" +
+            "end" ) unless full_prefix.empty?
     }
 
     # Unlike ordinary magnitudes, units can have names and abbreviations.

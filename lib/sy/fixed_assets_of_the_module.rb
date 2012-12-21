@@ -43,9 +43,27 @@ module SY
     map { |row| row[:full] }
   end
 
-  # PREFIXES = PREFIX_TABLE.each_with_object Hash.new do |row, memo_hash|
-  #   memo_hash[row[:full]] = row
-  # end
+  # Valid shortened prefixes rendered as a list (simple array).
+  # 
+  def PREFIX_TABLE.short
+    map { |row| row[:short] }
+  end
+
+  # A hash of full prefixes => corresponding rows.
+  # 
+  def PREFIX_TABLE.hash_full
+    each_with_object Hash.new do |row, memo_hash|
+      memo_hash[ row[:full] ] = row
+    end
+  end
+
+  # A hash of short prefixes => corresponding rows.
+  # 
+  def PREFIX_TABLE.hash_short
+    each_with_object Hash.new do |row, memo_hash|
+      memo_hash[ row[:short] ] = row
+    end
+  end
 
   # Unicode superscript exponents.
   # 
