@@ -13,7 +13,7 @@ require_relative 'sy/unit'
 
 # Applying the unit method extension to Numeric.
 # 
-module Numeric
+class Numeric
   include ::SY::UnitMethodsMixin
 end
 
