@@ -12,6 +12,7 @@ module SY
       puts "Hello from method missing"
       # Check whether method_ß is registered in the table of units:
       begin
+        puts "About to ask about instances"
         units = ::SY::Unit.instances
         puts "Getting after first line"
         unit_names = units.map( &:name ).map( &:to_s )
