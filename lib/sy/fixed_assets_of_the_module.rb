@@ -11,7 +11,11 @@ module SY
     T: :TIME,
     Q: :ELECTRIC_CHARGE,
     Θ: :TEMPERATURE
-  }.define_singleton_method :letters do keys end
+  }
+
+  # #letters singleton method is an alias for #keys
+  # 
+  BASIC_DIMENSIONS.define_singleton_method :letters do keys end
 
   # Table of standard prefixes and their corresponding unit multiples.
   # 
