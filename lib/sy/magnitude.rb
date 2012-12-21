@@ -27,7 +27,6 @@ module SY
     # 
     def initialize *args
       hash = args.extract_options!
-      puts hash
       @quantity = hash.must_have :quantity, syn!: :of
       raise ArgumentError, "Named argument :quantity must be of " +
         "SY::Quantity class." unless @quantity.is_a? ::SY::Quantity

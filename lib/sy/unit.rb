@@ -55,6 +55,7 @@ module SY
     # 
     def initialize *args
       hash = args.extract_options!
+      puts hash
       super
       # abbreviation can be introduced by multiple keywords
       @short = hash.may_have( :short, syn!: :abbreviation ).to_sym
