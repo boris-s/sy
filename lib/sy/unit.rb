@@ -23,6 +23,7 @@ module SY
     # Standard unit constructor.
     # 
     def self.standard *args, &block
+      puts args
       instance = new *args, &block
       instance.quantity.standard_unit = self
       return instance
