@@ -14,7 +14,7 @@ module SY
       ꜧ = args.extract_options!
       case args.size
       when 0 then new ꜧ
-      when 1 then new ꜧ.merge! quantity: args[0]
+      when 1 then new ꜧ.merge!( quantity: args[0] )
       else
         raise ArgumentError, "Too many ordered arguments."
       end
@@ -26,12 +26,20 @@ module SY
     # A magnitude is basically a pair [quantity, number].
     # 
     def initialize *args
-      ꜧ = args.extract_options!
-      @quantity = ꜧ[:quantity]
-      raise ArgumentError unless @quantity.kind_of? Quantity
-      @amount = ꜧ[:amount]
+      hash = args.extract_options!
+      @quantity = hash.must_have :quantity
+      raise ArgumentError, "Named argument :quantity must be of " +
+        "SY::Quantity class." unless @quantity.is_a? ::SY::Quantity
+      @amount = hash[:amount] or 1
       raise NegativeAmountError, "Attempt to create a magnitude " +
-        "with negative number (#@amount)." unless @amount >= 0
+        "with negative amount (#@amount)." unless @amount >= 0
+    end
+
+    # Absolute value of a Magnitude: A new magnitude instance with amount equal
+    # to the absolute value of this magnitude's amount.
+    # 
+    def abs
+      self.class.of quantity, amount: amount.abs
     end
 
     # Magnitudes compare by their numbers. Compared magnitudes must be of
@@ -63,8 +71,8 @@ module SY
           # same quantity magnitudes add freely
           begin
             self.class.of( quantity, n: amount + other.amount )
-          rescue NegativeMagnitudeError
-            raise MagnitudeSubtractionError,
+          rescue NegativeAmountError
+            raise NegativeAmountError,
               "Attempt to subtract greater magnitude from a smaller one."
           end
         else
@@ -202,12 +210,6 @@ module SY
     # 
     def -@
       SignedMagnitude.minus quantity, number: n
-    end
-
-    # Magnitude of the same quantity, whose number was subjected to #abs call.
-    # 
-    def abs
-      self.class.of quantity, number: n.abs
     end
 
     # Inquirer whether the number of the magnitude is greater of equal than

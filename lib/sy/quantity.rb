@@ -5,88 +5,54 @@ module SY
   # 
   class Quantity
     include NameMagic
-
-    # Dimension means physical dimension.
-    # 
     attr_reader :dimension
+    attr_writer :standard_unit
 
     # Quantity constructor. Example:
     # <tt>Quantity.of Dimension.new( "L.T⁻²" )</tt>
     # 
     def self.of *args
-      ꜧ = args.extract_options!
+      hash = args.extract_options!
       case args.size
-      when 0 then new( ꜧ )
-      when 1 then new( ꜧ.merge dimension: args[0] )
-      else raise ArgumentError, "too many ordered arguments" end
+      when 0 then new hash
+      when 1 then new( hash.merge dimension: args[0] )
+      else
+        raise ArgumentError,
+          "Too many ordered arguments (args.size for at most 1)!"
+      end
     end
 
     # Standard quantity constructor. Example:
     # <tt>Quantity.standard of: Dimension.new( "L.T⁻²" )</tt>
     # 
-    def self.standard *args
-      new( *args ).set_as_standard
-    end
-
-    # Dimensionless quantity constructor.
-    # 
-    def self.zero hash={}
-      new hash.merge( dimension: Dimension.zero )
-    end
-
-    # Dimensionless quantity constructor alias.
-    # 
-    def self.null hash={}
-      zero( hash )
+    def self.standard *args, &block
+      new( *args, &block ).tap { |instance| instance.set_as_standard }
     end
 
     # Dimensionless quantity constructor alias.
     # 
     def self.dimensionless hash={}
-      zero( hash )
-    end
-
-    # Name writer.
-    # 
-    def name=( name )
-      @name = if name.blank? then nil else name.to_s.capitalize end
+      new hash.merge( dimension: Dimension.zero )
     end
 
     # Standard constructor of a metrological quantity. A quantity may have
     # a name and a dimension.
     # 
     def initialize *args
-      ꜧ = args.extract_options!
-      @dimension = Dimension.new ꜧ.must_have( :dimension, syn!: :of )
-      name = ꜧ[:name] || ꜧ[:ɴ]
-      @name = if name.blank? then nil else name.to_s.capitalize end
+      hash = args.extract_options!
+      @dimension = Dimension.new hash.must_have( :dimension, syn!: :of )
     end
-
-    # Convenience shortcut to register a name of the basic unit of the
-    # quantity in SY::UNITS table. Admits either syntax:
-    # <tt>quantity.name_basic_unit "name", symbol: "s"</tt>
-    # or
-    # <tt>quantity.name_basic_unit "name", "s"<tt>
-    # 
-    def name_basic_unit( name, hash=nil )
-      BASIC_UNITS[self] = Unit.basic( if hash.respond_to?(:keys) then
-                                        hash.merge( of: self, ɴ: name )
-                                      else # second type syntax
-                                        { of: self, ɴ: name, abbr: hash }
-                                      end )
-    end
-    alias :ɴ_basic_unit :name_basic_unit
 
     # Convenience reader of the SY::BASIC_UNITS table.
     # 
-    def basic_unit
-      BASIC_UNITS[self]
+    def standard_unit
+      @standard_unit ||= Unit.of self
     end
 
-    # Convenience reader of the FAV_UNITS table.
+    # Presents an array of units ordered as favored by this quantity.
     # 
-    def fav_units
-      FAV_UNITS[self]
+    def units
+      @units ||= []
     end
 
     # Quantity arithmetic: multiplication.
@@ -130,7 +96,7 @@ module SY
     # Make this quantity the standard quantity for its dimension.
     # 
     def set_as_standard
-      QUANTITIES[dimension.to_a] = self
+      ::SY::Dimension.standard_quantities[ dimension ] = self
     end
 
     def to_s                         # :nodoc:

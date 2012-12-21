@@ -6,14 +6,30 @@ module SY
   # of a metrological quantity.
   # 
   class Unit < Magnitude
-    # Basic unit constructor. Either as
-    # u = Unit.basic of: quantity
-    # or
-    # u = Unit.basic quantity
-    def self.basic opts
-      new opts.merge( number: 1 )
+    include NameMagic
+
+    # Checks the unit name a little bit for correctness.
+    # 
+    naming_hook { |ɴ, new_instance, old_name|
+      conflicting_row = ::SY::PREFIX_TABLE.find { |row|
+        ɴ.start_with? row[:full] unless row[:full].empty?
+      }
+      raise NameError, "Unit name may not start with standard prefix! (#{ɴ} " +
+          "starts with #{conflicting_row[:full]} prefix)" if conflicting_row
+      # This is not completely foolproof, but let's rely on user's common sense
+      ɴ
+    }
+
+    # Standard unit constructor.
+    # 
+    def self.standard *args, &block
+      instance = new *args, &block
+      instance.quantity.standard_unit = self
+      return instance
     end
 
+    # Eval is used to define all the prefix methods.
+    # 
     PREFIX_TABLE.map{|e| e[:full] }.each{ |full_pfx|
       eval( "def #{full_pfx}\n" +
             "self * #{PREFIXES[full_pfx][:factor]}\n" +
@@ -21,82 +37,27 @@ module SY
     }
 
     # Unlike ordinary magnitudes, units can have names and abbreviations.
-    attr_reader :name, :abbr
-    alias :short :abbr
-    alias :symbol :abbr
+    # 
+    attr_reader :short
+    alias :abbreviation :short
 
-    def initialize oj
+    # Unit name (in lower case).
+    # 
+    def name
+      super.downcase
+    end
+
+    # Apart from the arguments required by Magnitude, Unit constructor allows
+    # named argument :short, alias :abbreviation. A unit must be named, if
+    # abbreviation is given. In choosing unit names and abbreviation, ambiguity
+    # with regard to standard prefixes and their abbreviations must be avoided.
+    # 
+    def initialize *args
+      hash = args.extract_options!
       super
-      @name = oj[:name] || oj[:ɴ]
       # abbreviation can be introduced by multiple keywords
-      @abbr = oj[:short] || oj[:abbreviation] || oj[:abbr] || oj[:symbol]
-      if @name then
-        # no prefixed names, otherwise there will be multiple prefixes!
-        @name = @name.to_s              # convert to string
-        # the unit name is entered into the UNITS_WITHOUT_PREFIX table:
-        UNITS_WITHOUT_PREFIX[@name] = self
-        # and FAV_UNITS table keys are updated:
-        FAV_UNITS[quantity] = FAV_UNITS[quantity] + [ self ]
-      end
-      if @abbr then
-        raise ArgumentError unless @name.present? # name must be given if abbreviation is given
-        # no prefixed abbrevs, otherwise there will be multiple prefixes!
-        @abbr = @abbr.to_s           # convert to string
-        # the unit abbrev is entered into the UNITS_WITHOUT_PREFIX table
-        UNITS_WITHOUT_PREFIX[abbr] = self
-      end
+      @short = hash.may_have( :short, syn!: :abbreviation ).to_sym
+      ( quantity.units << self ).uniq!
     end
-
-    # #abs absolute value - Magnitude with number.abs
-    def abs; Magnitude.of quantity, number: n.abs end
-      
-    # addition
-    def + other
-      aE_same_quantity( other )
-      Magnitude.of( quantity, n: self.n + other.n )
-    end
-
-    # subtraction
-    def - other
-      aE_same_quantity( other )
-      Magnitude.of( quantity, n: self.n - other.n )
-    end
-
-    # multiplication
-    def * other
-      case other
-      when Magnitude
-        Magnitude.of( quantity * other.quantity, n: self.n * other.n )
-      when Numeric then [1, other]
-        Magnitude.of( quantity, n: self.n * other )
-      else
-        raise ArgumentError, "magnitudes only multiply with magnitudes and numbers"
-      end
-    end
-
-    # division
-    def / other
-      case other
-      when Magnitude
-        Magnitude.of( quantity / other.quantity, n: self.n / other.n )
-      when Numeric then [1, other]
-        Magnitude.of( quantity, n: self.n / other )
-      else
-        raise ArgumentError, "magnitudes only divide by magnitudes and numbers"
-      end
-    end
-
-    # power
-    def ** arg
-      return case arg
-             when Magnitude then self.n ** arg.n
-             else
-               raise ArgumentError unless arg.is_a? Numeric
-               Magnitude.of( quantity ** arg, n: self.n ** arg )
-             end
-    end
-
-    # #basic? inquirer
-    def basic?; @number == 1 end
   end # class Unit
 end # module SY

@@ -4,6 +4,61 @@ module SY
   # This class represents physical dimension of a metrological quantity.
   # 
   class Dimension
+    class << self
+      alias original_method_new new
+
+      # Make return same instance if already present in instances
+      def new *args
+        hash = args.extract_options!
+        if not args.empty? then
+          # we got a superscripted product string or a Dimension instance
+          # therefore, only one ordered argument is allowed:
+          raise ArgumentError, "Too many ordered arguments!" unless
+            args.size == 1
+          # and no hash garbage is allowed:
+          raise ArgumentError, "When an ordered argument is supplied, " +
+            "no named arguments are allowed!" unless hash.empty?
+          # now we can safely extract the single ordered argument:
+          case arg = args[0]
+          when self then # it is a dimension instance
+            return arg   # return it straight
+          when String, Symbol then # it is a superscripted product string
+            # so let's unleash SPS_PARSER on it (of course, no prefixes)
+            prefixes, dimension_symbols, exponents =
+              ::SY::SPS_PARSER.( arg.to_s, ::SY::BASIC_DIMENSIONS.letters )
+            hash = Hash[ dimension_symbols.map( &:to_sym ).zip( exponents ) ]
+          else
+            raise ArgumentError, "Wrong ordered argument type! (#{arg.class})"
+          end
+        end
+        # now that the args have been conformed into hash, let's standardize it
+        hash = hash.default!( L: 0, M: 0, T: 0, Q: 0, Θ: 0 )
+          .each_with_object Hash.new do |pair, memo_hash|
+            memo_hash[ pair[0] ] = Integer pair[1]
+          end
+        # in this form, it is measurable whether there are already any
+        # instances of this dimension:
+        instance = instances.find { |instance| instance.to_hash == hash }
+        if instance then return instance else
+          instance = original_method_new( hash )
+          instances << instance
+          return instance
+        end
+      end
+
+      # Presents class-owned instances array.
+      # 
+      def instances
+        return @instances ||= []
+      end
+
+      # Presents class-owned standard quantities array.
+      # 
+      def standard_quantities
+        return @standard_quantities ||=
+          Hash.new { |hash, instance| Quantity.of: instance }
+      end
+    end
 
     # Constructor for basic dimensions. Symbol signifying the basic
     # physical dimension is expected as the argument.
@@ -20,7 +75,7 @@ module SY
       new
     end
 
-    attr_accessor *DIMENSION_LETTERS
+    attr_accessor *BASIC_DIMENSIONS.letters
 
     # Dimension can be initialized either by supplying a hash
     # (such as Dimension.new L: 1, T: -2) or by supplying a SPS
@@ -28,40 +83,8 @@ module SY
     # It is also possible to supply a Dimension instance, which will
     # result in a new Dimension instance equal to the supplied one.
     # 
-    def initialize *args
-      ꜧ = args.extract_options!
-      if not args.empty? then # rely on the hash of named arguments
-        # we got a superscripted product string or another Dimension
-        # instance, therefore, only one ordered argument is allowed:
-        unless args.size == 1
-          raise ArgumentError, "Too many ordered arguments!"
-        end
-        # and no hash garbage is allowed:
-        unless ꜧ.empty?
-          raise ArgumentError, "When an ordered argument is supplied, " +
-            "no named arguments are allowed!"
-        end
-        # now we can safely extract the single ordered argument:
-        case arg = args[0]
-        when self.class then # it is a dimension instance
-          ꜧ = arg.to_hash    # make it into a hash
-        when String, Symbol then # it is a superscripted product string
-          # so let's unleash SPS_PARSER on it (of course, no prefixes)
-          prefixes, dimension_symbols, exponents =
-            SPS_PARSER.( arg.to_s, DIMENSION_LETTERS )
-          ꜧ = Hash[ dimension_symbols.map( &:to_sym ).zip( exponents ) ]
-        else
-          raise ArgumentError, "Wrong ordered argument type! (#{arg.class})"
-        end
-      end
-      # now that the argument field has been conformed into ꜧ, let use use it:
-      ꜧ = ꜧ.reverse_merge!( L: 0, M: 0, T: 0, Q: 0, Θ: 0 )
-        .each_with_object Hash.new do |pair, ꜧ|
-          ꜧ[pair[0]] = Integer pair[1]
-        end
-      # assigning the instance variebles corresponding to the basic physical
-      # dimensions:
-      @L, @M, @T, @Q, @Θ = ꜧ[:L], ꜧ[:M], ꜧ[:T], ꜧ[:Q], ꜧ[:Θ]
+    def initialize hash
+      @L, @M, @T, @Q, @Θ = hash[:L], hash[:M], hash[:T], hash[:Q], hash[:Θ]
     end
 
     # #[] method provides access to the dimension components, such as
@@ -69,7 +92,7 @@ module SY
     # 
     def [] arg
       ß = arg.to_s.strip.to_sym
-      if DIMENSION_LETTERS.include? ß then send ß else
+      if BASIC_DIMENSIONS.letters.include? ß then send ß else
         raise ArgumentError, "Unknown basic dimension symbol: #{ß}" unless
           BASIC_DIMENSIONS.values.include? ß
         send BASIC_DIMENSIONS.rassoc(ß)[0]
@@ -82,7 +105,7 @@ module SY
       # other must be a dimension
       raise ArgumentError unless
         other.is_a? self.class
-      DIMENSION_LETTERS.map { |letter|
+      BASIC_DIMENSIONS.letters.map { |letter|
         self[letter] == other[letter]
       }.reduce( :& )
     end
@@ -90,7 +113,7 @@ module SY
     # Dimension arithmetic: addition. (+, -, *, /).
     # 
     def + other
-      self.class.new Hash[ DIMENSION_LETTERS.map { |letter|
+      self.class.new Hash[ BASIC_DIMENSIONS.letters.map { |letter|
                              [ letter, self[letter] + other[letter] ]
                            } ]
     end
@@ -98,7 +121,7 @@ module SY
     # Dimension arithmetic: multiplication by a number.
     # 
     def * num
-      self.class.new Hash[ DIMENSION_LETTERS.map { |letter|
+      self.class.new Hash[ BASIC_DIMENSIONS.letters.map { |letter|
                              [ letter, self[letter] * num ]
                            } ]
     end
@@ -106,7 +129,7 @@ module SY
     # Dimension arithmetic: subtraction.
     # 
     def - other
-      self.class.new Hash[ DIMENSION_LETTERS.map { |letter|
+      self.class.new Hash[ BASIC_DIMENSIONS.letters.map { |letter|
                              [ letter, self[letter] - other[letter] ]
                            } ]
     end
@@ -120,7 +143,7 @@ module SY
           "that all the dimension exponents be divisible by the number" unless
           exponent % num == 0
       }
-      Dimension.new Hash[ DIMENSION_LETTERS
+      Dimension.new Hash[ BASIC_DIMENSIONS.letters
                             .zip( exponents.map { |exp| exp / num } ) ]
     end
 
@@ -128,16 +151,14 @@ module SY
     # basic dimension letters).
     # 
     def to_a
-      DIMENSION_LETTERS.map { |letter|
-        self[letter]
-      }
+      BASIC_DIMENSIONS.letters.map { |letter| self[ letter ] }
     end
 
     # Conversion to a hash (eg. { L: 1, M: 0, T: -2, Q: 0, Θ: 0 } ).
     # 
     def to_hash
-      DIMENSION_LETTERS.each_with_object( {} ) { |letter, ꜧ|
-        ꜧ[letter] = self[letter]
+      BASIC_DIMENSIONS.letters.each_with_object Hash.new do |letter, memo_hash|
+        memo_hash[ letter ] = self[ letter ]
       }
     end
 
@@ -147,39 +168,29 @@ module SY
       [ @L, @M, @T, @Q, @Θ ] == [ 0, 0, 0, 0, 0 ]
     end
 
-    def to_s                         # :nodoc:
-      sps = SPS.( DIMENSION_LETTERS,
-                  DIMENSION_LETTERS.map { |letter|
-                    self[letter]
+    # Converts the dimension into a superscripted product string.
+    # 
+    def to_s
+      sps = SPS.( BASIC_DIMENSIONS.letters,
+                  BASIC_DIMENSIONS.letters.map { |letter|
+                    self[ letter ]
                   } )
       if sps == "" then "∅" else sps end
     end
 
-    def inspect                      # :nodoc:
+    # Produces the inspect string of the dimension.
+    # 
+    def inspect
       "#<Dimension: #{self} >"
     end
 
-    # Returns dimension's standard quantity from the table.
+    # Returns dimension's standard quantity.
     # 
     def standard_quantity
-      QUANTITIES[to_a]
+      self.class.standard_quantities[ self ]
     end
 
     delegate :fav_units, to: :standard_quantity
-
-    def coerce other                 # :nodoc:
-      case other
-      when Quantity then
-        if same_dimension?( other ) then
-          return self, self
-        else
-          raise "#{other} has different dimension and cannot be " +
-            "coerced into #{self}"
-        end
-      else
-        raise "A #{other.class} cannot be coerced into a #{self.class}."
-      end
-    end
   end # class Dimension
 
   # Convenience constructor Dimension() (acts as alias for Dimension.new).
@@ -187,4 +198,6 @@ module SY
   def Dimension( *args, &block )
     Dimension.new *args, &block
   end
+
+  module_function :Dimension
 end # module SY

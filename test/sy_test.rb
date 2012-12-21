@@ -12,7 +12,7 @@ require 'minitest/autorun'
 
 # The following will load SY library
 require 'sy'
-include SY
+SY.apply_numeric_extension
 
 # **************************************************************************
 # THE SPECIFICATIONS START HERE
