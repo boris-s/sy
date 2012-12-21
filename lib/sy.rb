@@ -109,7 +109,7 @@ module SY
 
   WATT = Unit.standard of: Power, short: "W"
 
-  LITRE = Unit.of Volume, short "l", amount: 1.dm³
+  LITRE = Unit.of Volume, short: "l", amount: 1.dm³
 
   PASCAL = Unit.standard of: Pressure, short: "Pa"
 
@@ -130,7 +130,7 @@ module SY
 
   VOLT = Unit.of Electric_potential, short: "V"
 
-  CELSIUS = Unit.of Quantity.of( Temperature.dimension ), short "°C"
+  CELSIUS = Unit.of Quantity.of( Temperature.dimension ), short: "°C"
 
   # Now we would do singleton modifications to CELSIUS.quantity, so that arithmetic
   # and coerce method work to make the whole behave as expected.
