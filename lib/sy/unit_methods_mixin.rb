@@ -9,7 +9,7 @@ module SY
     # correspond to the metrological units.
     # 
     def method_missing( method_ß, *args, &block )
-      puts "Hello from method missing"
+      puts "Method missing: #{method_ß}"
       # Check whether method_ß is registered in the table of units:
       begin
         puts "About to ask about instances"
