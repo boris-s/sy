@@ -12,8 +12,10 @@ module SY
       # Check whether method_ß is registered in the table of units:
       begin
         units = ::SY::Unit.instances
-        unit_names = units.map &:name
+        unit_names = units.map( &:name ).map( &:to_s )
         prefixes = ::SY::PREFIX_TABLE.full + ::SY::PREFIX_TABLE.short
+        prefix_hash = ::SY::PREFIX_TABLE.hash_full
+          .merge ::SY::PREFIX_TABLE.hash_short
         prefixes, units, exponents =
           ::SY::SPS_PARSER.( method_ß.to_s, unit_names, prefixes )
       rescue ArgumentError
@@ -31,12 +33,12 @@ module SY
       factors = [ prefixes, units, exponents ].transpose.map { |triple|
         prefix, unit, exponent = triple
         # convert prefix into the full form
-        prefix = PREFIXES[ prefix ][ :full ]
+        prefix = prefix_hash[ prefix ][ :full ]
         # reference the unit (with or without prefix)
         ς = if prefix == "" then
-              "::SY::UNITS_WITHOUT_PREFIX['#{unit}']"
+              "::SY::Unit.instance( '#{unit}' )"
             else
-              "::SY::UNITS_WITHOUT_PREFIX['#{unit}'].#{prefix}"
+              "::SY::Unit.instance( '#{unit}' ).#{prefix}"
             end
         # and exponentiate it if exponent requires it
         ς += if exponent == 1 then "" else " ** #{exponent}" end
