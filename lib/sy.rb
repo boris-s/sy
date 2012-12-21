@@ -60,7 +60,7 @@ module SY
 
 
   # === Derived units of basic quantities
-  
+  puts 'hello'
   DALTON = Unit.of Mass, short: "Da", amount: 1.66053892173e-24
 
   MINUTE = Unit.of Time, short: "min", n: 60.s
