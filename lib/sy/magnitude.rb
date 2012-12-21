@@ -317,3 +317,4 @@ module SY
       # it's O.K. for a SignedMagnitude to have negative @amount
     end
   end
+end # module SY
