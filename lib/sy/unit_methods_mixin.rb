@@ -13,6 +13,7 @@ module SY
       # Check whether method_ß is registered in the table of units:
       begin
         units = ::SY::Unit.instances
+        puts "Getting after first line"
         unit_names = units.map( &:name ).map( &:to_s )
         prefixes = ::SY::PREFIX_TABLE.full + ::SY::PREFIX_TABLE.short
         prefix_hash = ::SY::PREFIX_TABLE.hash_full
