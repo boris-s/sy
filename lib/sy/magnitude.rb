@@ -311,7 +311,9 @@ module SY
     def initialize *args
       begin
         super
-      rescue NegativeAmountError end # just swallow it silently,
+      rescue
+        NegativeAmountError
+      end # just swallow it silently,
       # it's O.K. for a SignedMagnitude to have negative @amount
     end
   end
