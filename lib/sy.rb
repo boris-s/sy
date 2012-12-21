@@ -62,11 +62,11 @@ module SY
   # === Derived units of basic quantities
   puts 'hello'
   DALTON = Unit.of Mass, short: "Da", amount: 1.66053892173e-24
-
+  puts 'dalton'
   MINUTE = Unit.of Time, short: "min", n: 60.s
-
+  puts 'minute'
   HOUR = Unit.of Time, short: "h", n: 60.min
-
+  puts 'hour'
   
   # === Derived quantities
   
