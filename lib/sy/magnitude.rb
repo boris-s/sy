@@ -30,7 +30,7 @@ module SY
       @quantity = hash.must_have :quantity, syn!: :of
       raise ArgumentError, "Named argument :quantity must be of " +
         "SY::Quantity class." unless @quantity.is_a? ::SY::Quantity
-      @amount = hash[:amount] or 1
+      @amount = hash[:amount] || 1
       raise NegativeAmountError, "Attempt to create a magnitude " +
         "with negative amount (#@amount)." unless @amount >= 0
     end
