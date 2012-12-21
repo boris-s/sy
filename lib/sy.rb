@@ -1,7 +1,21 @@
 #encoding: utf-8
-require "sy/version"
+
 require 'y_support/name_magic'
 require 'y_support/all'
+require "sy/version"
+
+require_relative 'sy/unit_methods_mixin'
+require_relative 'sy/fixed_assets_of_the_module'
+require_relative 'sy/dimension'
+require_relative 'sy/quantity'
+require_relative 'sy/magnitude'
+require_relative 'sy/unit'
+
+# Applying the unit method extension to Numeric.
+# 
+module Numeric
+  include ::SY::UnitMethodsMixin
+end
 
 # These requires will be necessary as soon as y_support is made according
 # to the structure of active_support.
@@ -12,21 +26,6 @@ require 'y_support/all'
 # require 'y_support/core_ext/array/extract_options'
 
 module SY
-  def self.apply_numeric_extension
-    ::Numeric.module_exec do
-      include UnitMethodsMixin
-    end
-  end
-
-  require_relative 'sy/unit_methods_mixin'
-  require_relative 'sy/fixed_assets_of_the_module'
-  require_relative 'sy/dimension'
-  require_relative 'sy/quantity'
-  require_relative 'sy/magnitude'
-  require_relative 'sy/unit'
-
-
-  # == Current assets of the SY module
 
   Nᴀ = AVOGADRO_CONSTANT = 6.02214e23
 
