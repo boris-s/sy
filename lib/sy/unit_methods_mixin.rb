@@ -9,6 +9,7 @@ module SY
     # correspond to the metrological units.
     # 
     def method_missing( method_ß, *args, &block )
+      puts "Hello from method missing"
       # Check whether method_ß is registered in the table of units:
       begin
         units = ::SY::Unit.instances
@@ -22,6 +23,7 @@ module SY
         # SPS_PARSER fails with ArgumentError if method_ß is not recognized,
         super     # in which case, #method_missing will be forwarded higher
       end
+      puts "About to define a method"
       # method_ß is a method that takes a number (the receiver) and creates
       # a metrological Magnitude instance out of it. We are going to define
       # that method here. The definition skeleton will be:
