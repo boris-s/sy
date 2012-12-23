@@ -212,10 +212,10 @@ module SY
     # Gives the magnitude as a numeric value in the basic unit of the
     # quantity of this magnitude.
     # 
-    def numeric_value_in_basic_unit
+    def numeric_value_in_standard_unit
       numeric_value_in( quantity.standard_unit )
     end
-    alias :to_f :numeric_value_in_basic_unit
+    alias :to_f :numeric_value_in_standard_unit
 
     # Changes the quantity of the magnitude, provided that the dimensions
     # match.
@@ -266,7 +266,7 @@ module SY
     # quantity), or even, as the 2nd argument, the number format (by default,
     # 3 decimal places).
     # 
-    def to_s unit=quantity.units.first, number_format='%.3g'
+    def to_s unit=nil, number_format='%.3g'
       str = if unit then to_string( unit ) else
               # use units of basic dimensions – here be the magic:
               hsh = dimension.to_hash
@@ -278,7 +278,7 @@ module SY
               # assemble the superscripted product string:
               sps = SPS.( symbols, exponents )
               # 
-              "#{number_format}#{sps == '' ? '' : '.' + sps}" % number
+              "#{number_format}#{sps == '' ? '' : '.' + sps}" % amount
             end
     end
 

@@ -13,7 +13,8 @@ require 'minitest/spec'
 require 'minitest/autorun'
 
 # The following will load SY library
-require 'sy'
+# require 'sy'
+require './../lib/sy'
 
 # **************************************************************************
 # THE SPECIFICATIONS START HERE
@@ -364,7 +365,7 @@ describe SY do
 
         # And now there is specialy, null dimension will introduce itself as
         # 
-        @dim_null.inspect.must_equal "#<Dimension: zero >"
+        @dim_null.inspect.must_equal "#<Dimension: ∅ >"
       end
 
       it "should have #coerce" do
@@ -443,315 +444,324 @@ describe SY do
       # throughout this test library:
       # 
       @q_speed =
-        SY::Quantity.new( dimension: SY::Dimension.new( L: 1, T: -1 ),
-                          name: "Speed" )
+        begin
+          SY::Quantity.instance :Speed
+        rescue NameError
+          SY::Quantity.of 'L.T⁻¹', name: "Speed"
+        end
       @q_thermal_distension =
-        SY::Quantity.new( dimension: SY::Dimension.new( L: 1, Θ: -1 ),
-                          name: "Thermal distension" )
+        begin
+          SY::Quantity.instance :Thermal_distension
+        rescue NameError
+          SY::Quantity.of 'L.Θ⁻¹', name: "Thermal_distension"
+        end
       @q_dimensionless =
-        SY::Quantity.new( dimension: Dimension.zero,
-                          name: "Some dimensionless quantity" )
+        begin
+          SY::Quantity.instance :Dimensionless_quantity
+        rescue NameError
+          SY::Quantity.dimensionless name: "Dimensionless_quantity"
+        end
     end
 
-    # describe "instance methods" do
-    #   it "has flexible #initialize" do
+    describe "instance methods" do
+      it "has flexible #initialize" do
 
-    #     # That is, to instantiate a new quantity, we don't have to write
-    #     # clumsily
-    #     # 
-    #     # SY::Quantity.new( dimension: SY::Dimension.new( Θ: -1 ),
-    #     #                   name: "reciprocal temperature" )
-    #     # 
-    #     # but we can write instead:
-    #     # 
-    #     q = SY::Quantity.new of: "Θ⁻¹", name: "reciprocal temperature"
+        # That is, to instantiate a new quantity, we don't have to write
+        # clumsily
+        # 
+        # SY::Quantity.new( dimension: SY::Dimension.new( Θ: -1 ),
+        #                   name: "reciprocal temperature" )
+        # 
+        # but we can write instead:
+        # 
+        q = SY::Quantity.new of: "Θ⁻¹", name: "reciprocal temperature"
 
-    #     # Let us see that we indeed obtained desired Quantity instance
-    #     # 
-    #     q.must_be_kind_of SY::Quantity
-    #     q.name.must_equal "Reciprocal temperature"
-    #     # (Note that dimension names are all upcase, such as "LENGTH",
-    #     # quantity names are capitalized first letter, such as "Electric
-    #     # current", and units are all downcase, such as "ampere".)
-    #   end
+        # Let us see that we indeed obtained desired Quantity instance
+        # 
+        q.must_be_kind_of SY::Quantity
+        q.name.must_equal "Reciprocal temperature"
+        # (Note that dimension names are all upcase, such as "LENGTH",
+        # quantity names are capitalized first letter, such as "Electric
+        # current", and units are all downcase, such as "ampere".)
+      end
 
-    #   it "should have attr_readers for dimension, basic unit and name" do
+      it "should have attr_readers for dimension, basic unit and name" do
 
-    #     # Should know its dimension:
-    #     # 
-    #     @q_speed.dimension.inspect.must_equal "#<Dimension: L.T⁻¹ >"
-    #     @q_thermal_distension.dimension.inspect.must_equal "#<Dimension: L.Θ⁻¹ >"
-    #     @q_dimensionless.dimension.inspect.must_equal "#<Dimension: zero >"
+        # Should know its dimension:
+        # 
+        @q_speed.dimension.inspect.must_equal "#<Dimension: L.T⁻¹ >"
+        @q_thermal_distension.dimension.inspect.must_equal "#<Dimension: L.Θ⁻¹ >"
+        @q_dimensionless.dimension.inspect.must_equal "#<Dimension: zero >"
 
-    #     # Should know its basic unit
-    #     # 
-    #     @q_speed.basic_unit.inspect
-    #       .must_equal "#<Magnitude: 1.m.s⁻¹ of Speed >"
-    #     @q_thermal_distension.basic_unit.inspect
-    #       .must_equal "#<Magnitude: 1.m.K⁻¹ of Thermal distension >"
-    #     @q_dimensionless.basic_unit.inspect
-    #       .must_equal "#<Magnitude: 1 of Some dimensionless quantity >"
+        # Should know its basic unit
+        # 
+        @q_speed.basic_unit.inspect
+          .must_equal "#<Magnitude: 1.m.s⁻¹ of Speed >"
+        @q_thermal_distension.basic_unit.inspect
+          .must_equal "#<Magnitude: 1.m.K⁻¹ of Thermal distension >"
+        @q_dimensionless.basic_unit.inspect
+          .must_equal "#<Magnitude: 1 of Some dimensionless quantity >"
 
-    #     # Should know its name
-    #     # 
-    #     @q_speed.name.must_equal "Speed"
-    #     @q_thermal_distension.name.must_equal "Thermal distension"
-    #     @q_dimensionless.name.must_equal "Some dimensionless quantity"
-    #   end
+        # Should know its name
+        # 
+        @q_speed.name.must_equal "Speed"
+        @q_thermal_distension.name.must_equal "Thermal distension"
+        @q_dimensionless.name.must_equal "Some dimensionless quantity"
+      end
 
-    #   it "should have working * operator" do
+      it "should have working * operator" do
 
-    #     # Multiplication of quantities means addition of the dimension
-    #     # exponent vectors.
-    #     # 
-    #     ( @q_speed * @q_thermal_distension ).dimension.inspect
-    #       .must_equal "#<Dimension: L².T⁻¹.Θ⁻¹ >"
-    #   end
+        # Multiplication of quantities means addition of the dimension
+        # exponent vectors.
+        # 
+        ( @q_speed * @q_thermal_distension ).dimension.inspect
+          .must_equal "#<Dimension: L².T⁻¹.Θ⁻¹ >"
+      end
 
-    #   it "should have working / operator" do
+      it "should have working / operator" do
 
-    #     # Division of quantities means subtraction of the dimension exponent
-    #     # vectors.
-    #     # 
-    #     ( @q_speed / @q_thermal_distension ).dimension.inspect
-    #       .must_equal "#<Dimension: T⁻¹.Θ >"
-    #   end
+        # Division of quantities means subtraction of the dimension exponent
+        # vectors.
+        # 
+        ( @q_speed / @q_thermal_distension ).dimension.inspect
+          .must_equal "#<Dimension: T⁻¹.Θ >"
+      end
 
-    #   it "should have working ** operator" do
+      it "should have working ** operator" do
 
-    #     # Raising quantity to an integer means multiplication of the
-    #     # dimension by that integer.
-    #     # 
-    #     ( @q_speed ** 2 ).dimension.inspect
-    #       .must_equal "#<Dimension: L².T⁻² >"
-    #   end
+        # Raising quantity to an integer means multiplication of the
+        # dimension by that integer.
+        # 
+        ( @q_speed ** 2 ).dimension.inspect
+          .must_equal "#<Dimension: L².T⁻² >"
+      end
 
-    #   it "should have #name_basic_unit, #inspect, #to_s" do
+      it "should have #name_basic_unit, #inspect, #to_s" do
 
-    #     # Ever since a Quantity instance is born, it has its basic unit.
-    #     # But the basic unit is nameless until it is named by
-    #     # #name_basic_unit method.
+        # Ever since a Quantity instance is born, it has its basic unit.
+        # But the basic unit is nameless until it is named by
+        # #name_basic_unit method.
 
-    #     # Name of the basic unit is nil at the beginning
-    #     # 
-    #     @q_speed.basic_unit.name.must_equal nil
+        # Name of the basic unit is nil at the beginning
+        # 
+        @q_speed.basic_unit.name.must_equal nil
 
-    #     # Now, we will name the basic unit of "Speed" snail (abbr. 1.sn):
-    #     # 
-    #     @q_speed.name_basic_unit "snail", symbol: "sn"
+        # Now, we will name the basic unit of "Speed" snail (abbr. 1.sn):
+        # 
+        @q_speed.name_basic_unit "snail", symbol: "sn"
 
-    #     # Since now, basic unit of speed will be called "snail":
-    #     # 
-    #     @q_speed.basic_unit.name.must_equal "snail"
+        # Since now, basic unit of speed will be called "snail":
+        # 
+        @q_speed.basic_unit.name.must_equal "snail"
 
-    #     # Unit symbol need not be given:
-    #     # 
-    #     @q_dimensionless.name_basic_unit "amount"
+        # Unit symbol need not be given:
+        # 
+        @q_dimensionless.name_basic_unit "amount"
 
-    #     # Now, let's write expectation about the #inspect method
-    #     # 
-    #     @q_speed.inspect.must_equal '#<Quantity: Speed >'
+        # Now, let's write expectation about the #inspect method
+        # 
+        @q_speed.inspect.must_equal '#<Quantity: Speed >'
 
-    #     # Expectation about the #to_s (conversion to string)
-    #     # 
-    #     @q_speed.to_s.must_equal 'Speed'
+        # Expectation about the #to_s (conversion to string)
+        # 
+        @q_speed.to_s.must_equal 'Speed'
 
-    #     # Expectation about #inspect of a quantity without name:
-    #     # 
-    #     SY::Quantity.new( dimension: SY::Dimension.new("L⁻¹") ).inspect
-    #       .must_equal "#<Quantity: L⁻¹ >"
-    #   end
+        # Expectation about #inspect of a quantity without name:
+        # 
+        SY::Quantity.new( dimension: SY::Dimension.new("L⁻¹") ).inspect
+          .must_equal "#<Quantity: L⁻¹ >"
+      end
 
-    #   it "should have #set_as_standard method" do
+      it "should have #set_as_standard method" do
 
-    #     # This method, which has already been used above, is here
-    #     # defined formally by test expectations.
+        # This method, which has already been used above, is here
+        # defined formally by test expectations.
 
-    #     # Let us first set "Speed" as standard quantity for its dimension:
-    #     # 
-    #     @q_speed.set_as_standard
+        # Let us first set "Speed" as standard quantity for its dimension:
+        # 
+        @q_speed.set_as_standard
 
-    #     # Now let us instantiate a brand new LENGTH/TIME dimension:
-    #     # 
-    #     new_dim = SY::Dimension.new("L.T⁻¹")
+        # Now let us instantiate a brand new LENGTH/TIME dimension:
+        # 
+        new_dim = SY::Dimension.new("L.T⁻¹")
 
-    #     # And let's write expectation about its standard quantity:
-    #     #
-    #     new_dim.standard_quantity.must_equal @q_speed
-    #     # (it must be "Speed")
-    #   end
+        # And let's write expectation about its standard quantity:
+        #
+        new_dim.standard_quantity.must_equal @q_speed
+        # (it must be "Speed")
+      end
 
-    #   it "should have #fav_units reader" do
+      it "should have #fav_units reader" do
 
-    #     # Each quantity should have its favored units. For example,
-    #     # "Pressure" quantity should favor 'pascal' unit over 'psi'
-    #     # (pounds per square inch). So far, the only favored unit is
-    #     # the basic unit, so if we name basic unit properly:
-    #     # 
-    #     @q_speed.name_basic_unit "metre", symbol: "m"
+        # Each quantity should have its favored units. For example,
+        # "Pressure" quantity should favor 'pascal' unit over 'psi'
+        # (pounds per square inch). So far, the only favored unit is
+        # the basic unit, so if we name basic unit properly:
+        # 
+        @q_speed.name_basic_unit "metre", symbol: "m"
 
-    #     # Then the fav_units should return an array with a single
-    #     # member: metre
-    #     # 
-    #     result = @q_speed.fav_units
-    #     result.must_be_kind_of Array
-    #     result.size.must_equal 1
-    #     result[0].must_be_kind_of SY::Unit
-    #     result[0].name.must_equal "metre"
-    #   end
-    # end
+        # Then the fav_units should return an array with a single
+        # member: metre
+        # 
+        result = @q_speed.fav_units
+        result.must_be_kind_of Array
+        result.size.must_equal 1
+        result[0].must_be_kind_of SY::Unit
+        result[0].name.must_equal "metre"
+      end
+    end
 
-    # describe "public class methods" do
+    describe "public class methods" do
 
-    #   # Again, Quantity class has 2 public class methods:
-    #   # #of
-    #   # and
-    #   # #zero
+      # Again, Quantity class has 2 public class methods:
+      # #of
+      # and
+      # #zero
 
-    #   it "should have #of constructor" do
+      it "should have #of constructor" do
         
-    #     # Expectation about #of class method
-    #     # 
-    #     new_quantity = SY::Quantity.of "L.T⁻¹", ɴ: "growth rate" 
-    #     new_quantity.dimension.inspect.must_equal "#<Dimension: L.T⁻¹ >"
-    #   end
+        # Expectation about #of class method
+        # 
+        new_quantity = SY::Quantity.of "L.T⁻¹", ɴ: "growth rate" 
+        new_quantity.dimension.inspect.must_equal "#<Dimension: L.T⁻¹ >"
+      end
 
-    #   it "should have dimensionless quantity constructor" do
+      it "should have dimensionless quantity constructor" do
 
-    #     # Expectation about #zero class method
-    #     # 
-    #     new_quantity = SY::Quantity.zero name: "happiness"
-    #     new_quantity.inspect
-    #       .must_equal '#<Quantity: Happiness >'
-    #   end
-    # end
+        # Expectation about #zero class method
+        # 
+        new_quantity = SY::Quantity.zero name: "happiness"
+        new_quantity.inspect
+          .must_equal '#<Quantity: Happiness >'
+      end
+    end
 
-    # describe "Magnitude and SignedMagnitude classes" do
-    #   before do
+    describe "Magnitude and SignedMagnitude classes" do
+      before do
 
-    #     # Let us set up 3 magnitudes of the 3 quantities defined earlier
-    #     # 
-    #     @m1 = SY::Magnitude.new amount: 3.3, quantity: @q_speed
-    #     @m2 = SY::Magnitude.new amount: 1, quantity: @q_thermal_distension
-    #     @m3 = SY::Magnitude.new amount: 2.0, quantity: @q_dimensionless
-    #     @sm1 = SY::SignedMagnitude.new amount: 3.3, quantity: @q_speed
-    #     @sm2 = SY::SignedMagnitude.new amount: -3.3, quantity: @q_speed
-    #     @sm3 = SY::SignedMagnitude.new amount: 2.0, quantity: @q_dimensionless
-    #   end
+        # Let us set up 3 magnitudes of the 3 quantities defined earlier
+        # 
+        @m1 = SY::Magnitude.new amount: 3.3, quantity: @q_speed
+        @m2 = SY::Magnitude.new amount: 1, quantity: @q_thermal_distension
+        @m3 = SY::Magnitude.new amount: 2.0, quantity: @q_dimensionless
+        @sm1 = SY::SignedMagnitude.new amount: 3.3, quantity: @q_speed
+        @sm2 = SY::SignedMagnitude.new amount: -3.3, quantity: @q_speed
+        @sm3 = SY::SignedMagnitude.new amount: 2.0, quantity: @q_dimensionless
+      end
 
-    #   it "should have flexible initialization" do
+      it "should have flexible initialization" do
 
-    #     # Instead of number:, we can just say n:
-    #     # Instead of quantity:, we can just say of:
-    #     # 
-    #     ( SY::Magnitude.new of: @q_speed, n: 3.3 ).must_equal @m1
-    #   end
+        # Instead of number:, we can just say n:
+        # Instead of quantity:, we can just say of:
+        # 
+        ( SY::Magnitude.new of: @q_speed, n: 3.3 ).must_equal @m1
+      end
 
-    #   it "should have comparison methods" do
+      it "should have comparison methods" do
 
-    #     ( SY::Magnitude.new of: @q_speed, n: 3 ).must_be :<, @m1
-    #     ( SY::Magnitude.new of: @q_speed, n: 3.3 ).must_be :==, @m1
-    #     ( SY::Magnitude.new of: @q_speed, n: 4 ).must_be :>, @m1
-    #   end
+        ( SY::Magnitude.new of: @q_speed, n: 3 ).must_be :<, @m1
+        ( SY::Magnitude.new of: @q_speed, n: 3.3 ).must_be :==, @m1
+        ( SY::Magnitude.new of: @q_speed, n: 4 ).must_be :>, @m1
+      end
 
-    #   it "should have #abs method" do
+      it "should have #abs method" do
 
-    #     # Firstly, negative Magnitude proper doesn't exist.
-    #     # 
-    #     begin
-    #       SY::Magnitude.new of: @q_speed, n: -3
-    #     rescue NegativeMagnitudeError
-    #       :negative_magnitude_error_raised
-    #     end.must_equal :negative_magnitude_error_raised
+        # Firstly, negative Magnitude proper doesn't exist.
+        # 
+        begin
+          SY::Magnitude.new of: @q_speed, n: -3
+        rescue NegativeMagnitudeError
+          :negative_magnitude_error_raised
+        end.must_equal :negative_magnitude_error_raised
 
-    #     # Secondly, for existing magnitudes, absolute value equals themselves.
-    #     # 
-    #     @m1.abs.must_equal @m1
+        # Secondly, for existing magnitudes, absolute value equals themselves.
+        # 
+        @m1.abs.must_equal @m1
 
-    #     # Thirdly, for signed magnitudes, it should work as expected.
-    #     assert_equal @sm3, @sm3.abs
-    #     assert_equal Magnitude.new( number: 3.3, quantity: @q_speed ), @sm1
-    #     assert_equal @sm1, @sm2.abs
-    #   end
+        # Thirdly, for signed magnitudes, it should work as expected.
+        assert_equal @sm3, @sm3.abs
+        assert_equal Magnitude.new( number: 3.3, quantity: @q_speed ), @sm1
+        assert_equal @sm1, @sm2.abs
+      end
 
-    #   it "should know #quantity, #number, #basic_unit" do
+      it "should know #quantity, #number, #basic_unit" do
         
-    #     @m1.quantity.inspect.must_equal '#<Quantity: Speed >'
-    #     @m1.number.must_equal 3.3
-    #     @m1.basic_unit.inspect.must_equal "#<Magnitude: 1.m.s⁻¹ of Speed >"
-    #   end
+        @m1.quantity.inspect.must_equal '#<Quantity: Speed >'
+        @m1.amount.must_equal 3.3
+        @m1.basic_unit.inspect.must_equal "#<Magnitude: 1.m.s⁻¹ of Speed >"
+      end
       
-    #   it "should delegate dimension method to quantity" do
-    #     @m1.dimension.must_equal @m1.quantity.dimension
-    #   end
+      it "should delegate dimension method to quantity" do
+        @m1.dimension.must_equal @m1.quantity.dimension
+      end
 
-    #   it "has #inspect and #to_s methods" do
-    #     @m1.inspect.must_equal "#<Magnitude: 3.3.m.s⁻¹ of Speed >"
-    #     @m1.to_s.must_equal "3.3.m.s⁻¹"
-    #   end
+      it "has #inspect and #to_s methods" do
+        @m1.inspect.must_equal "#<Magnitude: 3.3.m.s⁻¹ of Speed >"
+        @m1.to_s.must_equal "3.3.m.s⁻¹"
+      end
       
-    #   it "has #numeric_value_in working with magnitudes of the same " +
-    #     "quantity and returning a number" do
-    #     m = Magnitude.of @q_speed, number: 9.9
-    #     m.numeric_value_in( @m1 ).must_be_within_epsilon 3.0, 1e-6
-    #   end
+      it "has #numeric_value_in working with magnitudes of the same " +
+        "quantity and returning a number" do
+        m = Magnitude.of @q_speed, number: 9.9
+        m.numeric_value_in( @m1 ).must_be_within_epsilon 3.0, 1e-6
+      end
 
-    #   it "has #numeric_value_in_basic_unit alias #to_f method" do
-    #     m = Magnitude.of @q_speed, number: 6.6
-    #     m.numeric_value_in_basic_unit.must_equal 6.6
-    #     m.to_f.must_equal 6.6
-    #   end
+      it "has #numeric_value_in_basic_unit alias #to_f method" do
+        m = Magnitude.of @q_speed, amount: 6.6
+        m.numeric_value_in_standard_unit.must_equal 6.6
+        m.to_f.must_equal 6.6
+      end
 
-    #   it "should be capable of arithmetic" do
-    #     m = Magnitude.of @q_speed, number: 1.0
-    #     ( m + @m1 ).number.must_equal 4.3
-    #     ( @m1 - m ).number.must_equal 2.3
+      it "should be capable of arithmetic" do
+        m = SY::Magnitude.of @q_speed, amount: 1.0
+        ( m + @m1 ).amount.must_equal 4.3
+        ( @m1 - m ).amount.must_equal 2.3
 
-    #     ( @m1 * @m2 ).inspect
-    #       .must_equal "#<Magnitude: 3.3.m².s⁻¹.K⁻¹ of L².T⁻¹.Θ⁻¹ >"
-    #     ( @m1 / @m2 ).inspect
-    #       .must_equal "#<Magnitude: 3.3.s⁻¹.K of T⁻¹.Θ >"
-    #   end
+        ( @m1 * @m2 ).inspect
+          .must_equal "#<Magnitude: 3.3.m².s⁻¹.K⁻¹ of L².T⁻¹.Θ⁻¹ >"
+        ( @m1 / @m2 ).inspect
+          .must_equal "#<Magnitude: 3.3.s⁻¹.K of T⁻¹.Θ >"
+      end
 
-    #   it "should be comparable" do
-    #     m = Magnitude.of @q_speed, number: 1.0
-    #     ( @m1 == m * 3.3 ).must_equal true
-    #   end
+      it "should be comparable" do
+        m = SY::Magnitude.of @q_speed, amount: 1.0
+        ( @m1 == m * 3.3 ).must_equal true
+      end
       
-    #   describe "class methods" do
-    #     it "should have #of constructor" do
-    #       # I already did this above:
-    #       # 
-    #       m = Magnitude.of @q_speed, number: 1
-    #       m.must_be_kind_of Magnitude
-    #       m.number.must_equal 1
-    #     end
-    #   end
-    # end # describe Magnitude
+      describe "class methods" do
+        it "should have #of constructor" do
+          # I already did this above:
+          # 
+          m = SY::Magnitude.of @q_speed, amount: 1
+          m.must_be_kind_of SY::Magnitude
+          m.number.must_equal 1
+        end
+      end
+    end # describe Magnitude
 
-    # describe "Unit class" do
-    #   before do
-    #     @u = SY::Unit.new( quantity: @q_speed,
-    #                        number: 0.1,
-    #                        name: "snail",
-    #                        symbol: "sn" )
-    #   end
+    describe "Unit class" do
+      before do
+        @u = SY::Unit.new( quantity: @q_speed,
+                           number: 0.1,
+                           name: "snail",
+                           symbol: "sn" )
+      end
 
-    #   describe "instance methods" do
-    #     it "should have #name and #symbol" do
-    #       @u.name.must_equal "snail"
-    #       @u.symbol.must_equal "sn"
-    #     end
-    #   end
+      describe "instance methods" do
+        it "should have #name and #symbol" do
+          @u.name.must_equal "snail"
+          @u.symbol.must_equal "sn"
+        end
+      end
 
-    #   describe "class methods" do
-    #     it "should have #basic constructor" do
-    #       q = SY::Quantity.new of: "T⁻¹"
-    #       u = SY::Unit.basic of: q, name: "hertz", symbol: "Hz"
-    #       q.basic_unit.must_equal u
-    #     end
-    #   end
-    # end # describe Unit class
+      describe "class methods" do
+        it "should have #basic constructor" do
+          q = SY::Quantity.new of: "T⁻¹"
+          u = SY::Unit.basic of: q, name: "hertz", symbol: "Hz"
+          q.basic_unit.must_equal u
+        end
+      end
+    end # describe Unit class
   end # describe Quantity class
 
   describe "Magnitude() constructor" do

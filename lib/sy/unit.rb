@@ -8,16 +8,21 @@ module SY
   class Unit < Magnitude
     include NameMagic
 
-    # Checks the unit name a little bit for correctness.
+    # Checks the unit name a tiny bit for correctness.
     # 
     naming_hook { |ɴ, new_instance, old_name|
+      ɴ = ɴ.to_s
+      raise NameError, "Unit name must all be in same case (upper-case " +
+        "version is used as unit and constant name, lower-case version " +
+        "in magnitude expressions." unless ɴ == ɴ.upcase || ɴ == ɴ.downcase
+      ɴ_down = ɴ.downcase
       conflicting_row = ::SY::PREFIX_TABLE.find { |row|
-        ɴ.to_s.start_with? row[:full] unless row[:full].empty?
+        ɴ_down.to_s.start_with? row[:full] unless row[:full].empty?
       }
       raise NameError, "Unit name may not start with standard prefix! (#{ɴ} " +
           "starts with #{conflicting_row[:full]} prefix)" if conflicting_row
       # This is not completely foolproof, but let's rely on user's common sense
-      ɴ
+      ɴ_down.upcase.to_sym
     }
 
     # Standard unit constructor.
@@ -47,7 +52,8 @@ module SY
     # but their names are always presented in all-lower case).
     # 
     def name
-      super.downcase
+      ɴ = super
+      return ɴ ? ɴ.to_s.downcase.to_sym : nil
     end
 
     # Apart from the arguments required by Magnitude, Unit constructor allows
@@ -59,7 +65,9 @@ module SY
       hash = args.extract_options!
       super
       # abbreviation can be introduced by multiple keywords
-      @short = hash.may_have( :short, syn!: :abbreviation ).to_sym
+      if hash.has? :short, syn!: :abbreviation then
+        @short = hash[:short].to_sym
+      end
       ( quantity.units << self ).uniq!
     end
 

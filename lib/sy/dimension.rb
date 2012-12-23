@@ -65,7 +65,7 @@ module SY
       def basic basic_dimension_letter
         raise ArgumentError, "Unknown basic dimension letter: " +
           "#{basic_dimension_letter}" unless
-            ( DIMENSION_LETTERS + BASIC_DIMENSIONS.values )
+            ( BASIC_DIMENSIONS.letters + BASIC_DIMENSIONS.values )
               .include? basic_dimension_letter.to_sym
         return new basic_dimension_letter.to_sym => 1
       end
