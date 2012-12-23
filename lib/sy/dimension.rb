@@ -58,21 +58,23 @@ module SY
         return @standard_quantities ||=
           Hash.new { |hash, instance| Quantity.of instance }
       end
-    end
 
-    # Constructor for basic dimensions. Symbol signifying the basic
-    # physical dimension is expected as the argument.
-    # 
-    def self.basic ß
-      raise ArgumentError, "Unknown basic dimension symbol: #{ß}" unless
-        ( DIMENSION_LETTERS + BASIC_DIMENSIONS.values ).include? ß.to_sym
-      return new ß.to_sym => 1
-    end
+      # Constructor for basic dimensions. Symbol signifying the basic
+      # physical dimension is expected as the argument.
+      # 
+      def basic basic_dimension_letter
+        raise ArgumentError, "Unknown basic dimension letter: " +
+          "#{basic_dimension_letter}" unless
+            ( DIMENSION_LETTERS + BASIC_DIMENSIONS.values )
+              .include? basic_dimension_letter.to_sym
+        return new basic_dimension_letter.to_sym => 1
+      end
 
-    # Constructor for zero dimension (as in "dimensionless").
-    # 
-    def self.zero
-      new
+      # Constructor for zero dimension (as in "dimensionless").
+      # 
+      def zero
+        new
+      end
     end
 
     attr_accessor *BASIC_DIMENSIONS.letters
