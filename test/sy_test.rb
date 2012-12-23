@@ -160,280 +160,280 @@ describe SY do
       @dim_null = SY::Dimension.new
     end
 
-    # describe "Dimension instance methods" do
-    #   it "Dimension's #initialize method should be flexible" do
+    describe "Dimension instance methods" do
+      it "Dimension's #initialize method should be flexible" do
 
-    #     # There should be two ways to invoke a new Dimension instance.
-    #     # By providing named parameters { LETTER: exponent }
-    #     # 
-    #     d = SY::Dimension.new L: 1, T: -1 # using named parameters
-    #     d.inspect
-    #       .must_equal "#<Dimension: L.T⁻¹ >"
+        # There should be two ways to invoke a new Dimension instance.
+        # By providing named parameters { LETTER: exponent }
+        # 
+        d = SY::Dimension.new L: 1, T: -1 # using named parameters
+        d.inspect
+          .must_equal "#<Dimension: L.T⁻¹ >"
 
-    #     # And by providing a superscripted product string:
-    #     # 
-    #     d = SY::Dimension.new "Θ.L³.T⁻¹" # using SPS
-    #     d.inspect
-    #       .must_equal "#<Dimension: L³.T⁻¹.Θ >"
-    #   end
+        # And by providing a superscripted product string:
+        # 
+        d = SY::Dimension.new "Θ.L³.T⁻¹" # using SPS
+        d.inspect
+          .must_equal "#<Dimension: L³.T⁻¹.Θ >"
+      end
 
-    #   it "should have readers of the basic dim. components" do
+      it "should have readers of the basic dim. components" do
 
-    #     # A dimension should respond to five methods #L, #M, #T, #Q and #Θ
-    #     # by returning its exponent in the corresponding basic dimension:
+        # A dimension should respond to five methods #L, #M, #T, #Q and #Θ
+        # by returning its exponent in the corresponding basic dimension:
 
-    #     # Test that @dim_l_per_t responds to all five letters:
-    #     # 
-    #     @dim_l_per_t.must_respond_to :L
-    #     @dim_l_per_t.must_respond_to :M
-    #     @dim_l_per_t.must_respond_to :T
-    #     @dim_l_per_t.must_respond_to :Q
-    #     @dim_l_per_t.must_respond_to :Θ
+        # Test that @dim_l_per_t responds to all five letters:
+        # 
+        @dim_l_per_t.must_respond_to :L
+        @dim_l_per_t.must_respond_to :M
+        @dim_l_per_t.must_respond_to :T
+        @dim_l_per_t.must_respond_to :Q
+        @dim_l_per_t.must_respond_to :Θ
 
-    #     # Test that each of the five letters used as method returns correct
-    #     # exponent:
-    #     # 
-    #     @dim_l_per_t.L.must_equal 1
-    #     @dim_l_per_t.M.must_equal 0
-    #     @dim_l_per_t.T.must_equal -1
-    #     @dim_l_per_t.Q.must_equal 0
-    #     @dim_l_per_t.Θ.must_equal 0
+        # Test that each of the five letters used as method returns correct
+        # exponent:
+        # 
+        @dim_l_per_t.L.must_equal 1
+        @dim_l_per_t.M.must_equal 0
+        @dim_l_per_t.T.must_equal -1
+        @dim_l_per_t.Q.must_equal 0
+        @dim_l_per_t.Θ.must_equal 0
 
-    #     # Test that both @dim_l_per_temperature and @dim_null respond to all
-    #     # five letters:
-    #     # 
-    #     [ @dim_l_per_temperature, @dim_null ].each{ |dimension|
-    #       dimension.must_respond_to :L
-    #       dimension.must_respond_to :M
-    #       dimension.must_respond_to :T
-    #       dimension.must_respond_to :Q
-    #       dimension.must_respond_to :Θ
-    #     }
+        # Test that both @dim_l_per_temperature and @dim_null respond to all
+        # five letters:
+        # 
+        [ @dim_l_per_temperature, @dim_null ].each{ |dimension|
+          dimension.must_respond_to :L
+          dimension.must_respond_to :M
+          dimension.must_respond_to :T
+          dimension.must_respond_to :Q
+          dimension.must_respond_to :Θ
+        }
 
-    #     # Test that the five letters return correct exponents for
-    #     # @dim_l_per_temperature:
-    #     # 
-    #     [:L, :M, :T, :Q, :Θ]
-    #       .map{ |letter|
-    #             @dim_l_per_temperature.send letter
-    #           }
-    #       .must_equal [ 1, 0, 0, 0, -1 ]
+        # Test that the five letters return correct exponents for
+        # @dim_l_per_temperature:
+        # 
+        [:L, :M, :T, :Q, :Θ]
+          .map{ |letter|
+                @dim_l_per_temperature.send letter
+              }
+          .must_equal [ 1, 0, 0, 0, -1 ]
 
-    #     # Test that the five letters return correct exponents for @dim_null
-    #     # 
-    #     [:L, :M, :T, :Q, :Θ]
-    #       .map{ |letter|
-    #             @dim_null.send letter
-    #           }
-    #       .must_equal [ 0, 0, 0, 0, 0 ] # zero vector
-    #   end
+        # Test that the five letters return correct exponents for @dim_null
+        # 
+        [:L, :M, :T, :Q, :Θ]
+          .map{ |letter|
+                @dim_null.send letter
+              }
+          .must_equal [ 0, 0, 0, 0, 0 ] # zero vector
+      end
 
-    #   it "should have #[] dim. component reader" do
+      it "should have #[] dim. component reader" do
 
-    #     # using method "square brackets" on Dimension class objects should,
-    #     # given a dimension letter, return its exponent. A few examples:
-    #     # 
-    #     @dim_l_per_t[:L].must_equal 1
-    #     @dim_l_per_t[:M].must_equal 0
-    #     @dim_l_per_t[:Θ].must_equal 0
-    #     @dim_l_per_temperature[:Θ].must_equal -1
-    #     @dim_null[:Θ].must_equal 0
-    #   end
+        # using method "square brackets" on Dimension class objects should,
+        # given a dimension letter, return its exponent. A few examples:
+        # 
+        @dim_l_per_t[:L].must_equal 1
+        @dim_l_per_t[:M].must_equal 0
+        @dim_l_per_t[:Θ].must_equal 0
+        @dim_l_per_temperature[:Θ].must_equal -1
+        @dim_null[:Θ].must_equal 0
+      end
 
-    #   it "should have #== comparator" do
+      it "should have #== comparator" do
 
-    #     # '==' method is used to compare object for equality. A Dimension
-    #     # class object is equal to another Dimesion class object if and only
-    #     # if all of its exponents match.
+        # '==' method is used to compare object for equality. A Dimension
+        # class object is equal to another Dimesion class object if and only
+        # if all of its exponents match.
 
-    #     # So, for example, @dim_l_per_t must declare equality to another
-    #     # brand new instantiated Dimension object with same exponents:
-    #     # 
-    #     @dim_l_per_t.==( SY::Dimension.new L: 1, T: -1 )
-    #       .must_equal true
+        # So, for example, @dim_l_per_t must declare equality to another
+        # brand new instantiated Dimension object with same exponents:
+        # 
+        @dim_l_per_t.==( SY::Dimension.new L: 1, T: -1 )
+          .must_equal true
 
-    #     # The same must be valid for @dim_l_per_temperature
-    #     # 
-    #     ( @dim_l_per_temperature == SY::Dimension.new( "L.Θ⁻¹" ) )
-    #       .must_equal true
-    #     # Note that above, more usual way to invoke #== method was used,
-    #     # by writing
-    #     # a == b
-    #     # instead of conformist, but awkward
-    #     # a.==( b )
+        # The same must be valid for @dim_l_per_temperature
+        # 
+        ( @dim_l_per_temperature == SY::Dimension.new( "L.Θ⁻¹" ) )
+          .must_equal true
+        # Note that above, more usual way to invoke #== method was used,
+        # by writing
+        # a == b
+        # instead of conformist, but awkward
+        # a.==( b )
 
-    #     # ... and for @dim_null
-    #     # 
-    #     ( @dim_null == SY::Dimension.new( "" ) ).must_equal true
+        # ... and for @dim_null
+        # 
+        ( @dim_null == SY::Dimension.new( "" ) ).must_equal true
 
-    #     # Let us also make negative test
-    #     # 
-    #     ( @dim_l_per_t == SY::Dimension.new( "M" ) ).must_equal false
-    #   end
+        # Let us also make negative test
+        # 
+        ( @dim_l_per_t == SY::Dimension.new( "M" ) ).must_equal false
+      end
 
-    #   it "should have #to_a, #to_hash, #to_s convertors" do
+      it "should have #to_a, #to_hash, #to_s convertors" do
 
-    #     # Dimensions should be able to convert themselves to array:
-    #     # 
-    #     @dim_l_per_t.to_a
-    #       .must_equal [1, 0, -1, 0, 0]
+        # Dimensions should be able to convert themselves to array:
+        # 
+        @dim_l_per_t.to_a
+          .must_equal [1, 0, -1, 0, 0]
 
-    #     # to a hash:
-    #     # 
-    #     @dim_l_per_t.to_hash
-    #       .must_equal( { L: 1,
-    #                      M: 0,
-    #                      T: -1,
-    #                      Q: 0,
-    #                      Θ: 0} )
+        # to a hash:
+        # 
+        @dim_l_per_t.to_hash
+          .must_equal( { L: 1,
+                         M: 0,
+                         T: -1,
+                         Q: 0,
+                         Θ: 0} )
 
-    #     # and to string:
-    #     # 
-    #     @dim_l_per_t.to_s.must_equal "L.T⁻¹"
-    #   end
+        # and to string:
+        # 
+        @dim_l_per_t.to_s.must_equal "L.T⁻¹"
+      end
 
-    #   it "should have +, -, *, / operators" do
+      it "should have +, -, *, / operators" do
 
-    #     # Dimension '+' means addition of the dimension vectors, '-' means
-    #     # their subtraction. * and / only work with numbers, and mean
-    #     # multiplication or division of the dimension vector by scalar.
+        # Dimension '+' means addition of the dimension vectors, '-' means
+        # their subtraction. * and / only work with numbers, and mean
+        # multiplication or division of the dimension vector by scalar.
 
-    #     # Testing #+ operator method
-    #     # 
-    #     ( @dim_l_per_t + @dim_l_per_temperature )
-    #       .must_equal SY::Dimension.new( L: 2, T: -1, Θ: -1 )
+        # Testing #+ operator method
+        # 
+        ( @dim_l_per_t + @dim_l_per_temperature )
+          .must_equal SY::Dimension.new( L: 2, T: -1, Θ: -1 )
 
-    #     # Testing #* operator method
-    #     # 
-    #     ( @dim_l_per_t * 2 )
-    #       .must_equal SY::Dimension.new( L: 2, T: -2 )
+        # Testing #* operator method
+        # 
+        ( @dim_l_per_t * 2 )
+          .must_equal SY::Dimension.new( L: 2, T: -2 )
 
-    #     # Testing #- operator method
-    #     # 
-    #     ( @dim_l_per_t - @dim_l_per_temperature )
-    #       .must_equal SY::Dimension.new( T: -1, Θ: 1 )
+        # Testing #- operator method
+        # 
+        ( @dim_l_per_t - @dim_l_per_temperature )
+          .must_equal SY::Dimension.new( T: -1, Θ: 1 )
 
-    #     # Testing #/ operator method
-    #     # 
-    #     ( ( @dim_l_per_t * 4 ) / 2 )
-    #       .must_equal SY::Dimension.new( L: 2, T: -2 )
-    #   end
+        # Testing #/ operator method
+        # 
+        ( ( @dim_l_per_t * 4 ) / 2 )
+          .must_equal SY::Dimension.new( L: 2, T: -2 )
+      end
 
-    #   it "should have zero? inquirer" do
+      it "should have zero? inquirer" do
 
-    #     # Method #zero? will answer true if the dimension is null, false
-    #     # otherwise:
-    #     # 
-    #     @dim_l_per_t.zero?.must_equal false
-    #     @dim_null.zero?.must_equal true
-    #   end
+        # Method #zero? will answer true if the dimension is null, false
+        # otherwise:
+        # 
+        @dim_l_per_t.zero?.must_equal false
+        @dim_null.zero?.must_equal true
+      end
 
-    #   it "should know its favored quantities" do
+      it "should know its favored quantities" do
 
-    #     # To test this, we first need to make quantities of the dimensions:
-    #     # 
-    #     @quantity_1 = SY::Quantity.new of: @dim_l_per_t
-    #     @quantity_2 = SY::Quantity.new of: @dim_l_per_temperature
-    #     @quantity_3 = SY::Quantity.new of: @dim_null
+        # To test this, we first need to make quantities of the dimensions:
+        # 
+        @quantity_1 = SY::Quantity.new of: @dim_l_per_t
+        @quantity_2 = SY::Quantity.new of: @dim_l_per_temperature
+        @quantity_3 = SY::Quantity.new of: @dim_null
 
-    #     # Then, we need to set these quantities as standard quantities for
-    #     # their respective dimensions:
-    #     # 
-    #     @quantity_1.set_as_standard
-    #     @quantity_2.set_as_standard
-    #     @quantity_3.set_as_standard
+        # Then, we need to set these quantities as standard quantities for
+        # their respective dimensions:
+        # 
+        @quantity_1.set_as_standard
+        @quantity_2.set_as_standard
+        @quantity_3.set_as_standard
 
-    #     # And now, the dimensions should recognize them as their standard
-    #     # quantities:
-    #     # 
-    #     @dim_l_per_t.standard_quantity
-    #       .must_equal @quantity_1
-    #     @dim_l_per_temperature.standard_quantity
-    #       .must_equal @quantity_2
-    #     @dim_null.standard_quantity
-    #       .must_equal @quantity_3
-    #   end
+        # And now, the dimensions should recognize them as their standard
+        # quantities:
+        # 
+        @dim_l_per_t.standard_quantity
+          .must_equal @quantity_1
+        @dim_l_per_temperature.standard_quantity
+          .must_equal @quantity_2
+        @dim_null.standard_quantity
+          .must_equal @quantity_3
+      end
 
-    #   it "should have nice #inspect" do
+      it "should have nice #inspect" do
 
-    #     # Inspect method serves the purpose of making beautiful text
-    #     # representation of the object.
-    #     # 
-    #     @dim_l_per_t.inspect.must_equal "#<Dimension: L.T⁻¹ >"
-    #     @dim_l_per_temperature.inspect.must_equal "#<Dimension: L.Θ⁻¹ >"
+        # Inspect method serves the purpose of making beautiful text
+        # representation of the object.
+        # 
+        @dim_l_per_t.inspect.must_equal "#<Dimension: L.T⁻¹ >"
+        @dim_l_per_temperature.inspect.must_equal "#<Dimension: L.Θ⁻¹ >"
 
-    #     # And now there is specialy, null dimension will introduce itself as
-    #     # 
-    #     @dim_null.inspect.must_equal "#<Dimension: zero >"
-    #   end
+        # And now there is specialy, null dimension will introduce itself as
+        # 
+        @dim_null.inspect.must_equal "#<Dimension: zero >"
+      end
 
-    #   it "should have #coerce" do
+      it "should have #coerce" do
 
-    #     # Coerce method takes another object or quantity as its argument and
-    #     # returns a pair [ compatible_object_other, compatible_object_self ]
-    #     # usable for arithmetic, comparison and such.
-    #     # 
-    #     p, q = Quantity.dimensionless, Quantity.dimensionless
-    #     assert_equal :AE_raised, begin
-    #                                q.coerce( p )
-    #                              rescue ArgumentError
-    #                                :AE_raised
-    #                              end
-    #   end
-    # end
+        # Coerce method takes another object or quantity as its argument and
+        # returns a pair [ compatible_object_other, compatible_object_self ]
+        # usable for arithmetic, comparison and such.
+        # 
+        p, q = SY::Quantity.dimensionless, SY::Quantity.dimensionless
+        assert_equal :TE_raised, begin
+                                   q.coerce( p )
+                                 rescue TypeError
+                                   :TE_raised
+                                 end
+      end
+    end
 
-    # describe "Dimension class methods" do
+    describe "Dimension class methods" do
 
-    #   # ********************************************************************
-    #   # INTRODUCTION TO PUBLIC CLASS METHODS
-    #   #
-    #   # Normally, instance of a class is first made by calling 'new' method
-    #   #
-    #   # d = Dimension.new "L.T⁻²"
-    #   #
-    #   # And then, instance methods are called on thus created object:
-    #   #
-    #   # d.instance_method_1
-    #   # d.instance_method_2
-    #   # etc.
-    #   #
-    #   # Compared to this, public class methods are called directly on the
-    #   # class:
-    #   #
-    #   # Dimension.public_class_method_1
-    #   # Dimension.public_class_method_2
-    #   # etc.
-    #   #
-    #   # ********************************************************************
+      # ********************************************************************
+      # INTRODUCTION TO PUBLIC CLASS METHODS
+      #
+      # Normally, instance of a class is first made by calling 'new' method
+      #
+      # d = Dimension.new "L.T⁻²"
+      #
+      # And then, instance methods are called on thus created object:
+      #
+      # d.instance_method_1
+      # d.instance_method_2
+      # etc.
+      #
+      # Compared to this, public class methods are called directly on the
+      # class:
+      #
+      # Dimension.public_class_method_1
+      # Dimension.public_class_method_2
+      # etc.
+      #
+      # ********************************************************************
 
-    #   it "should provide #basic, #zero special dimension constructors" do
+      it "should provide #basic, #zero special dimension constructors" do
 
-    #     # Two public class methods are defined on Dimension class:
-    #     # #basic
-    #     # and
-    #     # #zero
+        # Two public class methods are defined on Dimension class:
+        # #basic
+        # and
+        # #zero
 
-    #     # #basic method is a shorthand for creating basic dimensions.
-    #     # Instead of writing
-    #     # Dimension.new L: 1
-    #     # we can write just
-    #     # Dimension.basic :L
-    #     # or
-    #     # Dimension.basic "L"
-    #     # 
-    #     SY::Dimension.basic( "L" )
-    #       .must_equal( SY::Dimension.new( L: 1 ) )
+        # #basic method is a shorthand for creating basic dimensions.
+        # Instead of writing
+        # Dimension.new L: 1
+        # we can write just
+        # Dimension.basic :L
+        # or
+        # Dimension.basic "L"
+        # 
+        SY::Dimension.basic( "L" )
+          .must_equal( SY::Dimension.new( L: 1 ) )
 
-    #     # Zero method is another way to explicitly create null dimension.
-    #     # Instead of writing
-    #     # Dimension.new( )
-    #     # we can write more expressively
-    #     # Dimension.zero
-    #     # 
-    #     SY::Dimension.zero
-    #       .must_equal SY::Dimension.new()
-    #   end
-    # end
+        # Zero method is another way to explicitly create null dimension.
+        # Instead of writing
+        # Dimension.new( )
+        # we can write more expressively
+        # Dimension.zero
+        # 
+        SY::Dimension.zero
+          .must_equal SY::Dimension.new()
+      end
+    end
   end # describe Dimension class
 
   describe "Quantity class" do

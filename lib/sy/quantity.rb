@@ -122,12 +122,11 @@ module SY
         # quantities would be coercible to others.
         # 
         if other == self then return other, self else
-          raise ArgumentError, "Different quantities (up to exceptions) " +
+          raise TypeError, "Different quantities (up to exceptions) " +
             "do not mix with each other."
         end
       else
-        raise ArgumentError, "Object #{other} cannot be coerced into " +
-          "a quantity"
+        raise TypeError, "Object #{other} cannot be coerced into a quantity."
       end
     end
 
