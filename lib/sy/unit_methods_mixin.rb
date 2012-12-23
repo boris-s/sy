@@ -9,28 +9,22 @@ module SY
     # correspond to the metrological units.
     # 
     def method_missing( method_ß, *args, &block )
+      # hack to prevent method missing activation on #to_something
+      super if method_ß.to_s[0..2] == 'to_'
       puts "Method missing: #{method_ß} in #{ç}"
-      # this method should either
-      # (a) find the method_ß among registered units and define
-      # the unit method for the caller's class, or
-      # (b) not find the method and stop execution.
-      # But various interferencis could, in theory, cause this method
-      # to be invoked multiple times for the same method_ß in a given
-      # class. While such case would indicate a programming error outside
-      # the responsibility of this method, if the same symbol comes for
-      # a second time in a given class, this method should be smart enough
-      # to notice that something is wrong and complain.
-      ç.instance_variable_set( :@active_missing_unit_method_ßß, [] ) unless
-        ç.instance_variable_get :@active_missing_unit_method_ßß
+      # This method should not be recursively invoked for the same class.
+      # While such state indicates error on the user's side, let's be
+      # smart enough to notice repeated nested processing of the same
+      # symbol here.
+      ç.instance_variable_set( :@active_unit_mmiss, [] ) unless
+        ç.instance_variable_get :@active_unit_mmiss
       # if the symbol appears twice, clearly something unexpected is going on
       # we could raise an error, but avoiding responsibility is what we do:
-      if ç.instance_variable_get( :@active_missing_unit_method_ßß )
-          .include? method_ß then
-        puts "it is not our responsibility"
-        super
+      if ç.instance_variable_get( :@active_unit_mmiss ).include? method_ß
+        super                        # not our responsibility
       end
       # now let us note the symbol we are analyzing now
-      ç.instance_variable_get( :@active_missing_unit_method_ßß ) << method_ß
+      ç.instance_variable_get( :@active_unit_mmiss ) << method_ß
       puts "adding #{method_ß} to the registry"
       # Check whether method_ß is registered in the table of units:
       begin
@@ -46,7 +40,7 @@ module SY
         # SPS_PARSER fails with ArgumentError if method_ß is not recognized,
         # in which case, #method_missing will be forwarded higher, but before
         # that, let us clear it from the registry of active symbols:
-        ç.instance_variable_get( :@active_missing_unit_method_ßß )
+        ç.instance_variable_get( :@active_unit_mm_registry )
           .delete method_ß
         puts "deleting #{method_ß} from the registry"
         super
@@ -82,7 +76,7 @@ module SY
       ç.module_eval definition_skeleton % method_body
       # before invoking it, let us remove it from the registry of active
       # method_missing symbols under consideration
-      ç.instance_variable_get( :@active_missing_unit_method_ßß )
+      ç.instance_variable_get( :@active_unit_mm_registry )
         .delete method_ß
       puts "deleting #{method_ß} from the registry"
       # finally, invoke it
