@@ -479,7 +479,7 @@ describe SY do
         # Let us see that we indeed obtained desired Quantity instance
         # 
         q.must_be_kind_of SY::Quantity
-        q.name.must_equal "Reciprocal temperature"
+        q.name.must_equal "Reciprocal_temperature"
         # (Note that dimension names are all upcase, such as "LENGTH",
         # quantity names are capitalized first letter, such as "Electric
         # current", and units are all downcase, such as "ampere".)
