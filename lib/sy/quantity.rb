@@ -30,7 +30,8 @@ module SY
     # 
     def self.standard *args, &block
       hash = args.extract_options!
-      Dimension.new hash.must_have( :dimension, syn!: :of ).standard_quantity
+      Dimension.new( hash.must_have( :dimension, syn!: :of ) )
+        .standard_quantity
     end
 
     # Dimensionless quantity constructor alias.
