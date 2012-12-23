@@ -29,7 +29,7 @@ module SY
 
   Nᴀ = AVOGADRO_CONSTANT = 6.02214e23
 
-  
+
   # === Basic quantities
 
   Length = Quantity.standard of: :L
@@ -42,7 +42,7 @@ module SY
 
   Temperature = Quantity.standard of: :Θ
 
-  
+
   # === Basic units of basic quantities
 
   METRE = Unit.standard of: Length, short: "m"

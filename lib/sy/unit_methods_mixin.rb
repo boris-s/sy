@@ -10,6 +10,25 @@ module SY
     # 
     def method_missing( method_ß, *args, &block )
       puts "Method missing: #{method_ß} in #{self}, caller: #{caller}"
+      # this method should either
+      # (a) find the method_ß among registered units and define
+      # the unit method for the caller's class, or
+      # (b) not find the method and stop execution.
+      # But various interferencis could, in theory, cause this method
+      # to be invoked multiple times for the same method_ß in a given
+      # class. While such case would indicate a programming error outside
+      # the responsibility of this method, if the same symbol comes for
+      # a second time in a given class, this method should be smart enough
+      # to notice that something is wrong and complain.
+      ç.instance_variable_set( :@active_missing_unit_method_ßß, [] ) unless
+        ç.instance_variable_get :@active_missing_unit_method_ßß
+      # if the symbol appears twice, clearly something unexpected is going on
+      # we could raise an error, but avoiding responsibility is what we do:
+      super if ç.instance_variable_get( :@active_missing_unit_method_ßß
+                                        ).include? method_ß
+      # now let us note the symbol we are analyzing now
+      ç.instance_variable_get( :@active_missing_unit_method_ßß ) << method_ß
+      puts "it is our responsibility"
       # Check whether method_ß is registered in the table of units:
       begin
         puts "About to ask about instances"
@@ -23,7 +42,11 @@ module SY
           ::SY::SPS_PARSER.( method_ß.to_s, unit_names, prefixes )
       rescue ArgumentError
         # SPS_PARSER fails with ArgumentError if method_ß is not recognized,
-        super      # in which case, #method_missing will be forwarded higher
+        # in which case, #method_missing will be forwarded higher, but before
+        # that, let us clear it from the registry of active symbols:
+        ç.instance_variable_get( :@active_missing_unit_method_ßß )
+          .delete method_ß
+        super
       end
       puts "About to define a method"
       # method_ß is a method that takes a number (the receiver) and creates
@@ -53,8 +76,12 @@ module SY
       end
       # finally, teh finished method will be defined for that class,
       # on which it was called:
-      self.class.module_eval definition_skeleton % method_body
-      # and invoked:
+      ç.module_eval definition_skeleton % method_body
+      # before invoking it, let us remove it from the registry of active
+      # method_missing symbols under consideration
+      ç.instance_variable_get( :@active_missing_unit_method_ßß )
+        .delete method_ß
+      # finally, invoke it
       send method_ß, *args, &block
     end # def method_missing
 
