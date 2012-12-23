@@ -538,13 +538,12 @@ describe SY do
 
       it "should have #name_basic_unit, #inspect, #to_s" do
 
-        # Ever since a Quantity instance is born, it has its basic unit.
-        # But the basic unit is nameless until it is named by
-        # #name_basic_unit method.
+        # Ever since a Quantity instance is born, it has its standard unit,
+        # which can be named immediately, or later.
 
         # Name of the basic unit is nil at the beginning
         # 
-        @q_speed.standard_unit.name.must_equal nil
+        SY::Quantity.dimensionless.standard_unit.name.must_equal nil
 
         # Now, we will name the basic unit of "Speed" snail (abbr. 1.sn):
         # 
