@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+          # ... whi
 #encoding: utf-8
 #! /usr/bin/ruby
 

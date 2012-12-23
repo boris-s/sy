@@ -173,4 +173,8 @@ module SY
   # Custom error class for attempts to create negative magnitudes.
   # 
   class NegativeAmountError < StandardError; end
+
+  # Custom error class for attempts to mix incompatible quantities.
+  # 
+  class IncompatibleQuantityError < StandardError; end
 end

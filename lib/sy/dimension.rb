@@ -190,7 +190,9 @@ module SY
       self.class.standard_quantities[ self ]
     end
 
-    delegate :fav_units, to: :standard_quantity
+    delegate :standard_unit,
+             :units,
+             to: :standard_quantity
   end # class Dimension
 
   # Convenience constructor Dimension() (acts as alias for Dimension.new).

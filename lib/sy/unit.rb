@@ -43,7 +43,8 @@ module SY
     attr_reader :short
     alias :abbreviation :short
 
-    # Unit name (in lower case).
+    # Unit name (units are typically named as constants in all-upper case,
+    # but their names are always presented in all-lower case).
     # 
     def name
       super.downcase
@@ -60,6 +61,26 @@ module SY
       # abbreviation can be introduced by multiple keywords
       @short = hash.may_have( :short, syn!: :abbreviation ).to_sym
       ( quantity.units << self ).uniq!
+    end
+
+    # Unit as string.
+    # 
+    def to_s
+      if name.nil? then
+        "[unit %s of %s]" % [ amount, quantity ]
+      else
+        "%s%s" % [ name, short.nil? ? '' : ' (%s)' % short ]
+      end
+    end
+
+    # Inspect string for the unit.
+    # 
+    def inspect
+      "#<%s>" % if name.nil? then # anonymous unit
+                  "%s"
+                else # named unit
+                  "Unit #{name + ( short.nil? ? '' : ' (%s)' % short )} of %s"
+                end % quantity
     end
   end # class Unit
 end # module SY

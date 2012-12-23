@@ -22,11 +22,15 @@ module SY
       end
     end
 
-    # Standard quantity constructor. Example:
+    # Standard quantity accessor. Example:
     # <tt>Quantity.standard of: Dimension.new( "L.T⁻²" )</tt>
+    # or
+    # <tt>Quantity.standard of: "L.T⁻²"
+    # (Both should give Acceleration as their result.)
     # 
     def self.standard *args, &block
-      new( *args, &block ).tap { |instance| instance.set_as_standard }
+      hash = args.extract_options!
+      Dimension.new hash.must_have( :dimension, syn!: :of ).standard_quantity
     end
 
     # Dimensionless quantity constructor alias.
