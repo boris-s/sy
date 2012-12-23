@@ -48,6 +48,13 @@ module SY
     attr_reader :short
     alias :abbreviation :short
 
+    # Unit abbreviation setter.
+    # 
+    def short= unit_symbol
+      @short = unit_symbol.to_sym
+    end
+    alias :abbreviation= :short=
+
     # Unit name (units are typically named as constants in all-upper case,
     # but their names are always presented in all-lower case).
     # 

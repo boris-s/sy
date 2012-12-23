@@ -474,7 +474,7 @@ describe SY do
         # 
         # but we can write instead:
         # 
-        q = SY::Quantity.new of: "Θ⁻¹", name: "reciprocal temperature"
+        q = SY::Quantity.new of: "Θ⁻¹", name: "Reciprocal_temperature"
 
         # Let us see that we indeed obtained desired Quantity instance
         # 
@@ -491,7 +491,7 @@ describe SY do
         # 
         @q_speed.dimension.inspect.must_equal "#<Dimension: L.T⁻¹ >"
         @q_thermal_distension.dimension.inspect.must_equal "#<Dimension: L.Θ⁻¹ >"
-        @q_dimensionless.dimension.inspect.must_equal "#<Dimension: zero >"
+        @q_dimensionless.dimension.inspect.must_equal "#<Dimension: ∅ >"
 
         # Should know its basic unit
         # 
@@ -544,12 +544,17 @@ describe SY do
 
         # Name of the basic unit is nil at the beginning
         # 
-        @q_speed.basic_unit.name.must_equal nil
+        @q_speed.standard_unit.name.must_equal nil
 
         # Now, we will name the basic unit of "Speed" snail (abbr. 1.sn):
         # 
-        @q_speed.name_basic_unit "snail", symbol: "sn"
-
+        begin
+          @q_speed = SY::Unit::SNAIL.dimension.standard_quantity
+        rescue NameError
+          @q_speed.standard_unit.name = "snail"
+          @q_speed.standard_unit.abbreviation = "sn"
+        end
+          
         # Since now, basic unit of speed will be called "snail":
         # 
         @q_speed.basic_unit.name.must_equal "snail"
@@ -598,12 +603,17 @@ describe SY do
         # (pounds per square inch). So far, the only favored unit is
         # the basic unit, so if we name basic unit properly:
         # 
-        @q_speed.name_basic_unit "metre", symbol: "m"
+        begin
+          @q_speed = SY::Unit::KNOT.dimension.standard_quantity
+        rescue NameError
+          @q_speed.standard_unit.name = "knot"
+          @q_speed.standard_unit.abbreviation = "kn"
+        end
 
         # Then the fav_units should return an array with a single
         # member: metre
         # 
-        result = @q_speed.fav_units
+        result = @q_speed.units
         result.must_be_kind_of Array
         result.size.must_equal 1
         result[0].must_be_kind_of SY::Unit
@@ -622,7 +632,7 @@ describe SY do
         
         # Expectation about #of class method
         # 
-        new_quantity = SY::Quantity.of "L.T⁻¹", ɴ: "growth rate" 
+        new_quantity = SY::Quantity.of "L.T⁻¹", ɴ: "Growth_rate" 
         new_quantity.dimension.inspect.must_equal "#<Dimension: L.T⁻¹ >"
       end
 
@@ -630,7 +640,7 @@ describe SY do
 
         # Expectation about #zero class method
         # 
-        new_quantity = SY::Quantity.zero name: "happiness"
+        new_quantity = SY::Quantity.dimensionless name: "Happiness"
         new_quantity.inspect
           .must_equal '#<Quantity: Happiness >'
       end
@@ -654,14 +664,14 @@ describe SY do
         # Instead of number:, we can just say n:
         # Instead of quantity:, we can just say of:
         # 
-        ( SY::Magnitude.new of: @q_speed, n: 3.3 ).must_equal @m1
+        ( SY::Magnitude.new of: @q_speed, amount: 3.3 ).must_equal @m1
       end
 
       it "should have comparison methods" do
 
-        ( SY::Magnitude.new of: @q_speed, n: 3 ).must_be :<, @m1
-        ( SY::Magnitude.new of: @q_speed, n: 3.3 ).must_be :==, @m1
-        ( SY::Magnitude.new of: @q_speed, n: 4 ).must_be :>, @m1
+        ( SY::Magnitude.new of: @q_speed, amount: 3 ).must_be :<, @m1
+        ( SY::Magnitude.new of: @q_speed, amount: 3.3 ).must_be :==, @m1
+        ( SY::Magnitude.new of: @q_speed, amount: 4 ).must_be :>, @m1
       end
 
       it "should have #abs method" do
