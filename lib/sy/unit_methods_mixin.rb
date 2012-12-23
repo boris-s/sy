@@ -92,10 +92,11 @@ module SY
     def respond_to_missing?( method_ß, include_private = false )
       # Check whether method_ß is registered in the table of units:
       begin
+        units = ::SY::Unit.instances
+        unit_names = units.map( &:name ).map( &:to_s )
+        prefixes = ::SY::PREFIX_TABLE.full + ::SY::PREFIX_TABLE.short
         prefixes, units, exponents =
-          ::SY::SPS_PARSER.( method_ß.to_s,
-                             ::SY::UNITS_WITHOUT_PREFIX.keys,
-                             ::SY::PREFIXES.keys )
+          ::SY::SPS_PARSER.( method_ß.to_s, unit_names, prefixes )
       rescue ArgumentError
         # SPS_PARSER fails with ArgumentError if method_ß is not registered,
         super # in which case, #respond_to_missing is sent up the lookup chain
