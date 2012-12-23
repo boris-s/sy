@@ -40,7 +40,7 @@ module SY
         # SPS_PARSER fails with ArgumentError if method_ß is not recognized,
         # in which case, #method_missing will be forwarded higher, but before
         # that, let us clear it from the registry of active symbols:
-        ç.instance_variable_get( :@active_unit_mm_registry )
+        ç.instance_variable_get( :@active_unit_mmiss )
           .delete method_ß
         puts "deleting #{method_ß} from the registry"
         super
