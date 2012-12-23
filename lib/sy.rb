@@ -59,14 +59,14 @@ module SY
   # COULOMB = ELECTRIC_CHARGE.name_basic_unit "coulomb", symbol: "C"
 
 
-  # === Derived units of basic quantities
-  puts 'hello'
-  DALTON = Unit.of Mass, short: "Da", amount: 1.66053892173e-24
-  puts 'dalton'
-  MINUTE = Unit.of Time, short: "min", amount: 60.s
-  puts 'minute'
-  HOUR = Unit.of Time, short: "h", amount: 60.min
-  puts 'hour'
+  # # === Derived units of basic quantities
+  # puts 'hello'
+  # DALTON = Unit.of Mass, short: "Da", amount: 1.66053892173e-24
+  # puts 'dalton'
+  # MINUTE = Unit.of Time, short: "min", amount: 60.s
+  # puts 'minute'
+  # HOUR = Unit.of Time, short: "h", amount: 60.min
+  # puts 'hour'
   
   # === Derived quantities
   
