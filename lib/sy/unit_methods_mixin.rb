@@ -24,16 +24,19 @@ module SY
         ç.instance_variable_get :@active_missing_unit_method_ßß
       # if the symbol appears twice, clearly something unexpected is going on
       # we could raise an error, but avoiding responsibility is what we do:
-      super if ç.instance_variable_get( :@active_missing_unit_method_ßß
-                                        ).include? method_ß
+      if ç.instance_variable_get( :@active_missing_unit_method_ßß )
+          .include? method_ß then
+        puts "it is not our responsibility"
+        super
+      end
       # now let us note the symbol we are analyzing now
       ç.instance_variable_get( :@active_missing_unit_method_ßß ) << method_ß
-      puts "it is our responsibility"
+      puts "adding #{method_ß} to the registry"
       # Check whether method_ß is registered in the table of units:
       begin
         puts "About to ask about instances"
         units = ::SY::Unit.instances
-        puts "Getting after first line"
+        puts "Obtained instances"
         unit_names = units.map( &:name ).map( &:to_s )
         prefixes = ::SY::PREFIX_TABLE.full + ::SY::PREFIX_TABLE.short
         prefix_hash = ::SY::PREFIX_TABLE.hash_full
@@ -46,6 +49,7 @@ module SY
         # that, let us clear it from the registry of active symbols:
         ç.instance_variable_get( :@active_missing_unit_method_ßß )
           .delete method_ß
+        puts "deleting #{method_ß} from the registry"
         super
       end
       puts "About to define a method"
@@ -81,6 +85,7 @@ module SY
       # method_missing symbols under consideration
       ç.instance_variable_get( :@active_missing_unit_method_ßß )
         .delete method_ß
+      puts "deleting #{method_ß} from the registry"
       # finally, invoke it
       send method_ß, *args, &block
     end # def method_missing
