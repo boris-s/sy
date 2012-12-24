@@ -211,7 +211,7 @@ module SY
     def coerce other
       case other
       when Numeric then
-        return ç.of( Dimension.zero.standard_quantity
+        return ç.of( Dimension.zero.standard_quantity,
                      amount: other ), self
       when Magnitude then
         aE_same_dimension other
