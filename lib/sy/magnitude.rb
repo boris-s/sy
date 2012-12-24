@@ -52,7 +52,7 @@ module SY
     # Rounded value of a Magnitude: A new magnitude with rounded amount.
     # 
     def round *args
-      ç.of quantity, amount: amount.round *args
+      ç.of quantity, amount: amount.round( *args )
     end
 
     # Whether the magnitude is zero.
