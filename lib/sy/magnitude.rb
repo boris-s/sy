@@ -49,11 +49,15 @@ module SY
       ::SY::Magnitude.of quantity, amount: amount.abs
     end
 
+    # Rounded value of a Magnitude: A new magnitude with rounded amount.
+    # 
+    def round *args
+      ç.of quantity, amount: amount.round *args
+    end
+
     # Whether the magnitude is zero.
     # 
-    def zero?
-      amount.zero?
-    end
+    delegate :zero?, to: amount
 
     # Magnitudes compare by their numbers. Compared magnitudes must be of
     # the same quantity.
