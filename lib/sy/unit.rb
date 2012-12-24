@@ -16,11 +16,11 @@ module SY
         "version is used as unit and constant name, lower-case version " +
         "in magnitude expressions." unless ɴ == ɴ.upcase || ɴ == ɴ.downcase
       ɴ_down = ɴ.downcase
-      conflicting_row = ::SY::PREFIX_TABLE.find { |row|
+      confl_row = ::SY::PREFIX_TABLE.find { |row|
         ɴ_down.to_s.start_with? row[:full] unless row[:full].empty?
       }
-      raise NameError, "Unit name may not start with standard prefix! (#{ɴ} " +
-          "starts with #{conflicting_row[:full]} prefix)" if conflicting_row
+      raise NameError, "Unit name #{ɴ} starts with prefix " +
+        "#{confl_row[:full]}!" unless ɴ_down == 'kilogram' if confl_row
       # This is not completely foolproof, but let's rely on user's common sense
       ɴ_down.upcase.to_sym
     }
@@ -29,13 +29,43 @@ module SY
     # 
     def self.standard *args, &block
       instance = new *args, &block
-      instance.quantity.standard_unit = self
+      instance.quantity.standard_unit = instance
       return instance
+    end
+
+    # Tweaking instance safe accessor.
+    # 
+    def self.instance which
+      begin
+        super
+      rescue NameError
+        # let us first try if it's a unit abbreviation
+        begin
+          super instances.find { |inst|
+            inst.abbreviation.to_s == which.to_s if inst.abbreviation
+          }
+        rescue NameError, TypeError
+          # and if not, let's try if upcase will help
+          begin
+            super which.to_s.upcase
+          rescue NameError
+            # if not, tough luck
+            raise NameError, "Unknown unit symbol: #{which}"
+          end
+        end
+      end
+    end
+
+    # Unit abbreviations as a hash of abbreviation => name pairs.
+    # 
+    def self.abbreviations
+      Hash[ instances.map( &:name ).zip( instances.map( &:short ) )
+              .select { |inst, abbr| ! abbr.nil? } ]
     end
 
     # Eval is used to define all the prefix methods.
     # 
-    ::SY::PREFIX_TABLE.full.each{ |full_prefix|
+    PREFIX_TABLE.full.each{ |full_prefix|
       eval( "def #{full_prefix}\n" +
             "  self * " +
             "#{::SY::PREFIX_TABLE.hash_full[ full_prefix ][:factor]}\n" +
@@ -69,14 +99,55 @@ module SY
     # 
     def initialize *args
       hash = args.extract_options!
+      # Units can have name and an abbreviation
+      @short = hash[:short].to_sym if hash.has? :short, syn!: :abbreviation
       super
-      # abbreviation can be introduced by multiple keywords
-      if hash.has? :short, syn!: :abbreviation then
-        @short = hash[:short].to_sym
-      end
       ( quantity.units << self ).uniq!
     end
 
+    # Adding a unit to a magnitude results in a magnitude, not unit.
+    # 
+    def + other
+      self.to_magnitude + other
+    end
+
+    # Subtracting a magnitude from a unit results in a magnitude, not unit.
+    # 
+    def - other
+      self.to_magnitude - other
+    end
+
+    # Multiplication of a unit results in a magnitude, not unit.
+    # 
+    def * other
+      self.to_magnitude * other
+    end
+
+    # Division of a unit results in a magnitude, not unit.
+    # 
+    def / other
+      self.to_magnitude / other
+    end
+
+    # Exponentiation of a unit results in a magnitude, not unit.
+    # 
+    def ** exponent
+      self.to_magnitude ** exponent
+    end
+
+    # Coercion sent to a unit converts the unit to a magnitude before
+    # coercion being actually performed.
+    # 
+    def coerce other
+      self.to_magnitude.coerce other
+    end
+
+    # Reframing of a unit results in a magnitude, not unit.
+    # 
+    def reframe other_quantity
+      self.to_magnitude.reframe other_quantity
+    end
+    
     # Unit as string.
     # 
     def to_s
@@ -90,12 +161,13 @@ module SY
     # Inspect string for the unit.
     # 
     def inspect
-      if name.nil? then "#<#{ç}: #{to_magnitude.to_s} >" else
-        "#<#{ç}: #{name}#{short.nil? ? '' : ' (%s)' % short} of #{quantity} >"
+      if name.nil? then
+        "#<#{ç.name.match( /[^:]+$/ )[0]}: #{to_magnitude.to_s} >"
+      else
+        "#<#{ç.name.match( /[^:]+$/ )[0]}: " +
+          "#{name}#{short.nil? ? '' : ' (%s)' % short} of #{quantity} >"
       end
     end
-
-    private
 
     # Converts a unit into a regular magnitude.
     # 

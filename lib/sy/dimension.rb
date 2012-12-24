@@ -55,8 +55,9 @@ module SY
       # Presents class-owned standard quantities array.
       # 
       def standard_quantities
-        return @standard_quantities ||=
-          Hash.new { |hash, instance| Quantity.of instance }
+        @standard_quantities ||= Hash.new { |hash, dimension|
+          hash[ dimension ] = Quantity.of dimension
+        }
       end
 
       # Constructor for basic dimensions. Symbol signifying the basic
@@ -69,6 +70,7 @@ module SY
               .include? basic_dimension_letter.to_sym
         return new basic_dimension_letter.to_sym => 1
       end
+      alias base basic
 
       # Constructor for zero dimension (as in "dimensionless").
       # 
@@ -183,13 +185,13 @@ module SY
     # Produces the inspect string of the dimension.
     # 
     def inspect
-      "#<Dimension: #{self} >"
+      "#<#{ç.name.match( /[^:]+$/ )[0]}: #{self} >"
     end
 
     # Returns dimension's standard quantity.
     # 
     def standard_quantity
-      self.class.standard_quantities[ self ]
+      ç.standard_quantities[ self ]
     end
 
     delegate :standard_unit,

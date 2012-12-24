@@ -6,6 +6,8 @@ module SY
   class Quantity
     include NameMagic
     attr_reader :dimension
+
+    
     attr_writer :standard_unit
 
     # Quantity constructor. Example:
@@ -30,6 +32,7 @@ module SY
     # 
     def self.standard *args, &block
       hash = args.extract_options!
+      dim = Dimension.new hash.must_have( :dimension, syn!: :of )
       Dimension.new( hash.must_have( :dimension, syn!: :of ) )
         .standard_quantity
     end
@@ -48,7 +51,15 @@ module SY
       @dimension = Dimension.new hash.must_have( :dimension, syn!: :of )
     end
 
-    # Convenience reader of the SY::BASIC_UNITS table.
+    # Writer of standard unit
+    # 
+    def standard_unit= unit
+      @standard_unit = unit.tE_kind_of ::SY::Unit
+      # Make it the most favored unit
+      @units.unshift( unit ).uniq!
+    end
+
+    # Reader of standard unit.
     # 
     def standard_unit
       @standard_unit ||= Unit.of self
@@ -65,8 +76,8 @@ module SY
     def * other
       case other
       when Numeric then self
-      when Quantity then self.class.of dimension + other.dimension
-      when Dimension then self.class.of dimension + other
+      when Quantity then ç.standard of: dimension + other.dimension
+      when Dimension then ç.standard of: dimension + other
       else
         raise ArgumentError, "Quantities only multiply with quantities, " +
           "dimensions and numbers (the last case having no effect)."
@@ -78,8 +89,8 @@ module SY
     def / other
       case other
       when Numeric then self
-      when Quantity then self.class.of dimension - other.dimension
-      when Dimension then self.class.of dimension - other
+      when Quantity then ç.standard of: dimension - other.dimension
+      when Dimension then ç.standard of: dimension - other
       else
         raise ArgumentError, "Quantities only divide with quantities, " +
           "dimensions and numbers (the last case having no effect)."
@@ -89,7 +100,7 @@ module SY
     # Quantity arithmetic: power to a number.
     # 
     def ** number
-      self.class.of self.dimension * Integer( number )
+      ç.standard of: dimension * Integer( number )
     end
 
     # Inquirer whether the quantity is dimensionless.
@@ -109,7 +120,7 @@ module SY
     end
 
     def inspect                      # :nodoc:
-      "#<Quantity: #{name.nil? ? dimension : name} >"
+      "#<#{ç.name.match( /[^:]+$/ )[0]}: #{name.nil? ? dimension : name} >"
     end
 
     def coerce other                 # :nodoc:
@@ -125,6 +136,8 @@ module SY
           raise TypeError, "Different quantities (up to exceptions) " +
             "do not mix with each other."
         end
+      when Numeric then
+        return Quantity.dimensionless, self
       else
         raise TypeError, "Object #{other} cannot be coerced into a quantity."
       end

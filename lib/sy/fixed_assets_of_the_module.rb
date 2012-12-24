@@ -8,9 +8,9 @@ module SY
   BASIC_DIMENSIONS = {
     L: :LENGTH,
     M: :MASS,
-    T: :TIME,
     Q: :ELECTRIC_CHARGE,
-    Θ: :TEMPERATURE
+    Θ: :TEMPERATURE,
+    T: :TIME
   }
 
   # #letters singleton method is an alias for #keys
@@ -122,7 +122,7 @@ module SY
     # input string splitting
     input_string_sections = input_string.split '.'
     if input_string_sections.empty?
-      raise ArgumentError, complaint unless input_string.empty?
+      raise NameError, complaint unless input_string.empty?
       return [], [], []
     end
     # analysis of input string sections
@@ -136,26 +136,26 @@ module SY
       # the set of possible matching unit symbols
       possible_ßs = ßs.select{|ß| sec.end_with? ß }
       # complain if no symbol matches sec
-      raise ArgumentError, complaint if possible_ßs.empty?
-      # seek possible prefixj corresponding to possible_ßs
-      possible_prefixj = possible_ßs.map{|ß| sec[0..-1 - ß.size] }
+      raise NameError, complaint if possible_ßs.empty?
+      # seek possible prefixes corresponding to possible_ßs
+      possible_prefixes = possible_ßs.map{|ß| sec[0..-1 - ß.size] }
       # see which possible prefixj can be confirmed
-      confirmed_prefixj = possible_prefixj.select{|pfx| prefixj.include? pfx }
+      confirmed_prefixes = possible_prefixes.select{|pfx| prefixj.include? pfx }
       # warn if sec factors into more than one prefix/symbol pair
       warn "ambiguity in symbol #{sec} in #{input_string}" if
-        confirmed_prefixj.size > 1
+        confirmed_prefixes.size > 1
       # make sure that exactly one interpretation of sec exists
-      raise ArgumentError, complaint unless confirmed_prefixj.size == 1
+      raise NameError, complaint unless confirmed_prefixes.size == 1
       # based on it, interpret the section parts
-      prefix = confirmed_prefixj[0]
+      prefix = confirmed_prefixes[0]
       ß = sec[prefix.size..-1]
       suffix = section[-1 - prefix.size - ß.size..-1]
       # make suffix string into the exponent number
       exponent_string = SUPERSCRIPT_DOWN[suffix]
-      raise ArgumentError, complaint if exponent_string.nil? # complain if bad
+      raise NameError, complaint if exponent_string.nil? # complain if bad
       exponent_string = "1" if exponent_string == '' # no exp. means 1
       exp = Integer exponent_string
-      raise ArgumentError, "Zero exponents not allowed: #{exponent_string}" if exp == 0
+      raise NameError, "Zero exponents not allowed: #{exponent_string}" if exp == 0
       # and store the interpretation
       memo[0] << prefix; memo[1] << ß; memo[2] << exp
     }

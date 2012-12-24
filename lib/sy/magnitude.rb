@@ -34,7 +34,9 @@ module SY
       raise TypeError, "Named argument :quantity must be of " +
         "SY::Quantity class." unless @quantity.is_a? ::SY::Quantity
       @amount = case am = hash[:amount] || 1
-                when Magnitude then am.amount
+                when Magnitude then
+                  tE_same_dimension( am )
+                  am.amount
                 else am end
       raise NegativeAmountError, "Attempt to create a magnitude " +
         "with negative amount (#@amount)." unless @amount >= 0
@@ -53,12 +55,15 @@ module SY
     def <=> other
       case other
       when Magnitude then
-        aE_same_dimension other # different dimensions do not compare
-        if same_quantity? other then amount <=> other.amount else
+        tE_same_dimension other # different dimensions do not compare
+        if same_quantity? other then
+          rslt = amount <=> other.amount
+          return amount <=> other.amount
+        else
           # use Quantity#coerce for incompatible quantities
-          compat_q_1, compat_q_2 = other.quantity.coerce( self.quantity )
+          compat_q_1, compat_q_2 = other.quantity.coerce( quantity )
           begin
-            self.( compat_q_1 ) <=> other.( compat_q_2 )
+            return self.( compat_q_1 ) <=> other.( compat_q_2 )
           rescue IncompatibleQuantityError
             raise IncompatibleQuantityError,
               "Impossible to compare #{quantity} with #{other.quantity}."
@@ -75,7 +80,7 @@ module SY
     def + other
       case other
       when Magnitude then
-        aE_same_dimension other # different dimensions do not mix
+        tE_same_dimension other # different dimensions do not mix
         if same_quantity? other then
           # same quantity magnitudes add freely
           begin
@@ -108,7 +113,7 @@ module SY
     def - other
       case other
       when Magnitude then
-        aE_same_dimension other # different dimensions do not mix
+        tE_same_dimension other # different dimensions do not mix
         if same_quantity?( other ) then
           # same quantity magnitudes subtract freely
           begin
@@ -172,7 +177,7 @@ module SY
       case exponent
       when Numeric then
         ç.of ( quantity ** exponent ).dimension.standard_quantity,
-             amount ** exponent
+             amount: amount ** exponent
       when Magnitude then
         # Raising to a dimensionless magnitude is allowed (it is converted
         # to a number using #to_f method):
@@ -188,6 +193,22 @@ module SY
       end
     end
 
+    # Type coercion for magnitudes.
+    # 
+    def coerce other
+      case other
+      when Numeric then
+        return ç.of( Dimension.zero.standard_quantity, amount: other ), self
+      when Magnitude then
+        aE_same_dimension other
+        compat_q_1, compat_q_2 = other.quantity.coerce( quantity )
+        return other.( compat_q_2 ), self.( compat_q_1 )
+      else
+        raise TypeError, "Object #{other} cannot be coerced into a " +
+          "compatible magnitude."
+      end
+    end
+
     # Gives the magnitude as a numeric value in a given unit. The 'unit' must
     # be a magnitude of a quantity compatible with the receiver (at least of
     # same physical dimension).
@@ -200,7 +221,7 @@ module SY
           pipe.send sym
         end
       end
-      aE_same_dimension( other )
+      tE_same_dimension( other )
       if same_quantity?( other ) then amount / other.amount else
         # use Quantity#coerce for incompatible quantities
         compat_q_1, compat_q_2 = other.quantity.coerce( quantity )
@@ -227,7 +248,7 @@ module SY
         "of #{other_quantity.dimension} dimension attempted.)" unless
           same_dimension? other_quantity
       # and perform the quantity change
-      ç.of( other_quantity, amount: self.amount )
+      ç.of( other_quantity, amount: amount )
     end
     alias :call :reframe
 
@@ -266,42 +287,28 @@ module SY
     # quantity), or even, as the 2nd argument, the number format (by default,
     # 3 decimal places).
     # 
-    def to_s unit=nil, number_format='%.3g'
-      str = if unit then to_string( unit ) else
-              # use units of basic dimensions – here be the magic:
-              hsh = dimension.to_hash
-              symbols, exponents = hsh.each_with_object Hash.new do |pair, memo|
-                dimension_letter, exponent = pair
-                st_unit = Dimension.basic( dimension_letter ).standard_unit
-                memo[ st_unit.abbreviation || st_unit.name ] = exponent
-              end.to_a.transpose
-              # assemble the superscripted product string:
-              sps = SPS.( symbols, exponents )
-              # 
-              "#{number_format}#{sps == '' ? '' : '.' + sps}" % amount
-            end
+    def to_s unit=quantity.units.first, number_format='%.3g'
+      begin
+        return to_string( unit ) if unit and unit.abbreviation
+      rescue
+      end
+      # otherwise, use units of basic dimensions – here be the magic:
+      hsh = dimension.to_hash
+      symbols, exponents = hsh.each_with_object Hash.new do |pair, memo|
+        dimension_letter, exponent = pair
+        std_unit = Dimension.basic( dimension_letter ).standard_unit
+        memo[ std_unit.abbreviation || std_unit.name ] = exponent
+      end.to_a.transpose
+      # assemble the superscripted product string:
+      sps = SPS.( symbols, exponents )
+      # and finally, interpolate the string
+      "#{number_format}#{sps == '' ? '' : '.' + sps}" % amount
     end
 
     # Inspect string of the magnitude
     # 
     def inspect
-      "#<#{ç}: #{to_s} >"
-    end
-
-    # Type coercion for magnitudes.
-    # 
-    def coerce other
-      case other
-      when Numeric then
-        return ç.of( Dimension.zero.standard_quantity, amount: other ), self
-      when Magnitude then
-        aE_same_dimension other
-        compat_q_1, compat_q_2 = other.quantity.coerce( quantity )
-        return other.( compat_q_2 ), self.( compat_q_1 )
-      else
-        raise TypeError, "Object #{other} cannot be coerced into a " +
-          "compatible magnitude."
-      end
+      "#<#{ç.name.match( /[^:]+$/ )[0]}: #{to_s} >"
     end
 
     private
@@ -313,7 +320,7 @@ module SY
       when Quantity then dimension == other.dimension
       when Dimension then dimension == other
       else
-        raise ArgumentError, "The object (#{other.class} class) does not " +
+        raise TypeError, "The object (#{other.class} class) does not " +
           "have defined dimension comparable to SY::Dimension"
       end
     end
@@ -323,18 +330,18 @@ module SY
       when Magnitude then quantity == other.quantity
       when Quantity then quantity == other
       else
-        raise ArgumentError, "The object (#{other.class} class) does not " +
+        raise TypeError, "The object (#{other.class} class) does not " +
           "have quantity (SY::Quantity)"
       end
     end
 
-    def aE_same_dimension other
-      raise ArgumentError, "Magnitude not of the same dimension as " +
+    def tE_same_dimension other
+      raise TypeError, "Magnitude not of the same dimension as " +
         "#{other}" unless same_dimension? other
     end
 
-    def aE_same_quantity other
-      raise ArgumentError, "Magnitude not of the same quantity as " +
+    def tE_same_quantity other
+      raise TypeError, "Magnitude not of the same quantity as " +
         "#{other}" unless same_quantity? other
     end
 

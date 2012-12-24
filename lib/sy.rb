@@ -2,7 +2,7 @@
 
 require 'y_support/name_magic'
 require 'y_support/all'
-require "sy/version"
+require_relative 'sy/version'
 
 require_relative 'sy/unit_methods_mixin'
 require_relative 'sy/fixed_assets_of_the_module'
@@ -38,7 +38,7 @@ module SY
 
   Time = Quantity.standard of: :T
 
-  Electric_charge = Quantity.standard of: :Q
+  ElectricCharge = Quantity.standard of: :Q
 
   Temperature = Quantity.standard of: :Θ
 
@@ -49,96 +49,95 @@ module SY
 
   SECOND = Unit.standard of: Time, short: "s"
 
-  GRAM = Unit.standard of: Mass, short: "g"
-
-  COULOMB = Unit.standard of: Electric_charge, short: "C"
+  COULOMB = Unit.standard of: ElectricCharge, short: "C"
 
   KELVIN = Unit.standard of: Temperature, short: "K"
 
-  # GRAM = MASS.name_basic_unit "gram", symbol: "g"
-  # COULOMB = ELECTRIC_CHARGE.name_basic_unit "coulomb", symbol: "C"
+
+  # === Gram and kilogram
+
+  GRAM = Unit.of Mass, short: "g"
+
+  KILOGRAM = Unit.standard of: Mass, amount: 1000.g
 
 
   # # === Derived units of basic quantities
-  # puts 'hello'
-  # DALTON = Unit.of Mass, short: "Da", amount: 1.66053892173e-24
-  # puts 'dalton'
-  # MINUTE = Unit.of Time, short: "min", amount: 60.s
-  # puts 'minute'
-  # HOUR = Unit.of Time, short: "h", amount: 60.min
-  # puts 'hour'
+
+  DALTON = Unit.of Mass, short: "Da", amount: 1.66053892173e-27.kg
+
+  MINUTE = Unit.of Time, short: "min", amount: 60.s
+
+  HOUR = Unit.of Time, short: "h", amount: 60.min
+
   
   # === Derived quantities
   
-  # Speed = Length / Time
+  Speed = Length / Time
 
-  # Acceleration = Speed / Time
+  Acceleration = Speed / Time
 
-  # Force = Acceleration * Mass
+  Force = Acceleration * Mass
 
-  # Energy = Force * Length
+  Energy = Force * Length
 
-  # Power = Energy / Time
+  Power = Energy / Time
 
-  # Area = Length ** 2
+  Area = Length ** 2
 
-  # Volume = Length ** 3
+  Volume = Length ** 3
 
-  # Pressure = Force / Area
+  Pressure = Force / Area
 
-  # Amount = Quantity.dimensionless
+  Amount = Quantity.standard of: Dimension.zero
 
-  # Molarity = Amount / Volume
+  Molarity = Amount / Volume
 
-  # Electric_current = Electric_charge / Time
+  ElectricCurrent = ElectricCharge / Time
 
-  # Electric_potential = Energy / Electric_charge
+  ElectricPotential = Energy / ElectricCharge
 
-  # Frequency = 1 / Time
+  Frequency = 1 / Time
 
 
-  # # === Their units
+  # === Their units
   
-  # NEWTON = Unit.standard of: Force, short: "N"
+  NEWTON = Unit.standard of: Force, short: "N"
 
-  # JOULE = Unit.standard of: Energy, short: "J"
+  JOULE = Unit.standard of: Energy, short: "J"
 
-  # # Using thermochemical calorie.
-  # # 
-  # CALORIE = Unit.of Energy, short: "cal", amount: 4.184.J
+  # Using thermochemical calorie.
+  # 
+  CALORIE = Unit.of Energy, short: "cal", amount: 4.184.J
 
-  # WATT = Unit.standard of: Power, short: "W"
+  WATT = Unit.standard of: Power, short: "W"
 
-  # LITRE = Unit.of Volume, short: "l", amount: 1.dm³
+  LITRE = Unit.of( Volume, { short: "l", amount: 1.dm³ } )
 
-  # PASCAL = Unit.standard of: Pressure, short: "Pa"
+  PASCAL = Unit.standard of: Pressure, short: "Pa"
 
-  # # Instead of using mole, I find it more natural to count in "units",
-  # # (as in 1.unit.s⁻¹).
-  # # 
-  # UNIT = Unit.standard of: Amount
+  # Instead of using mole, I find it more natural to count in "units",
+  # (as in 1.unit.s⁻¹).
+  # 
+  UNIT = Unit.standard of: Amount
 
-  # # Mole in this library is defined as AVOGADRO_CONSTANT units.
-  # # 
-  # MOLE = Unit.of Amount, short: "mol", amount: AVOGADRO_CONSTANT
+  # Mole in this library is defined as AVOGADRO_CONSTANT units.
+  # 
+  MOLE = Unit.of Amount, short: "mol", amount: AVOGADRO_CONSTANT
 
-  # # 1.M, unit of molarity.
-  # # 
-  # MOLAR = Unit.of MOLARITY, short: "M", amount: 1.mol.l⁻¹
+  # 1.M, unit of molarity.
+  # 
+  MOLAR = Unit.standard of: Molarity, short: "M", amount: 1.mol.l⁻¹
 
-  # AMPERE = Unit.standard of: Electric_current, short: "A"
+  AMPERE = Unit.standard of: ElectricCurrent, short: "A"
 
-  # VOLT = Unit.of Electric_potential, short: "V"
+  VOLT = Unit.standard of: ElectricPotential, short: "V"
 
   # CELSIUS = Unit.of Quantity.of( Temperature.dimension ), short: "°C"
 
-  # # Now we would do singleton modifications to CELSIUS.quantity, so that arithmetic
-  # # and coerce method work to make the whole behave as expected.
+  # Now we would do singleton modifications to CELSIUS.quantity, so that arithmetic
+  # and coerce method work to make the whole behave as expected.
 
-  # # AMPERE = ELECTRIC_CURRENT.name_basic_unit "ampere", symbol: "A"
-  # # VOLT = Unit.of ELECTRIC_POTENTIAL, name: "volt", symbol: "V", number: 1000
-
-  # HERTZ = Unit.of Frequency, short: "Hz"
+  HERTZ = Unit.of Frequency, short: "Hz"
 end
 
 # Feature proposals for later development:

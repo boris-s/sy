@@ -11,7 +11,6 @@ module SY
     def method_missing( method_ß, *args, &block )
       # hack to prevent method missing activation on #to_something
       super if method_ß.to_s[0..2] == 'to_'
-      puts "Method missing: #{method_ß} in #{ç}"
       # This method should not be recursively invoked for the same class.
       # While such state indicates error on the user's side, let's be
       # smart enough to notice repeated nested processing of the same
@@ -25,27 +24,24 @@ module SY
       end
       # now let us note the symbol we are analyzing now
       ç.instance_variable_get( :@active_unit_mmiss ) << method_ß
-      puts "adding #{method_ß} to the registry"
       # Check whether method_ß is registered in the table of units:
+      units = ::SY::Unit.instances
+      unit_symbols = ( units.map( &:name ) + units.map( &:short ) )
+        .map( &:to_s )
+      prefixes = ::SY::PREFIX_TABLE.full + ::SY::PREFIX_TABLE.short
+      prefix_hash = ::SY::PREFIX_TABLE.hash_full
+        .merge ::SY::PREFIX_TABLE.hash_short
       begin
-        units = ::SY::Unit.instances
-        puts "Method missing obtained Unit instances"
-        unit_names = units.map( &:name ).map( &:to_s )
-        prefixes = ::SY::PREFIX_TABLE.full + ::SY::PREFIX_TABLE.short
-        prefix_hash = ::SY::PREFIX_TABLE.hash_full
-          .merge ::SY::PREFIX_TABLE.hash_short
         prefixes, units, exponents =
-          ::SY::SPS_PARSER.( method_ß.to_s, unit_names, prefixes )
-      rescue ArgumentError
+          ::SY::SPS_PARSER.( method_ß.to_s, unit_symbols, prefixes )
+      rescue NameError
         # SPS_PARSER fails with ArgumentError if method_ß is not recognized,
         # in which case, #method_missing will be forwarded higher, but before
         # that, let us clear it from the registry of active symbols:
         ç.instance_variable_get( :@active_unit_mmiss )
           .delete method_ß
-        puts "deleting #{method_ß} from the registry"
         super
       end
-      puts "About to define a method"
       # method_ß is a method that takes a number (the receiver) and creates
       # a metrological Magnitude instance out of it. We are going to define
       # that method here. The definition skeleton will be:
@@ -59,11 +55,10 @@ module SY
         # convert prefix into the full form
         prefix = prefix_hash[ prefix ][ :full ]
         # reference the unit (with or without prefix)
-        ς = if prefix == "" then
-              "::SY::Unit.instance( '#{unit}' )"
-            else
-              "::SY::Unit.instance( '#{unit}' ).#{prefix}"
-            end
+        ς = "::SY::Unit::#{::SY::Unit.instance( unit ).name.to_s.upcase}%s" %
+          if prefix == '' then '' else
+            ".#{prefix_hash[ prefix ][:full]}"
+          end
         # and exponentiate it if exponent requires it
         ς += if exponent == 1 then "" else " ** #{exponent}" end
       } # map
@@ -76,25 +71,35 @@ module SY
       ç.module_eval definition_skeleton % method_body
       # before invoking it, let us remove it from the registry of active
       # method_missing symbols under consideration
-      ç.instance_variable_get( :@active_unit_mm_registry )
-        .delete method_ß
-      puts "deleting #{method_ß} from the registry"
+      ç.instance_variable_get( :@active_unit_mmiss ).delete method_ß
       # finally, invoke it
       send method_ß, *args, &block
     end # def method_missing
 
     def respond_to_missing?( method_ß, include_private = false )
-      # Check whether method_ß is registered in the table of units:
-      begin
+      # due to similar consideration as in #method_missing, we watch out for
+      # nested double probing for the same symbol
+      ç.instance_variable_set( :@active_unit_rmiss, [] ) unless
+        ç.instance_variable_get :@active_unit_rmiss
+      if ç.instance_variable_get( :@active_unit_rmiss ).include? method_ß
+        super                        # not our responsibility
+      end
+      # now let us note the symbol we are analyzing now
+      ç.instance_variable_get( :@active_unit_rmiss ) << method_ß
+      # now check for the method
         units = ::SY::Unit.instances
-        unit_names = units.map( &:name ).map( &:to_s )
+        unit_symbols = ( units.map( &:name ) + units.map( &:short ) )
+          .map( &:to_s )
         prefixes = ::SY::PREFIX_TABLE.full + ::SY::PREFIX_TABLE.short
+      begin
         prefixes, units, exponents =
-          ::SY::SPS_PARSER.( method_ß.to_s, unit_names, prefixes )
-      rescue ArgumentError
-        # SPS_PARSER fails with ArgumentError if method_ß is not registered,
+          ::SY::SPS_PARSER.( method_ß.to_s, unit_symbols, prefixes )
+      rescue NameError
+        # SPS_PARSER fails with NameError if method_ß is not registered,
+        ç.instance_variable_get( :@active_unit_rmiss ).delete method_ß
         super # in which case, #respond_to_missing is sent up the lookup chain
       end
+      ç.instance_variable_get( :@active_unit_rmiss ).delete method_ß
     end
 
     # Units with offset are not supported by SY. The only exception is made
@@ -104,7 +109,8 @@ module SY
     # differences), use kelvins instead.
     # 
     def celsius
-      Magnitude.of ABSOLUTE_TEMPERATURE, n: self + 273.15
+      ::SY::Magnitude.of ::SY::Quantity.instance( :Temperature ),
+                         amount: self + 273.15
     end
     alias :°C :celsius
   end # UnitMethodsMixin
