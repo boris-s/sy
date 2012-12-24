@@ -91,8 +91,6 @@ module SY
     # Addition.
     # 
     def + other
-      return self if other.respond_to? :zero? and other.zero?
-      return other if zero?
       case other
       when Magnitude then
         tE_same_dimension other # different dimensions do not mix
@@ -126,7 +124,6 @@ module SY
     # Subtraction.
     # 
     def - other
-      return self if other.respond_to? :zero? and other.zero?
       case other
       when Magnitude then
         tE_same_dimension other # different dimensions do not mix
@@ -214,9 +211,8 @@ module SY
     def coerce other
       case other
       when Numeric then
-        return ç.of( if other.zero? then quantity else
-                       Dimension.zero.standard_quantity
-                     end, amount: other ), self
+        return ç.of( Dimension.zero.standard_quantity
+                     amount: other ), self
       when Magnitude then
         aE_same_dimension other
         compat_q_1, compat_q_2 = other.quantity.coerce( quantity )
