@@ -285,7 +285,7 @@ module SY
     # Inspect string of the magnitude
     # 
     def inspect
-      "#<Magnitude: #{to_s} >"
+      "#<#{ç}: #{to_s} >"
     end
 
     # Type coercion for magnitudes.

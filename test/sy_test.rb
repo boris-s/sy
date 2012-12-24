@@ -479,7 +479,7 @@ describe SY do
         # Let us see that we indeed obtained desired Quantity instance
         # 
         q.must_be_kind_of SY::Quantity
-        q.name.must_equal "Reciprocal_temperature"
+        q.name.must_equal :Reciprocal_temperature
         # (Note that dimension names are all upcase, such as "LENGTH",
         # quantity names are capitalized first letter, such as "Electric
         # current", and units are all downcase, such as "ampere".)
@@ -495,11 +495,11 @@ describe SY do
 
         # Should know its basic unit
         # 
-        @q_speed.basic_unit.inspect
-          .must_equal "#<Magnitude: 1.m.s⁻¹ of Speed >"
-        @q_thermal_distension.basic_unit.inspect
+        @q_speed.standard_unit.inspect.must_equal "#<Unit: %s (%s) of Speed >" %
+          [:name, :short].map { |ß| @q_speed.standard_unit.send ß }
+        @q_thermal_distension.standard_unit.inspect
           .must_equal "#<Magnitude: 1.m.K⁻¹ of Thermal distension >"
-        @q_dimensionless.basic_unit.inspect
+        @q_dimensionless.standard_unit.inspect
           .must_equal "#<Magnitude: 1 of Some dimensionless quantity >"
 
         # Should know its name
@@ -556,7 +556,7 @@ describe SY do
           
         # Since now, basic unit of speed will be called "snail":
         # 
-        @q_speed.basic_unit.name.must_equal "snail"
+        @q_speed.standard_unit.name.must_equal :snail
 
         # Unit symbol need not be given:
         # 
@@ -614,9 +614,8 @@ describe SY do
         # 
         result = @q_speed.units
         result.must_be_kind_of Array
-        result.size.must_equal 1
         result[0].must_be_kind_of SY::Unit
-        result[0].name.must_equal "metre"
+        assert result.any? { |unit| unit.name == :knot }
       end
     end
 

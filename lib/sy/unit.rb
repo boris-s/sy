@@ -28,7 +28,6 @@ module SY
     # Standard unit constructor.
     # 
     def self.standard *args, &block
-      puts args
       instance = new *args, &block
       instance.quantity.standard_unit = self
       return instance
@@ -94,7 +93,7 @@ module SY
       "#<%s>" % if name.nil? then # anonymous unit
                   "%s"
                 else # named unit
-                  "Unit #{name + ( short.nil? ? '' : ' (%s)' % short )} of %s"
+                  "Unit: #{name}#{short.nil? ? '' : ' (%s)' % short} of %s "
                 end % quantity
     end
   end # class Unit
