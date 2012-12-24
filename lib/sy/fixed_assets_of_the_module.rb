@@ -113,52 +113,66 @@ module SY
   # an array of acceptable prefixes. It returns 3 equal-sized arrays: prefixes,
   # symbols and exponents.
   # 
-  SPS_PARSER = lambda { |input_string, ßs, prefixj = []|
+  SPS_PARSER = lambda { |input_string, symbols, prefixes = []|
     complaint = "unacceptable string: #{input_string}"
-    # argument grooming
-    input_string = input_string.to_s.strip
-    ßs = ßs.map &:to_s
-    prefixj = prefixj.map( &:to_s ) << ""
+    input_ς = input_string.to_s.strip
+    ßs = symbols.map &:to_s
+    ßs.uniq!
+    ßs.delete ''
+    prefixes = prefixes.map( &:to_s ) << ""
+    prefixes.uniq!
     # input string splitting
-    input_string_sections = input_string.split '.'
-    if input_string_sections.empty?
-      raise NameError, complaint unless input_string.empty?
+    input_ς_sections = input_ς.split '.'
+    if input_ς_sections.empty?
+      raise NameError, "Unacceptable string: #{input_ς}" unless input_ς.empty?
       return [], [], []
     end
     # analysis of input string sections
-    input_string_sections.each_with_object( [[], [], []] ) {|section, memo|
+    input_ς_sections.each_with_object [[], [], []] do |section, memo|
       sec = section.dup
       superscript_chars = SUPERSCRIPT.values
-      # strip superscript tail
+      # chop off the superscript tail
       sec.chop! while superscript_chars.any? {|char| sec.end_with? char }
-      # create new complaint for those ArgumentErrors w're gonna raise
-      complaint = "unacceptable symbol: #{sec}"
       # the set of possible matching unit symbols
-      possible_ßs = ßs.select{|ß| sec.end_with? ß }
+      possible_ßs = ßs.select { |ß| sec.end_with? ß }
       # complain if no symbol matches sec
-      raise NameError, complaint if possible_ßs.empty?
-      # seek possible prefixes corresponding to possible_ßs
-      possible_prefixes = possible_ßs.map{|ß| sec[0..-1 - ß.size] }
-      # see which possible prefixj can be confirmed
-      confirmed_prefixes = possible_prefixes.select{|pfx| prefixj.include? pfx }
+      raise NameError, "Suffix of #{sec} not recognized." if possible_ßs.empty?
+      # seek possible prefixes
+      possible_prefixes = prefixes.select { |pfx| sec.start_with? pfx }
+      # see which possible prefixes can be confirmed
+      confirmed_pairs = possible_prefixes.each_with_object [] do |pfx, memo|
+        ß = possible_ßs.find { |ß| "#{pfx}#{ß}" == sec }
+        memo << [pfx, ß] if ß
+          
+      end
       # warn if sec factors into more than one prefix/symbol pair
-      warn "ambiguity in symbol #{sec} in #{input_string}" if
-        confirmed_prefixes.size > 1
-      # make sure that exactly one interpretation of sec exists
-      raise NameError, complaint unless confirmed_prefixes.size == 1
-      # based on it, interpret the section parts
-      prefix = confirmed_prefixes[0]
-      ß = sec[prefix.size..-1]
-      suffix = section[-1 - prefix.size - ß.size..-1]
-      # make suffix string into the exponent number
-      exponent_string = SUPERSCRIPT_DOWN[suffix]
-      raise NameError, complaint if exponent_string.nil? # complain if bad
-      exponent_string = "1" if exponent_string == '' # no exp. means 1
+      if confirmed_pairs.size > 1
+        warn "ambiguity in symbol #{sec} in #{input_string}" 
+        puts confirmed_pairs.map { |pfx, ß| "'%s|%s'" % [ pfx, ß ] }.join ", "
+      end
+
+
+      # # make sure that exactly one interpretation of sec exists
+      # raise NameError, complaint unless confirmed_prefixes.size == 1
+
+      # interpret the section parts
+      first_good_pair = confirmed_pairs.find { |pfx, ß| ß.size > 0 }
+      raise NameError, "Unable to interpret #{sec} as prefix + symbol." unless
+        first_good_pair
+      # take it
+      prefix, ß = first_good_pair
+      suffix = section[ ( (-1) - prefix.size - ß.size )..(-1) ]
+      # convert it into the exponent
+      exponent_string = SUPERSCRIPT_DOWN[ suffix ]
+      raise NameError, "Unable to interpret #{section} as superscripted " +
+        "prefix + symbol." if exponent_string.nil?
+      # missing exponent means exponent 1
+      exponent_string = "1" if exponent_string == ''
       exp = Integer exponent_string
-      raise NameError, "Zero exponents not allowed: #{exponent_string}" if exp == 0
+      raise NameError, "Zero exponents not allowed: #{section}" if exp == 0
       # and store the interpretation
       memo[0] << prefix; memo[1] << ß; memo[2] << exp
-    }
+    end
   }
 
   # Singleton #inspect method for SPS-parsing closure.

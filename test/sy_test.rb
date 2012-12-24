@@ -844,56 +844,64 @@ describe SY do
 
       1.s⁻¹.( SY::Frequency ).must_equal 1.Hz
 
-      # 7.°C.must_equal( 8.°C - 1.K )
+      7.°C.must_equal( 8.°C - 1.K )
 
-      # (-15).°C.must_equal 258.15.K
+      (-15).°C.must_equal 258.15.K
 
-      # 7000.µM.must_be_within_epsilon( 7.mM, 1e-9 )
+      7000.µM.to_f.must_be_within_epsilon 7.mM.to_f, 1e-12
 
       ::SY::Unit.instances.map do |i|
         begin
           i.abbreviation
         rescue
         end
-      end.must_include :M
+      end.must_include :M, :mol
 
-      SY::Unit.instance_names.must_include :mol
-
+      SY::Unit.instance_names.must_include :mole
 
       # Avogadro's number is defined directly in SY
-      1.mol
-        .must_equal SY::Nᴀ.unit
+      1.mol.must_equal SY::Nᴀ.unit
 
-      0.7.M
-        .must_equal( 0.7.mol.l⁻¹.is_actually!( MOLARITY ) )
-      # (if #is_actually! conversion method is not used, current
-      # implementation will refuse to compare different quantities,
-      # even if their dimensions match)
+      0.7.M.must_equal( 0.7.mol.l⁻¹.reframe( SY::Molarity ) )
+      # (if #reframe conversion method is not used, different quantities
+      # do not compare. Arithmetics is possible because Magnitude operators
+      # mostly give their results only in standard quantities.
 
-      30.Hz
-        .must_equal 30.s⁻¹.( FREQUENCY )
+      30.Hz.must_equal 30.s⁻¹.( SY::Frequency )
+
+      1.kg.to_f.must_equal 1
+
+      1.g.to_f.must_equal 0.001
 
       # Dalton * Avogadro must be 1 gram
-      ( 1.Da * Nᴀ )
-        .must_be_within_epsilon( 1.g, 1e-6 )
+      ( 1.Da * SY::Nᴀ ).to_f.must_be_within_epsilon( 1.g.to_f, 1e-6 )
 
       # kilogram
       1.kg.must_equal 1000.g
-      ( 1.kg * 1.m.s⁻² ).is_actually!( FORCE ).must_be_within_epsilon 1.N, 1e-9
+      SY::Mass.standard_unit.must_equal SY::KILOGRAM
+      SY::KILOGRAM.to_f.must_equal 1
+      1.kg.amount.must_equal 1
+      1.m.to_f.must_equal 1
+      ( 1.kg * 1.m.s⁻² ).to_f.must_equal 1
+      
+      ( 1.kg.m.s⁻² ).to_f.must_equal 1
 
       # joule
-      ( 1.N * 1.m ).is_actually!( ENERGY ).must_equal 1.J
+      ( 1.N * 1.m ).reframe( SY::Energy ).must_equal 1.J
       1e-23.J.K⁻¹.must_equal 1.0e-20.mJ.K⁻¹
 
       # pascal
-      ( 1.N / 1.m ** 2 ).is_actually!( PRESSURE ).must_be_within_epsilon 1.Pa, 1e-9
+      ( 1.N / 1.m ** 2 ).reframe( SY::Pressure ).must_be_within_epsilon 1.Pa, 1e-9
 
       # watt
-      ( 1.V * 1.A ).is_actually!( POWER ).must_be_within_epsilon 1.W, 1e-9
+      ( 1.V * 1.A ).reframe( SY::Power ).must_be_within_epsilon 1.W, 1e-9
 
       # pretty representation
-      ( 1.m / 3.s ).to_s.must_equal( "0.33.m.s⁻¹" )
-      ( 1.m / 7.01e7.s ).to_s.must_equal( "1.4e-08.m.s⁻¹" )
+      ( 1.m / 3.s ).to_s.must_equal( "0.333.m.s⁻¹" )
+      ( 1.m / 7.01e7.s ).to_s.must_equal( "1.43e-08.m.s⁻¹" )
+
+      # coercion
+      ( 1 / 0.1.s ).must_equal 10.Hz
     end
   end
 end

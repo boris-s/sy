@@ -36,7 +36,7 @@ module SY
       @amount = case am = hash[:amount] || 1
                 when Magnitude then
                   tE_same_dimension( am )
-                  am.amount
+                  am.numeric_value_in_standard_unit
                 else am end
       raise NegativeAmountError, "Attempt to create a magnitude " +
         "with negative amount (#@amount)." unless @amount >= 0
