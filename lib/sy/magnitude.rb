@@ -86,6 +86,7 @@ module SY
     # 
     def + other
       return self if other.respond_to? :zero? and other.zero?
+      return other if zero?
       case other
       when Magnitude then
         tE_same_dimension other # different dimensions do not mix
