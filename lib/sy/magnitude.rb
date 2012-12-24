@@ -85,6 +85,7 @@ module SY
     # Addition.
     # 
     def + other
+      return self if other.respond_to? :zero? and other.zero?
       case other
       when Magnitude then
         tE_same_dimension other # different dimensions do not mix
@@ -110,7 +111,6 @@ module SY
           end
         end
       else
-        return self if other.respond_to? :zero? and other.zero? rescue
         raise IncompatibleQuantityError, "Magnitudes may only be added to " +
           "compatible other magnitudes (adding to a #{other.ç} attempted)."
       end
@@ -119,6 +119,7 @@ module SY
     # Subtraction.
     # 
     def - other
+      return self if other.respond_to? :zero? and other.zero?
       case other
       when Magnitude then
         tE_same_dimension other # different dimensions do not mix
