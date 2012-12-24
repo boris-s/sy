@@ -70,6 +70,7 @@ module SY
           end
         end
       else
+        return self if other.respond_to? :zero? and other.zero? rescue
         raise IncompatibleQuantityError,
           "A Magnitude cannot be compared with a #{other.class}"
       end
@@ -103,6 +104,7 @@ module SY
           end
         end
       else
+        return self if other.respond_to? :zero? and other.zero? rescue
         raise IncompatibleQuantityError, "Magnitudes may only be added to " +
           "compatible other magnitudes (adding to a #{other.ç} attempted)."
       end
@@ -198,7 +200,9 @@ module SY
     def coerce other
       case other
       when Numeric then
-        return ç.of( Dimension.zero.standard_quantity, amount: other ), self
+        return ç.of( if other.zero? then quantity else
+                       Dimension.zero.standard_quantity
+                     end, amount: other ), self
       when Magnitude then
         aE_same_dimension other
         compat_q_1, compat_q_2 = other.quantity.coerce( quantity )
@@ -336,12 +340,12 @@ module SY
     end
 
     def tE_same_dimension other
-      raise TypeError, "Magnitude not of the same dimension as " +
+      raise TypeError, "#{self} not of the same dimension as " +
         "#{other}" unless same_dimension? other
     end
 
     def tE_same_quantity other
-      raise TypeError, "Magnitude not of the same quantity as " +
+      raise TypeError, "#{self} not of the same quantity as " +
         "#{other}" unless same_quantity? other
     end
 
