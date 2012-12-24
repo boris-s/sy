@@ -116,8 +116,13 @@ module SY
           end
         end
       else
-        raise IncompatibleQuantityError, "Magnitudes may only be added to " +
-          "compatible other magnitudes (adding to a #{other.ç} attempted)."
+        begin
+          compat_1, compat_2 = other.coerce( self )
+          compat_1 + compat_2
+        rescue
+          raise IncompatibleQuantityError, "Magnitudes may only be added to " +
+            "compatible other magnitudes (adding to a #{other.ç} attempted)."
+        end
       end
     end
 
@@ -149,8 +154,13 @@ module SY
           end
         end
       else
-        raise TypeError, "Magnitudes can only be subtracted from " +
-          "compatible other magnitudes."
+        begin
+          compat_1, compat_2 = other.coerce( self )
+          compat_1 - compat_2
+        rescue
+          raise TypeError, "Magnitudes can only be subtracted from " +
+            "compatible other magnitudes."
+        end
       end
     end
 
@@ -164,8 +174,13 @@ module SY
       when Numeric then
         ç.of quantity, amount: amount * other
       else
-        raise TypeError, "Magnitudes only multiply with other magnitudes " +
-          "and numbers. (Multiplication with a #{other.ç} attempted.)"
+        begin
+          compat_1, compat_2 = other.coerce( self )
+          compat_1 * compat_2
+        rescue
+          raise TypeError, "Magnitudes only multiply with other magnitudes " +
+            "and numbers. (Multiplication with a #{other.ç} attempted.)"
+        end
       end
     end
 
@@ -179,8 +194,13 @@ module SY
       when Numeric then
         ç.of quantity, amount: amount / other
       else
-        raise TypeError, "Magnitudes only divide with magnitudes and " +
-          "numbers. (Division by a #{other.ç} attempted.)"
+        begin
+          compat_1, compat_2 = other.coerce( self )
+          compat_1 / compat_2
+        rescue
+          raise TypeError, "Magnitudes only divide with magnitudes and " +
+            "numbers. (Division by a #{other.ç} attempted.)"
+        end
       end
     end
 
@@ -211,8 +231,7 @@ module SY
     def coerce other
       case other
       when Numeric then
-        return ç.of( Dimension.zero.standard_quantity,
-                     amount: other ), self
+        return ç.of( Dimension.zero.standard_quantity, amount: other ), self
       when Magnitude then
         aE_same_dimension other
         compat_q_1, compat_q_2 = other.quantity.coerce( quantity )
