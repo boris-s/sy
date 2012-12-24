@@ -90,11 +90,17 @@ module SY
     # Inspect string for the unit.
     # 
     def inspect
-      "#<%s>" % if name.nil? then # anonymous unit
-                  "%s"
-                else # named unit
-                  "Unit: #{name}#{short.nil? ? '' : ' (%s)' % short} of %s "
-                end % quantity
+      if name.nil? then "#<#{ç}: #{to_magnitude.to_s} >" else
+        "#<#{ç}: #{name}#{short.nil? ? '' : ' (%s)' % short} of #{quantity} >"
+      end
+    end
+
+    private
+
+    # Converts a unit into a regular magnitude.
+    # 
+    def to_magnitude
+      Magnitude.of quantity, amount: amount
     end
   end # class Unit
 end # module SY
