@@ -5,41 +5,51 @@ module SY
   # is basically a pair [quantity, amount].
   # 
   class Magnitude
+    # TODO: privatize #new method
+
     include UnitMethodsMixin # ensuring that magnitudes respond to unit methods
     include Comparable
+
+    attr_reader :quantity, :amount
 
     # Constructor of magnitudes of a given quantity.
     # 
     def self.of *args
-      ꜧ = args.extract_options!
-      case args.size
-      when 0 then new ꜧ
-      when 1 then new ꜧ.merge!( quantity: args[0] )
-      else
-        raise ArgumentError, "Too many ordered arguments."
-      end
+      hash = args.extract_options!
+      quantity = case args.size
+                 when 0 then hash.must_have( :quantity, syn!: :of )
+                 when 1 then args[0]
+                 else
+                   raise ArgumentError, "Too many ordered arguments"
+                 end
+      amount = hash.must_have :amount
+      quantity.tE_kind_of( ::SY::Quantity ).new_magnitude( amount )
     end
-
-    attr_reader :quantity, :amount
 
     delegate :dimension,
              :dimensionless?,
              to: :quantity
 
-    # A magnitude is basically a pair [quantity, number].
+    # A magnitude is basically a pair [quantity, number]. However, typically,
+    # a quantity will own its own anonymous subclass of Magnitude, which is
+    # actually used to create magnitudes.
     # 
     def initialize *args
       hash = args.extract_options!
       @quantity = hash.must_have :quantity, syn!: :of
-      raise TypeError, "Named argument :quantity must be of " +
-        "SY::Quantity class." unless @quantity.is_a? ::SY::Quantity
-      @amount = case am = hash[:amount] || 1
+      raise TypeError, "Wrong quantity supplied (#@quantity)" unless
+        @quantity.is_a? ::SY::Quantity
+      am = hash[:amount] || 1
+      @amount = case am
                 when Magnitude then
-                  tE_same_dimension( am )
+                  raise TE, dim_complaint( am ) unless same_dimension? am
                   am.numeric_value_in_standard_unit
-                else am end
-      raise NegativeAmountError, "Attempt to create a magnitude " +
-        "with negative amount (#@amount)." unless @amount >= 0
+                else
+                  am
+                end
+      raise NegativeAmountError, "Attempt to create a magnitude with " +
+        "negative amount (#@amount). Signed magnitude can be created eg. " +
+        "by using unary +/- operator on a magnitude object." if @amount < 0
     end
 
     # Absolute value of a Magnitude: A new magnitude instance with amount equal
@@ -67,13 +77,11 @@ module SY
     def <=> other
       case other
       when Magnitude then
-        tE_same_dimension other # different dimensions do not compare
+        raise TypeError, DIM_ERR_MSG unless same_dimension? other
         if same_quantity? other then
-          rslt = amount <=> other.amount
-          return amount <=> other.amount
+          amount <=> other.amount
         else
-          # use Quantity#coerce for incompatible quantities
-          compat_q_1, compat_q_2 = other.quantity.coerce( quantity )
+          compat_q_1, compat_q_2 = other.quantity.coerce( self.quantity )
           begin
             return self.( compat_q_1 ) <=> other.( compat_q_2 )
           rescue IncompatibleQuantityError
@@ -93,7 +101,7 @@ module SY
     def + other
       case other
       when Magnitude then
-        tE_same_dimension other # different dimensions do not mix
+        raise TypeError, DIM_ERR_MSG unless same_dimension? other
         if same_quantity? other then
           # same quantity magnitudes add freely
           begin
@@ -131,7 +139,7 @@ module SY
     def - other
       case other
       when Magnitude then
-        tE_same_dimension other # different dimensions do not mix
+        raise TypeError, DIM_ERR_MSG unless same_dimension? other
         if same_quantity?( other ) then
           # same quantity magnitudes subtract freely
           begin
@@ -254,11 +262,11 @@ module SY
           pipe.send sym
         end
       end
-      tE_same_dimension( other )
+      raise TypeError, DIM_ERR_MSG unless same_dimension? other
       if same_quantity?( other ) then amount / other.amount else
         # use Quantity#coerce for incompatible quantities
-        compat_q_1, compat_q_2 = other.quantity.coerce( quantity )
-        self.( compat_q_1 ).numeric_value_in other.( compat_q_2 )
+        qnt1, qnt2 = other.quantity.coerce( quantity )
+        self.( qnt1 ).numeric_value_in other.( qnt2 )
       end
     end
     alias :in :numeric_value_in
@@ -341,7 +349,7 @@ module SY
     # Inspect string of the magnitude
     # 
     def inspect
-      "#<#{ç.name.match( /[^:]+$/ )[0]}: #{to_s} >"
+      "#<Magnitude: #{to_s} >"
     end
 
     private
@@ -368,16 +376,6 @@ module SY
       end
     end
 
-    def tE_same_dimension other
-      raise TypeError, "#{self} not of the same dimension as " +
-        "#{other}" unless same_dimension? other
-    end
-
-    def tE_same_quantity other
-      raise TypeError, "#{self} not of the same quantity as " +
-        "#{other}" unless same_quantity? other
-    end
-
     # The engine for constructing #to_s strings.
     #
     def to_string unit=quantity.standard_unit, number_format='%.3g'
@@ -385,23 +383,31 @@ module SY
       "#{number_format}.#{ str == '' ? unit : str }" %
         numeric_value_in( unit )
     end
+
+    # Error complaint about incompatible dimensions.
+    # 
+    def dim_complaint obj1=self, obj2
+      "#{obj1} not of the same dimension as #{obj2} !!!"
+    end
   end # class Magnitude
 
   # Magnitude is generally an absolute value. SignedMagnitude allows magnitude
   # to carry a +/- sign, allowing it to stand in for negative numbers.
   # 
-  class SignedMagnitude < Magnitude
-
+  module AllowSignedAmount
     # SignedMagnitude has overriden #initialize method to allow negative
     # number of the magnitude.
     # 
     def initialize *args
       begin
         super
-      rescue
-        NegativeAmountError
-      end # just swallow it silently,
+      rescue NegativeAmountError # just swallow it silently
+      end
       # it's O.K. for a SignedMagnitude to have negative @amount
     end
+  end
+
+  class SignedMagnitude
+    include AllowSignedAmount
   end
 end # module SY

@@ -13,8 +13,8 @@ require 'minitest/spec'
 require 'minitest/autorun'
 
 # The following will load SY library
-require 'sy'
-# require './../lib/sy'
+# require 'sy'
+require './../lib/sy'
 
 # **************************************************************************
 # THE SPECIFICATIONS START HERE
@@ -860,7 +860,7 @@ describe SY do
       SY::Unit.instance_names.must_include :mole
 
       # Avogadro's number is defined directly in SY
-      1.mol.must_equal SY::Nᴀ.unit
+      assert 1.mol == SY::Nᴀ.unit
 
       0.7.M.must_equal( 0.7.mol.l⁻¹.reframe( SY::Molarity ) )
       # (if #reframe conversion method is not used, different quantities

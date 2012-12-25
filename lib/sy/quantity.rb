@@ -5,10 +5,7 @@ module SY
   # 
   class Quantity
     include NameMagic
-    attr_reader :dimension
-
-    
-    attr_writer :standard_unit
+    attr_reader :dimension, :magnitude
 
     # Quantity constructor. Example:
     # <tt>Quantity.of Dimension.new( "L.T⁻²" )</tt>
@@ -19,8 +16,7 @@ module SY
       when 0 then new hash
       when 1 then new( hash.merge dimension: args[0] )
       else
-        raise ArgumentError,
-          "Too many ordered arguments (args.size for at most 1)!"
+        raise AE, "Too many ordered arguments (#{args.size})!"
       end
     end
 
@@ -48,7 +44,9 @@ module SY
     # 
     def initialize *args
       hash = args.extract_options!
-      @dimension = Dimension.new hash.must_have( :dimension, syn!: :of )
+      dim = hash.must_have( :dimension, syn!: :of )
+      @dimension = Dimension.new( dim )
+      @magnitude = customize_magnitude_class Class.new( Magnitude )
     end
 
     # Writer of standard unit
@@ -71,16 +69,23 @@ module SY
       @units ||= []
     end
 
+    # Creates a new magnitude pertinent to this quantity. Takes one argument —
+    # amount of the magnitude.
+    # 
+    def new_magnitude amount
+      @magnitude.new of: self, amount: amount
+    end
+    alias :amount :new_magnitude
+
     # Quantity arithmetic: multiplication.
     # 
     def * other
       case other
       when Numeric then self
-      when Quantity then ç.standard of: dimension + other.dimension
-      when Dimension then ç.standard of: dimension + other
+      when Quantity then ç.of dimension + other.dimension
+      when Dimension then ç.of dimension + other
       else
-        raise ArgumentError, "Quantities only multiply with quantities, " +
-          "dimensions and numbers (the last case having no effect)."
+        raise AE, "Unable to multiply a quantity with a #{other.ç}"
       end
     end
 
@@ -89,18 +94,17 @@ module SY
     def / other
       case other
       when Numeric then self
-      when Quantity then ç.standard of: dimension - other.dimension
-      when Dimension then ç.standard of: dimension - other
+      when Quantity then ç.of dimension - other.dimension
+      when Dimension then ç.of dimension - other
       else
-        raise ArgumentError, "Quantities only divide with quantities, " +
-          "dimensions and numbers (the last case having no effect)."
+        raise AE, "Unable to divide a quantity by a #{other.ç}"
       end
     end
 
     # Quantity arithmetic: power to a number.
     # 
     def ** number
-      ç.standard of: dimension * Integer( number )
+      ç.of dimension * Integer( number )
     end
 
     # Inquirer whether the quantity is dimensionless.
@@ -111,8 +115,8 @@ module SY
 
     # Make this quantity the standard quantity for its dimension.
     # 
-    def set_as_standard
-      ::SY::Dimension.standard_quantities[ dimension ] = self
+    def standard
+      ::SY::Dimension.standard_quantities[ dimension ]
     end
 
     def to_s                         # :nodoc:
@@ -126,11 +130,9 @@ module SY
     def coerce other                 # :nodoc:
       case other
       when Quantity then
-        # By default, coercion between quantities doesn't work:
-        # Quantities are quantities so as not to mix together, as in
-        # "you cannot sum pears with apples". But in some special cases,
-        # this could conceivably be overridden so that <em>some</em>
-        # quantities would be coercible to others.
+        # By default, coercion between quantities doesn't exist. The basic
+        # purpose of having quantities is to avoid mutual mixing of
+        # incompatible magnitudes, as in "one cannot sum pears with apples".
         # 
         if other == self then return other, self else
           raise TypeError, "Different quantities (up to exceptions) " +
@@ -139,7 +141,7 @@ module SY
       when Numeric then
         return Quantity.dimensionless, self
       else
-        raise TypeError, "Object #{other} cannot be coerced into a quantity."
+        raise TypeError, "#{other} cannot be coerced into a quantity."
       end
     end
 
@@ -155,6 +157,18 @@ module SY
         raise ArgumentError, "The object <#{other.class}:#{other.object_id}> " +
           "cannot be coerced into quantity."
       end
+    end
+
+    # This method is normally called only once upon initialization. By
+    # default, it includes AllowSignedAmount mixin, thus allowing negative
+    # amounts for the magnitude class. The user, who wants to customize the
+    # magnitude class of some quantity, can override this method and further
+    # modify the magnitude class in it.
+    # 
+    def customize_magnitude_class magnitude_class
+      magnitude_class.module_exec {
+        include AllowSignedAmount
+      }
     end
   end # class Quantity
 end # module SY

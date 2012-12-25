@@ -30,90 +30,95 @@ module SY
   Nᴀ = AVOGADRO_CONSTANT = 6.02214e23
 
 
-  # === Basic quantities
+  # === Standard quantities of basic dimensions
 
-  Length = Quantity.standard of: :L
+  Length = Quantity.standard of: Dimension( :L )
 
-  Mass = Quantity.standard of: :M
+  Mass = Quantity.standard of: Dimension( :M )
 
-  Time = Quantity.standard of: :T
+  Time = Quantity.standard of: Dimension( :T )
 
-  ElectricCharge = Quantity.standard of: :Q
+  ElectricCharge = Quantity.standard of: Dimension( :Q )
 
-  Temperature = Quantity.standard of: :Θ
-
-
-  # === Basic units of basic quantities
-
-  METRE = Unit.standard of: Length, short: "m"
-
-  SECOND = Unit.standard of: Time, short: "s"
-
-  COULOMB = Unit.standard of: ElectricCharge, short: "C"
-
-  KELVIN = Unit.standard of: Temperature, short: "K"
+  Temperature = Quantity.standard of: Dimension( :Θ )
 
 
-  # === Gram and kilogram
+  # === Their units
 
   GRAM = Unit.of Mass, short: "g", amount: 0.001
 
   KILOGRAM = Unit.standard of: Mass, amount: 1000.g
 
+  METRE = Unit.standard of: Length, abbreviation: "m"
 
-  # # === Derived units of basic quantities
+  SECOND = Unit.standard of: Time, abbreviation: "s"
 
-  DALTON = Unit.of Mass, short: "Da", amount: 1.66053892173e-27.kg
+  COULOMB = Unit.standard of: ElectricCharge, abbreviation: "C"
 
-  MINUTE = Unit.of Time, short: "min", amount: 60.s
+  KELVIN = Unit.standard of: Temperature, abbreviation: "K"
 
-  HOUR = Unit.of Time, short: "h", amount: 60.min
+  DALTON = Unit.of Mass, abbreviation: "Da", amount: 1.66053892173e-27.kg
+
+  MINUTE = Unit.of Time, abbreviation: "min", amount: 60.s
+
+  HOUR = Unit.of Time, abbreviation: "h", amount: 60.min
 
   
-  # === Derived quantities
+  # === Other quantities
   
-  Speed = Length / Time
+  Speed = ( Length / Time ).standard
 
-  Acceleration = Speed / Time
+  Acceleration = ( Speed / Time ).standard
 
-  Force = Acceleration * Mass
+  Force = ( Acceleration * Mass ).standard
 
-  Energy = Force * Length
+  Energy = ( Force * Length ).standard
 
-  Power = Energy / Time
+  Power = ( Energy / Time ).standard
 
-  Area = Length ** 2
+  Area = ( Length ** 2 ).standard
 
-  Volume = Length ** 3
+  Volume = ( Length ** 3 ).standard
 
-  Pressure = Force / Area
+  Pressure = ( Force / Area ).standard
 
   Amount = Quantity.standard of: Dimension.zero
 
+  MoleAmount = Quantity.dimensionless
+
+  # Molarity is not a standard quantity. Let the standard quantity remain
+  # unnamed with dimension L⁻³, and molarity a standalone named quantity.
+  # 
   Molarity = Amount / Volume
 
-  ElectricCurrent = ElectricCharge / Time
+  ElectricCurrent = ( ElectricCharge / Time ).standard
 
-  ElectricPotential = Energy / ElectricCharge
+  ElectricPotential = ( Energy / ElectricCharge ).standard
 
+  # Again, let us the standard quantity of T⁻¹ dimension be unnamed, and
+  # Frequency with Hz as its standard unit, be a standalone named quantity.
+  # 
   Frequency = 1 / Time
 
+  CelsiusTemperature = Quantity.of Temperature.dimension
+  # TODO: Now we would do singleton modifications to this quantity, so that
+  # arithmetic would work as it should.
 
   # === Their units
   
-  NEWTON = Unit.standard of: Force, short: "N"
+  NEWTON = Unit.standard of: Force, abbreviation: "N"
 
-  JOULE = Unit.standard of: Energy, short: "J"
+  JOULE = Unit.standard of: Energy, abbreviation: "J"
 
   # Using thermochemical calorie.
   # 
-  CALORIE = Unit.of Energy, short: "cal", amount: 4.184.J
+  CALORIE = Unit.of Energy, abbreviation: "cal", amount: 4.184.J
 
-  WATT = Unit.standard of: Power, short: "W"
+  WATT = Unit.standard of: Power, abbreviation: "W"
 
-  LITRE = Unit.of( Volume, { short: "l", amount: 1.dm³ } )
+  LITRE = Unit.of( Volume, { abbreviation: "l", amount: 1.dm³ } )
 
-  PASCAL = Unit.standard of: Pressure, short: "Pa"
+  PASCAL = Unit.standard of: Pressure, abbreviation: "Pa"
 
   # Instead of using mole, I find it more natural to count in "units",
   # (as in 1.unit.s⁻¹).
@@ -122,20 +127,17 @@ module SY
 
   # Mole in this library is defined as AVOGADRO_CONSTANT units.
   # 
-  MOLE = Unit.of Amount, short: "mol", amount: AVOGADRO_CONSTANT
+  MOLE = Unit.standard of: MoleAmount, short: "mol", amount: UNIT * Nᴀ
 
   # 1.M, unit of molarity.
   # 
-  MOLAR = Unit.standard of: Molarity, short: "M", amount: 1.mol.l⁻¹
+  MOLAR = Unit.standard of: Molarity, abbreviation: "M", amount: 1.mol.l⁻¹
 
-  AMPERE = Unit.standard of: ElectricCurrent, short: "A"
+  AMPERE = Unit.standard of: ElectricCurrent, abbreviation: "A"
 
-  VOLT = Unit.standard of: ElectricPotential, short: "V"
+  VOLT = Unit.standard of: ElectricPotential, abbreviation: "V"
 
-  # CELSIUS = Unit.of Quantity.of( Temperature.dimension ), short: "°C"
-
-  # Now we would do singleton modifications to CELSIUS.quantity, so that arithmetic
-  # and coerce method work to make the whole behave as expected.
+  CELSIUS = Unit.standard of: CelsiusTemperature, short: "°C"
 
   HERTZ = Unit.of Frequency, short: "Hz"
 end
