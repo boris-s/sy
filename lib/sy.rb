@@ -45,7 +45,7 @@ module SY
 
   # === Their units
 
-  GRAM = Unit.of Mass, short: "g", amount: 0.001
+  GRAM = Unit.of Mass, short: "g"
 
   KILOGRAM = Unit.standard of: Mass, amount: 1000.g
 

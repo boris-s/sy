@@ -42,6 +42,7 @@ module SY
       am = hash[:amount] || 1
       @amount = case am
                 when Magnitude then
+<<<<<<< HEAD
                   raise TE, dim_complaint( am ) unless same_dimension? am
                   am.numeric_value_in_standard_unit
                 else
@@ -50,6 +51,13 @@ module SY
       raise NegativeAmountError, "Attempt to create a magnitude with " +
         "negative amount (#@amount). Signed magnitude can be created eg. " +
         "by using unary +/- operator on a magnitude object." if @amount < 0
+=======
+                  tE_same_dimension( am )
+                  am.amount
+                else am end
+      raise NegativeAmountError, "Attempt to create a magnitude " +
+        "with negative amount (#@amount)." unless @amount >= 0
+>>>>>>> parent of d3e0fa7... full rewrite deserves big version jump
     end
 
     # Absolute value of a Magnitude: A new magnitude instance with amount equal
