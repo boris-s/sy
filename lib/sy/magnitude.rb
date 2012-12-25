@@ -67,9 +67,7 @@ module SY
 
     # Whether the magnitude is zero.
     # 
-    def zero?
-      amount.zero?
-    end
+    delegate :zero?, to: amount
 
     # Magnitudes compare by their numbers. Compared magnitudes must be of
     # the same quantity.
