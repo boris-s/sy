@@ -5,81 +5,61 @@ module SY
   # 
   class Dimension
     class << self
-      alias original_method_new new
+      alias __new__ new
 
-      # Make return same instance if already present in instances
-      def new *args
-        hash = args.extract_options!
-        if not args.empty? then
-          # we got a superscripted product string or a Dimension instance
-          # therefore, only one ordered argument is allowed:
-          raise ArgumentError, "Too many ordered arguments!" unless
-            args.size == 1
-          # and no hash garbage is allowed:
-          raise ArgumentError, "When an ordered argument is supplied, " +
-            "no named arguments are allowed!" unless hash.empty?
-          # now we can safely extract the single ordered argument:
-          case arg = args[0]
-          when self then # it is a dimension instance
-            return arg   # return it straight
-          when String, Symbol then # it is a superscripted product string
-            # so let's unleash SPS_PARSER on it (of course, no prefixes)
-            prefixes, dimension_symbols, exponents =
-              ::SY::SPS_PARSER.( arg.to_s, ::SY::BASIC_DIMENSIONS.letters )
-            hash = Hash[ dimension_symbols.map( &:to_sym ).zip( exponents ) ]
-          else
-            raise ArgumentError, "Wrong ordered argument type! (#{arg.class})"
-          end
-        end
-        # now that the args have been conformed into hash, let's standardize it
-        hash = hash.default!( L: 0, M: 0, T: 0, Q: 0, Θ: 0 )
-          .each_with_object Hash.new do |pair, memo_hash|
-            memo_hash[ pair[0] ] = Integer pair[1]
-          end
-        # in this form, it is measurable whether there are already any
-        # instances of this dimension:
-        instance = instances.find { |instance| instance.to_hash == hash }
-        if instance then return instance else
-          instance = original_method_new( hash )
-          instances << instance
-          return instance
-        end
+      # The #new constructor of SY::Dimension has been changed, so that the
+      # same instance is returned, if that dimension has already been created.
+      # 
+      def new dim_spec={}
+        ꜧ = case dim_spec
+            when Hash then dim_spec
+            when self then return dim_spec # it is a dimension instance
+            else # we'll treat dimension_specification as SPS
+              _, letters, exponents =
+                SPS_PARSER.( dim_spec.to_s, BASE_DIMENSIONS.letters )
+              Hash[ letters.map( &:to_sym ).zip( exponents ) ]
+            end.with_values { |v| Integer v } # grooming
+        ꜧ.default!( L: 0, M: 0, T: 0, Q: 0, Θ: 0 ) # zeros by default
+        # Now we can see whether the instance of this dimension already exists
+        return instances.find { |inst| inst.to_hash == ꜧ } ||
+               __new__( ꜧ ).tap{ |inst| instances << inst }
       end
 
-      # Presents class-owned instances array.
+      # Presents class-owned instances (array).
       # 
       def instances
         return @instances ||= []
       end
 
-      # Presents class-owned standard quantities array.
+      # Presents standard quantities pertaining to the dimensions (hash).
       # 
       def standard_quantities
-        @standard_quantities ||= Hash.new { |hash, dimension|
-          hash[ dimension ] = Quantity.of dimension
+        @standard_quantities ||= Hash.new { |ꜧ, dim|
+          if dim.is_a? Dimension then
+            ꜧ[ dim ] = Quantity.of dim
+          else
+            ꜧ[ Dimension.new dim ]
+          end
         }
       end
 
       # Constructor for basic dimensions. Symbol signifying the basic
       # physical dimension is expected as the argument.
       # 
-      def basic basic_dimension_letter
-        raise ArgumentError, "Unknown basic dimension letter: " +
-          "#{basic_dimension_letter}" unless
-            ( BASIC_DIMENSIONS.letters + BASIC_DIMENSIONS.values )
-              .include? basic_dimension_letter.to_sym
-        return new basic_dimension_letter.to_sym => 1
+      def basic base_dimension_letter
+        ß = base_dimension_letter.to_sym
+        raise AE, "Unknown base dimension: #{ß}" unless
+          ( BASE_DIMENSIONS.letters + BASE_DIMENSIONS.values ).include? ß
+        return new( ß => 1 )
       end
       alias base basic
 
-      # Constructor for zero dimension (as in "dimensionless").
+      # Constructor for zero dimension ("dimensionless").
       # 
-      def zero
-        new
-      end
+      def zero; new() end
     end
 
-    attr_accessor *BASIC_DIMENSIONS.letters
+    attr_accessor *BASE_DIMENSIONS.letters
 
     # Dimension can be initialized either by supplying a hash
     # (such as Dimension.new L: 1, T: -2) or by supplying a SPS
@@ -96,96 +76,88 @@ module SY
     # 
     def [] arg
       ß = arg.to_s.strip.to_sym
-      if BASIC_DIMENSIONS.letters.include? ß then send ß else
-        raise ArgumentError, "Unknown basic dimension symbol: #{ß}" unless
-          BASIC_DIMENSIONS.values.include? ß
-        send BASIC_DIMENSIONS.rassoc(ß)[0]
+      if BASE_DIMENSIONS.letters.include? ß
+        send( ß )
+      elsif BASE_DIMENSIONS.values.include? ß
+        send( BASE_DIMENSIONS.rassoc( ß ).first )
+      else
+        raise AE, "Unknown basic dimension: #{ß}"
       end
     end
 
-    # #== method – two dimensions are equal if their componets are equal.
+    #Two dimensions are equal, if their exponents are equal.
     # 
     def == other
-      # other must be a dimension
-      raise ArgumentError unless
-        other.is_a? self.class
-      BASIC_DIMENSIONS.letters.map { |letter|
-        self[letter] == other[letter]
-      }.reduce( :& )
+      other = ç.new other rescue return false
+      to_a == other.to_a
     end
 
     # Dimension arithmetic: addition. (+, -, *, /).
     # 
     def + other
-      self.class.new Hash[ BASIC_DIMENSIONS.letters.map { |letter|
-                             [ letter, self[letter] + other[letter] ]
-                           } ]
+      ç.new Hash[ BASE_DIMENSIONS.letters.map do |l|
+                    [ l, self.send( l ) + other.send( l ) ]
+                  end ]
+    end
+    
+    # Dimension arithmetic: subtraction.
+    # 
+    def - other
+      ç.new Hash[ BASE_DIMENSIONS.letters.map do |l|
+                    [ l, self.send( l ) - other.send( l ) ]
+                  end ]
     end
 
     # Dimension arithmetic: multiplication by a number.
     # 
-    def * num
-      self.class.new Hash[ BASIC_DIMENSIONS.letters.map { |letter|
-                             [ letter, self[letter] * num ]
-                           } ]
+    def * number
+      ç.new Hash[ BASE_DIMENSIONS.letters.map do |l|
+                        [ l, self.send( l ) * number ]
+                      end ]
     end
 
-    # Dimension arithmetic: subtraction.
+    # Dimension arithmetic: division by a number.
     # 
-    def - other
-      self.class.new Hash[ BASIC_DIMENSIONS.letters.map { |letter|
-                             [ letter, self[letter] - other[letter] ]
-                           } ]
-    end
-
-    # Dimension arithmetic: division by a number. (Division only works
-    # if all the exponents are divisible.)
-    # 
-    def / num
-      ( exponents = to_a ).each{ |exponent|
-        raise ArgumentError, "Dimension division by a number only requires " +
-          "that all the dimension exponents be divisible by the number" unless
-          exponent % num == 0
-      }
-      Dimension.new Hash[ BASIC_DIMENSIONS.letters
-                            .zip( exponents.map { |exp| exp / num } ) ]
+    def / number
+      ç.new Hash[ BASE_DIMENSIONS.letters.map do |l|
+                        raise AE, "Dimensions with rational exponents " +
+                          "not implemented" if ( exp = send l ) % number != 0
+                        [ l, exp / number ]
+                      end ]
     end
 
     # Conversion to an array (of exponents of in the order of the
     # basic dimension letters).
     # 
     def to_a
-      BASIC_DIMENSIONS.letters.map { |letter| self[ letter ] }
+      BASE_DIMENSIONS.letters.map { |l| self.send l }
     end
 
     # Conversion to a hash (eg. { L: 1, M: 0, T: -2, Q: 0, Θ: 0 } ).
     # 
     def to_hash
-      BASIC_DIMENSIONS.letters.each_with_object Hash.new do |letter, memo_hash|
-        memo_hash[ letter ] = self[ letter ]
+      BASE_DIMENSIONS.letters.each_with_object Hash.new do |l, ꜧ|
+        ꜧ[ l ] = self.send( l )
       end
     end
 
-    # Returns true if the dimension is zero ("dimensionless"), otherwise false.
+    # True if the dimension is zero ("dimensionless"), otherwise false.
     # 
     def zero?
-      [ @L, @M, @T, @Q, @Θ ] == [ 0, 0, 0, 0, 0 ]
+      to_a == [ 0, 0, 0, 0, 0 ]
     end
 
-    # Converts the dimension into a superscripted product string.
+    # Converts the dimension into its SPS.
     # 
     def to_s
-      sps = SPS.( BASIC_DIMENSIONS.letters,
-                  BASIC_DIMENSIONS.letters.map { |letter|
-                    self[ letter ]
-                  } )
-      if sps == "" then "∅" else sps end
+      sps = SPS.( BASE_DIMENSIONS.letters, to_a )
+      return sps == "" ? "∅" : sps
     end
 
     # Produces the inspect string of the dimension.
     # 
     def inspect
-      "#<#{ç.name.match( /[^:]+$/ )[0]}: #{self} >"
+      "#<Dimension: #{self} >"
     end
 
     # Returns dimension's standard quantity.
@@ -195,15 +167,6 @@ module SY
     end
 
     delegate :standard_unit,
-             :units,
              to: :standard_quantity
   end # class Dimension
-
-  # Convenience constructor Dimension() (acts as alias for Dimension.new).
-  # 
-  def Dimension( *args, &block )
-    Dimension.new *args, &block
-  end
-
-  module_function :Dimension
 end # module SY

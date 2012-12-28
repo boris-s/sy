@@ -5,7 +5,7 @@
 module SY
   # Basic physical dimensions.
   # 
-  BASIC_DIMENSIONS = {
+  BASE_DIMENSIONS = {
     L: :LENGTH,
     M: :MASS,
     Q: :ELECTRIC_CHARGE,
@@ -15,7 +15,7 @@ module SY
 
   # #letters singleton method is an alias for #keys
   # 
-  BASIC_DIMENSIONS.define_singleton_method :letters do keys end
+  BASE_DIMENSIONS.define_singleton_method :letters do keys end
 
   # Table of standard prefixes and their corresponding unit multiples.
   # 
@@ -126,7 +126,7 @@ module SY
       return [], [], []
     end
     # analysis of input string sections
-    input_string_sections.each_with_object( [[], [], []] ) {|section, memo|
+    input_string_sections.each_with_object [[], [], []] do |section, memo|
       sec = section.dup
       superscript_chars = SUPERSCRIPT.values
       # strip superscript tail
@@ -158,7 +158,7 @@ module SY
       raise NameError, "Zero exponents not allowed: #{exponent_string}" if exp == 0
       # and store the interpretation
       memo[0] << prefix; memo[1] << ß; memo[2] << exp
-    }
+    end
   }
 
   # Singleton #inspect method for SPS-parsing closure.
@@ -177,4 +177,27 @@ module SY
   # Custom error class for attempts to mix incompatible quantities.
   # 
   class IncompatibleQuantityError < StandardError; end
+
+
+  # Convenience dimension accessor.
+  # 
+  def Dimension dim_spec
+    case dim_spec.to_s
+    when '', 'nil', 'null', 'zero', '0', '⊘', 'ø' then ::SY::Dimension.zero
+    else ::SY::Dimension.new dim_spec end
+  end
+
+  # Convenience quantity instance accessor.
+  # 
+  def Quantity quantity_spec
+    ::SY::Quantity.instance quantity_spec
+  end
+
+  # Convenience unit instance accessor.
+  # 
+  def Unit unit_spec
+    ::SY::Unit.instance unit_spec
+  end
+
+  module_function :Dimension, :Quantity, :Unit
 end
