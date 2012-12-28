@@ -31,17 +31,16 @@ module SY
 
   # === Standard quantities of basic dimensions
 
-  Length = Quantity.standard of: Dimension( :L )
-  Mass = Quantity.standard of: Dimension( :M )
-  Time = Quantity.standard of: Dimension( :T )
-  ElectricCharge = Quantity.standard of: Dimension( :Q )
-  Temperature = Quantity.standard of: Dimension( :Θ )
+  # Length = Quantity.standard of: Dimension( :L )
+  # Mass = Quantity.standard of: Dimension( :M )
+  # Time = Quantity.standard of: Dimension( :T )
+  # ElectricCharge = Quantity.standard of: Dimension( :Q )
+  # Temperature = Quantity.standard of: Dimension( :Θ )
 
 
   # # === Their units
 
-  GRAM = Unit.of Mass, abbreviation: "g"
-
+  # GRAM = Unit.of Mass, abbreviation: "g"
   # KILOGRAM = Unit.standard of: Mass, amount: 1000.g
 
   # METRE = Unit.standard of: Length, abbreviation: "m"

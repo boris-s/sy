@@ -107,14 +107,15 @@ module SY
     # 
     def new_magnitude *args
       ꜧ = args.extract_options!
-      @magnitude.new *args, ꜧ.merge!( of: self )
+      @magnitude.new *args, ꜧ.merge!( quantity: self )
     end
     alias :amount :new_magnitude
 
     # Creates a new unit pertinent to this quantity.
     # 
     def new_unit *args
-      # FIXME - creation of a new unit
+      ꜧ = args.extract_options!
+      @unit.new *args, ꜧ.merge!( quantity: self )
     end
 
     # Quantity arithmetic: multiplication.

@@ -7,21 +7,21 @@ module SY
       receiver.module_exec do
         include NameMagic
         
-        puts "self.respond_to? instances #{respond_to? :instances}"
-        
-        naming_hook { |name, new_instance, old_name|
-          puts "hello from naming hook"
+        name_set_closure { |name, new_instance, old_name|
           name = name.to_s
           up, down = name.upcase, name.downcase
           raise NameError, "Unit name must be either all-upper or " +
           "all-lower case." unless name == up || name = down
           conflicter = PREFIX_TABLE.find { |row|
-            down.starts_with? full unless ( full = row[:full] ).empty?
+            full = row[:full]
+            down.starts_with? full unless full.empty?
           }
           raise NameError, "Name #{name} starts with #{conflicter[:full]}- " +
-          "prefix." unless down == 'kilogram' if conflicter
+            "prefix." unless down == 'kilogram' if conflicter
           up.to_sym
         }
+
+        # name_get_closure { |name| name.to_s.downcase.to_sym }
         
         # Eval is used to define all the prefix methods, such as #mili, #micro,
         # #kilo, #mega, etc. These methods are defined only for units, to which
@@ -51,13 +51,11 @@ module SY
       # variable, that will hold units defined in all quantities together.
       # 
       def __instances__
-        puts "hello from redefined __instances__"
         ::SY::Unit.instance_variable_get( :@instances ) or
           ::SY::Unit.instance_variable_set( :@instances, {} )
       end
 
       def __avid_instances__
-        puts "hello from redefined #__avid_instances__"
         ::SY::Unit.instance_variable_get( :@avid_instances ) or
           ::SY::Unit.instance_variable_set( :@avid_instances, [] )
       end
