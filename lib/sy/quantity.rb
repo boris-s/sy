@@ -113,6 +113,7 @@ class SY::Quantity
       @dimension = SY.Dimension( ꜧ.must_have :dimension )
     end
     @magnitude = Class.new( SY::Magnitude )
+    @signed_magnitude = Class.new @magnitude do include SY::SignedMixin end
     @unit = Class.new @magnitude do include SY::UnitMixin end
   end
 
@@ -125,7 +126,7 @@ class SY::Quantity
   def standard_unit= unit
     @standard_unit = unit.aT_kind_of @unit
     # Make it the most favored unit
-    @units.unshift( unit ).uniq!
+    units.unshift( unit ).uniq!
   end
 
   # Reader of standard unit.
@@ -218,7 +219,8 @@ class SY::Quantity
       if other == self then
         return other, self
       else
-        raise TErr, "Different quantities (up to exceptions) do not mix!"
+        raise SY::IncompatibleQuantityError,
+              "Different quantities (up to exceptions) do not mix!"
       end
     else
       raise TErr, "A #{other.class} cannot be coerced into a quantity!"

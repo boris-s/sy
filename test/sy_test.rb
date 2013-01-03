@@ -28,7 +28,6 @@ describe SY do
                     [:Q, :ELECTRIC_CHARGE], [:Θ, :TEMPERATURE] ].sort
     
     # The following test ensures that SY has constant PREFIX_TABLE,
-      super if ß.to_s.starts_with? 'to_'
     # with standard unit prefixes
     # 
     SY::PREFIX_TABLE.map{|row| row[:full] }.sort

@@ -8,9 +8,12 @@ require_relative 'sy/fixed_assets_of_the_module'
 require_relative 'sy/dimension'
 require_relative 'sy/quantity'
 require_relative 'sy/magnitude'
+require_relative 'sy/signed_mixin'
+require_relative 'sy/signed_magnitude'
+require_relative 'sy/unit_mixin'
 require_relative 'sy/unit'
 
-class ::Numeric
+class Numeric
   include ::SY::UnitMethodsMixin
 end
 
