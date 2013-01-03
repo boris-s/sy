@@ -10,8 +10,10 @@ require 'mathn'
 require 'minitest/spec'
 require 'minitest/autorun'
 
+puts 'hello'
+
 # The following will load SY library
-require 'sy'
+require './../lib/sy'
 
 # **************************************************************************
 # THE SPECIFICATIONS START HERE
@@ -19,124 +21,118 @@ require 'sy'
 
 describe SY do
   it "should have basic assets" do
-#     # # The following test specifies basic physical dimensions.
-#     # # 
-#     # SY::BASE_DIMENSIONS.to_a.sort
-#     #   .must_equal [ [:L, :LENGTH], [:M, :MASS], [:T, :TIME],
-#     #                 [:Q, :ELECTRIC_CHARGE], [:Θ, :TEMPERATURE] ].sort
+    # The following test specifies basic physical dimensions.
+    # 
+    SY::BASE_DIMENSIONS.to_a.sort
+      .must_equal [ [:L, :LENGTH], [:M, :MASS], [:T, :TIME],
+                    [:Q, :ELECTRIC_CHARGE], [:Θ, :TEMPERATURE] ].sort
     
-#     # # The following test ensures that SY has constant PREFIX_TABLE,
-#     # # with standard unit prefixes
-#     # # 
-#     # SY::PREFIX_TABLE.map{|row| row[:full] }.sort
-#     #   .must_equal [ "exa", "peta", "tera", "giga", "mega", "kilo",
-#     #                 "mili", "micro", "nano", "pico", "femto", "atto",
-#     #                 "hecto", "deka","deci", "centi", "" ].sort
+    # The following test ensures that SY has constant PREFIX_TABLE,
+      super if ß.to_s.starts_with? 'to_'
+    # with standard unit prefixes
+    # 
+    SY::PREFIX_TABLE.map{|row| row[:full] }.sort
+      .must_equal [ "exa", "peta", "tera", "giga", "mega", "kilo",
+                    "mili", "micro", "nano", "pico", "femto", "atto",
+                    "hecto", "deka","deci", "centi", "" ].sort
 
-#     # # SY::SUPERSCRIPT must be a hash with the ability to convert digits into
-#     # # the superscript digits.
-#     # # 
-#     # '-0123456789'.each_char.map{ |c| SY::SUPERSCRIPT[ c ] }.join
-#     #   .must_equal '⁻⁰¹²³⁴⁵⁶⁷⁸⁹'
-#     # [ 1, -1, 0, -1024, 234 ].map{ |n| SY::SUPERSCRIPT[ n ] }
-#     #   .must_equal [ "¹", "⁻¹", "⁰", "⁻¹⁰²⁴", "²³⁴" ] # superscripted
+    # SY::SUPERSCRIPT must be a hash with the ability to convert digits into
+    # the superscript digits.
+    # 
+    '-0123456789'.each_char.map{ |c| SY::SUPERSCRIPT[ c ] }.join
+      .must_equal '⁻⁰¹²³⁴⁵⁶⁷⁸⁹'
+    [ 1, -1, 0, -1024, 234 ].map{ |n| SY::SUPERSCRIPT[ n ] }
+      .must_equal [ "¹", "⁻¹", "⁰", "⁻¹⁰²⁴", "²³⁴" ] # superscripted
 
-#     # # SY::SUPERSCRIPT_DOWN must ba a hash with the ability to convert
-#     # # superscripts back into number strings.
-#     # # 
-#     # SY::SUPERSCRIPT_DOWN[ '⁻⁰¹²³⁴⁵⁶⁷⁸⁹' ].must_equal '-0123456789'
-#     # SY::SUPERSCRIPT_DOWN[ '' ].must_equal ''
+    # SY::SUPERSCRIPT_DOWN must ba a hash with the ability to convert
+    # superscripts back into number strings.
+    # 
+    SY::SUPERSCRIPT_DOWN[ '⁻⁰¹²³⁴⁵⁶⁷⁸⁹' ].must_equal '-0123456789'
+    SY::SUPERSCRIPT_DOWN[ '' ].must_equal ''
 
-#     # # "Superscripted product string" is a technical term for strings
-#     # # that look like this: <tt> "aaa.bb².cccc⁻¹.dd.e⁻³" </tt>
-#     # # SY module has closures that construct and parse such strings, called
-#     # # respectively SPS and SPS_PARSER. Given an array of symbols [:a, :b]
-#     # # and array of exponents [1, -1], SY::SPS should produce "a.b⁻¹" etc.
-#     # # 
-#     # SY::SPS.( [:a, :b], [1, -1] ).must_equal "a.b⁻¹"
-#     # SY::SPS.( [:a, :b], [-1, 2] ).must_equal "a⁻¹.b²"
-#     # SY::SPS.( [:kB, :µM, :°C], [-1, 2, 0] ).must_equal "kB⁻¹.µM²"
+    # "Superscripted product string" is a technical term for strings
+    # that look like this: <tt> "aaa.bb².cccc⁻¹.dd.e⁻³" </tt>
+    # SY module has closures that construct and parse such strings, called
+    # respectively SPS and SPS_PARSER. Given an array of symbols [:a, :b]
+    # and array of exponents [1, -1], SY::SPS should produce "a.b⁻¹" etc.
+    # 
+    SY::SPS.( [:a, :b], [1, -1] ).must_equal "a.b⁻¹"
+    SY::SPS.( [:a, :b], [-1, 2] ).must_equal "a⁻¹.b²"
+    SY::SPS.( [:kB, :µM, :°C], [-1, 2, 0] ).must_equal "kB⁻¹.µM²"
 
-#     # # As for SY::SPS_PARSER, apart from the string to pars, it requires the
-#     # # list of of permitted symbols and prefixes:
-#     # # 
-#     # sham_symbols = :a, :b, :c, :B, :M, :s
-#     # sham_prefixes = :k, :kilo, :M, :mega, :µ, :micro
-#     # SY::SPS_PARSER.( "kB⁻¹.µM²", sham_symbols, sham_prefixes )
-#     #   .must_equal [["k", "µ"], ["B", "M"], [-1, 2]]
-#     # SY::SPS_PARSER.( "a.b.kiloc⁻²", sham_symbols, sham_prefixes )
-#     #   .must_equal [["", "", "kilo"], ["a", "b", "c"], [1, 1, -2]]
-#     # SY::SPS_PARSER.( "kB.s⁻¹", sham_symbols, sham_prefixes )
-#     #   .must_equal [["k", ""], ["B", "s"], [1, -1]]
+    # As for SY::SPS_PARSER, apart from the string to pars, it requires the
+    # list of of permitted symbols and prefixes:
+    # 
+    sham_symbols = :a, :b, :c, :B, :M, :s
+    sham_prefixes = :k, :kilo, :M, :mega, :µ, :micro
+    SY::SPS_PARSER.( "kB⁻¹.µM²", sham_symbols, sham_prefixes )
+      .must_equal [["k", "µ"], ["B", "M"], [-1, 2]]
+    SY::SPS_PARSER.( "a.b.kiloc⁻²", sham_symbols, sham_prefixes )
+      .must_equal [["", "", "kilo"], ["a", "b", "c"], [1, 1, -2]]
+    SY::SPS_PARSER.( "kB.s⁻¹", sham_symbols, sham_prefixes )
+      .must_equal [["k", ""], ["B", "s"], [1, -1]]
   end
 end
 
-# describe SY::Dimension do
-#   it "should work" do
-#     # # #new should return same instance when asked twice.
-#     # # 
-#     # SY::Dimension.new( 'L' ).object_id
-#     #   .must_equal SY::Dimension.new( 'L' ).object_id
+describe SY::Dimension do
+  it "should work" do
+    # #new should return same instance when asked twice.
+    # 
+    SY::Dimension.new( 'L' ).object_id
+      .must_equal SY::Dimension.new( 'L' ).object_id
 
-#     # # Other constructors: #basic and #zero.
-#     # # 
-#     # SY::Dimension.basic( :L )
-#     #   .must_equal SY::Dimension.new( :L )
-#     # SY::Dimension.zero.must_equal SY::Dimension.new()
+    # Other constructors: #basic and #zero.
+    # 
+    SY::Dimension.basic( :L )
+      .must_equal SY::Dimension.new( :L )
+    SY::Dimension.zero.must_equal SY::Dimension.new()
 
-#     # # SY should have table of standard quantities.
-#     # # 
-#     # q = SY::Dimension.standard_quantities[ 'L' ]
-#     # q.dimension.must_equal SY::Dimension.new( 'L' )
+    # SY should have table of standard quantities.
+    # 
+    q = SY::Dimension.standard_quantities[ 'L' ]
+    q.dimension.must_equal SY::Dimension.new( 'L' )
 
-#     # # Instance should have access to base dimensions.
-#     # # 
-#     # assert_equal [0, 1], [:L, :M].map { |ß| SY.Dimension( :M ).send ß }
-#     # assert_equal [1, 0], [:L, :M].map { |ß| SY.Dimension( :L )[ß] }
+    # Instance should have access to base dimensions.
+    # 
+    assert_equal [0, 1], [:L, :M].map { |ß| SY.Dimension( :M ).send ß }
+    assert_equal [1, 0], [:L, :M].map { |ß| SY.Dimension( :L )[ß] }
 
-#     # # #to_a, #to_hash, #zero?, 
-#     # SY.Dimension( :M ).to_a
-#     #   .must_equal SY::BASE_DIMENSIONS.letters.map { |l| l == :M ? 1 : 0 }
-#     # SY.Dimension( :M ).to_hash
-#     #   .must_equal Hash[ SY::BASE_DIMENSIONS.letters.map do |l|
-#     #                       [ l, l == :M ? 1 : 0 ]
-#     #                     end ]
-#     # SY.Dimension( :M ).zero?.must_equal false
-#     # SY::Dimension.zero.zero?.must_equal true
-#     # SY.Dimension( nil ).to_a.must_equal [ 0, 0, 0, 0, 0 ]
+    # #to_a, #to_hash, #zero?, 
+    SY.Dimension( :M ).to_a
+      .must_equal SY::BASE_DIMENSIONS.letters.map { |l| l == :M ? 1 : 0 }
+    SY.Dimension( :M ).to_hash
+      .must_equal Hash[ SY::BASE_DIMENSIONS.letters.map do |l|
+                          [ l, l == :M ? 1 : 0 ]
+                        end ]
+    SY.Dimension( :M ).zero?.must_equal false
+    SY::Dimension.zero.zero?.must_equal true
+    SY.Dimension( nil ).to_a.must_equal [ 0, 0, 0, 0, 0 ]
 
-#     # # Dimension arithmetic
-#     # # 
-#     # ( SY.Dimension( :L ) + SY.Dimension( :M ) )
-#     #   .must_equal SY.Dimension( 'L.M' )
-#     # ( SY.Dimension( :L ) - SY.Dimension( :M ) )
-#     #   .must_equal SY.Dimension( 'L.M⁻¹' )
-#     # ( SY.Dimension( :L ) * 2 ).must_equal SY.Dimension( 'L²' )
-#     # ( SY.Dimension( M: 2 ) / 2 ).must_equal SY.Dimension( :M )
+    # Dimension arithmetic
+    # 
+    ( SY.Dimension( :L ) + SY.Dimension( :M ) )
+      .must_equal SY.Dimension( 'L.M' )
+    ( SY.Dimension( :L ) - SY.Dimension( :M ) )
+      .must_equal SY.Dimension( 'L.M⁻¹' )
+    ( SY.Dimension( :L ) * 2 ).must_equal SY.Dimension( 'L²' )
+    ( SY.Dimension( M: 2 ) / 2 ).must_equal SY.Dimension( :M )
 
-#     # # #to_s and #inspect
-#     # # 
-#     # SY.Dimension( L: 1, Θ: -1 ).to_s.must_equal 'L.Θ⁻¹'
-#     # SY.Dimension( L: 1, Θ: -1 ).inspect.must_equal '#<Dimension: L.Θ⁻¹ >'
-#   end
-# end
+    # #to_s and #inspect
+    # 
+    SY.Dimension( L: 1, Θ: -1 ).to_s.must_equal 'L.Θ⁻¹'
+    SY.Dimension( L: 1, Θ: -1 ).inspect.must_equal '#<Dimension: L.Θ⁻¹ >'
+  end
+end
 
-# describe SY::Quantity do
+describe SY::Quantity do
 
-# end
+end
 
-# describe SY::Unit do
-#   it "should have certain practical instances" do
-#     # x = Class.new ::SY::Unit
-#     # puts "Tests: about to call instances"
-#     # x.instances.must_equal []
-#     # puts "Tests: about to assign DUCK"
-#     # Duck = x.new quantity: SY::Quantity.dimensionless, short: "D"
-#     # puts "Tests: About to call #instance_names"
-#     # x.instance_names.must_include :Duck
-#     # puts "Tests: Done"
-#   end
-# end
+describe SY::Unit do
+  it "should have certain practical instances" do
+    
+  end
+end
 
 # describe SY do
 #   describe "classes" do

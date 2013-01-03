@@ -33,11 +33,11 @@ module SY
         # quantity unchanged, but can and should be overriden for those unit,
         # which have area-specific prefix use.)
         # 
-        PREFIX_TABLE.full.each { |full_prefix|
+        ::SY::PREFIX_TABLE.full.each { |full_prefix|
           unless full_prefix.empty?
             define_method full_prefix do
-              Quantity.instance quantity_by_prefix( full_prefix )
-                .amount self * PREFIX_TABLE.hash_full[ full_prefix ][:factor]
+              Quantity.instance( quantity_by_prefix( full_prefix ) )
+                .amount self * ::SY::PREFIX_TABLE.hash_full[ full_prefix ][:factor]
             end
           end
         }
@@ -58,6 +58,10 @@ module SY
       def __avid_instances__
         ::SY::Unit.instance_variable_get( :@avid_instances ) or
           ::SY::Unit.instance_variable_set( :@avid_instances, [] )
+      end
+
+      def namespace
+        ::SY::Unit
       end
       
       # Tweaking instance accessor from NameMagic
@@ -194,7 +198,9 @@ module SY
     # end
     # </tt>
     # 
-    def quantity_by_prefix full_prefix; quantity end
+    def quantity_by_prefix prefix
+      quantity
+    end
 
     private
 

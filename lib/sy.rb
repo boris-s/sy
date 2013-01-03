@@ -10,12 +10,8 @@ require_relative 'sy/quantity'
 require_relative 'sy/magnitude'
 require_relative 'sy/unit'
 
-SY::UnitMethodsMixin
-
-# Applying the unit method extension to Numeric.
-# 
-class Numeric
-  include SY::UnitMethodsMixin
+class ::Numeric
+  include ::SY::UnitMethodsMixin
 end
 
 # These requires will be necessary as soon as y_support is made according
@@ -31,31 +27,35 @@ module SY
 
   # === Standard quantities of basic dimensions
 
-  # Length = Quantity.standard of: Dimension( :L )
-  # Mass = Quantity.standard of: Dimension( :M )
-  # Time = Quantity.standard of: Dimension( :T )
-  # ElectricCharge = Quantity.standard of: Dimension( :Q )
-  # Temperature = Quantity.standard of: Dimension( :Θ )
+  Length = Quantity.standard of: Dimension( :L )
 
+  Mass = Quantity.standard of: Dimension( :M )
+
+  Time = Quantity.standard of: Dimension( :T )
+
+  ElectricCharge = Quantity.standard of: Dimension( :Q )
+
+  Temperature = Quantity.standard of: Dimension( :Θ )
 
   # # === Their units
 
-  # GRAM = Unit.of Mass, abbreviation: "g"
-  # KILOGRAM = Unit.standard of: Mass, amount: 1000.g
+  GRAM = Unit.of Mass, abbreviation: "g"
 
-  # METRE = Unit.standard of: Length, abbreviation: "m"
+  KILOGRAM = Unit.standard of: Mass, amount: 1000.g
 
-  # SECOND = Unit.standard of: Time, abbreviation: "s"
+  METRE = Unit.standard of: Length, abbreviation: "m"
 
-  # COULOMB = Unit.standard of: ElectricCharge, abbreviation: "C"
+  SECOND = Unit.standard of: Time, abbreviation: "s"
 
-  # KELVIN = Unit.standard of: Temperature, abbreviation: "K"
+  COULOMB = Unit.standard of: ElectricCharge, abbreviation: "C"
 
-  # DALTON = Unit.of Mass, abbreviation: "Da", amount: 1.66053892173e-27.kg
+  KELVIN = Unit.standard of: Temperature, abbreviation: "K"
 
-  # MINUTE = Unit.of Time, abbreviation: "min", amount: 60.s
+  DALTON = Unit.of Mass, abbreviation: "Da", amount: 1.66053892173e-27.kg
 
-  # HOUR = Unit.of Time, abbreviation: "h", amount: 60.min
+  MINUTE = Unit.of Time, abbreviation: "min", amount: 60.s
+
+  HOUR = Unit.of Time, abbreviation: "h", amount: 60.min
 
   
   # === Other quantities

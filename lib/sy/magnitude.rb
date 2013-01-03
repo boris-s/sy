@@ -6,8 +6,7 @@ module SY
   # 
   class Magnitude
     # TODO: privatize #new method
-
-    include UnitMethodsMixin # ensuring that magnitudes respond to unit methods
+    include ::SY::UnitMethodsMixin # ensuring that magnitudes respond to unit methods
     include Comparable
 
     attr_reader :quantity, :amount
@@ -109,27 +108,27 @@ module SY
     def + other
       case other
       when Magnitude then
-        raise TypeError, DIM_ERR_MSG unless same_dimension? other
+        raise TE, "Dimension mismatch (#{other} vs. #{self})" unless
+          dimension == other.dimension
         if same_quantity? other then
-          # same quantity magnitudes add freely
           begin
-            ç.of quantity, amount: amount + other.amount
+            quantity.amount( amount + other.amount )
           rescue NegativeAmountError
             raise NegativeAmountError,
               "Attempt to subtract greater magnitude from a smaller one."
           end
         else
           # use Quantity#coerce for incompatible quantities
-          compat_q_1, compat_q_2 = other.quantity.coerce( self.quantity )
-          begin
-            self.( compat_q_1 ) + other.( compat_q_2 )
-          rescue NegativeAmountError
-            raise NegativeAmountError,
-              "Attempt to subtract greater magnitude from a smaller one."
-          rescue IncompatibleQuantityError
+          # q1, q2 = other.quantity.coerce( self.quantity )
+          # begin
+          #   self.( compat_q_1 ) + other.( compat_q_2 )
+          # rescue NegativeAmountError
+          #   raise NegativeAmountError,
+          #     "Attempt to subtract greater magnitude from a smaller one."
+          # rescue IncompatibleQuantityError
             raise IncompatibleQuantityError,
               "Impossible to add #{quantity} with #{other.quantity}."
-          end
+          # end
         end
       else
         raise IncompatibleQuantityError, "Magnitudes may only be added to " +
@@ -142,27 +141,27 @@ module SY
     def - other
       case other
       when Magnitude then
-        raise TypeError, DIM_ERR_MSG unless same_dimension? other
+        raise TE, "Dimension mismatch (#{other} vs. #{self})" unless
+          dimension == other.dimension
         if same_quantity?( other ) then
-          # same quantity magnitudes subtract freely
           begin
-            ç.of quantity, amount: amount - other.amount
+            quantity.amount( amount - other.amount )
           rescue NegativeAmountError
             raise NegativeAmountError,
               "Attempt to subtract greater magnitude from a smaller one."
           end
         else
           # use Quantity#coerce for incompatible quantities
-          compat_q_1, compat_q_2 = other.quantity.coerce( self.quantity )
-          begin
-            self.( compat_q_1 ) - other.( compat_q_2 )
-          rescue NegativeAmountError
-            raise NegativeAmountError,
-              "Attempt to subtract greater magnitude from a smaller one."
-          rescue IncompatibleQuantityError
+          # compat_q_1, compat_q_2 = other.quantity.coerce( self.quantity )
+          # begin
+          #   self.( compat_q_1 ) - other.( compat_q_2 )
+          # rescue NegativeAmountError
+          #   raise NegativeAmountError,
+          #     "Attempt to subtract greater magnitude from a smaller one."
+          # rescue IncompatibleQuantityError
             raise IncompatibleQuantityError,
               "Impossible to subtract #{other.quantity} from #{quantity}."
-          end
+          # end
         end
       else
         raise TypeError, "Magnitudes can only be subtracted from " +
@@ -175,10 +174,9 @@ module SY
     def * other
       case other
       when Magnitude then
-        ç.of ( quantity * other.quantity ).dimension.standard_quantity,
-             amount: amount * other.amount
+        ( quantity * other.quantity ).amount( amount * other.amount )
       when Numeric then
-        ç.of quantity, amount: amount * other
+        quantity.amount( amount * other )
       else
         raise TypeError, "Magnitudes only multiply with other magnitudes " +
           "and numbers. (Multiplication with a #{other.ç} attempted.)"
@@ -190,13 +188,12 @@ module SY
     def / other
       case other
       when Magnitude
-        ç.of ( quantity / other.quantity ).dimension.standard_quantity,
-             amount: amount / other.amount
+        ( quantity / other.quantity ).amount( amount / other.amount )
       when Numeric then
-        ç.of quantity, amount: amount / other
+        quantity.amount( amount / other )
       else
-        raise TypeError, "Magnitudes only divide with magnitudes and " +
-          "numbers. (Division by a #{other.ç} attempted.)"
+        raise TE, "Magnitudes only divide with magnitudes and numbers. " +
+          "(Division by a #{other.ç} attempted.)"
       end
     end
 
@@ -205,20 +202,16 @@ module SY
     def ** exponent
       case exponent
       when Numeric then
-        ç.of ( quantity ** exponent ).dimension.standard_quantity,
-             amount: amount ** exponent
+        ( quantity ** exponent ).amount( amount ** exponent )
       when Magnitude then
-        # Raising to a dimensionless magnitude is allowed (it is converted
-        # to a number using #to_f method):
+        # Raising is allowed only to a dimensionless magnitude
         if exponent.dimensionless? then self ** exponent.to_f else
-          # while attempts to raise to a not dimensionless magnitude raise:
-          raise TypeError, "Before using a magnitude as an exponent in " +
-            "exponentiation, it has to  has to be converted to a number " +
-            "(try #in or #to_f methods)."
+          raise TE, "Only dimensionless magnitudes and numbers can be used " +
+            "as exponents in exponentiation."
         end
       else
-        raise TypeError, "Magnitudes can only be exponentiated to numbers " +
-          "or equivalents. (Exponentiation to a #{other.ç} attempted.)"
+        raise TE, "Magnitudes can only be raised to numbers or equivalents. " +
+          "(Exponentiation to a #{other.ç} attempted.)"
       end
     end
 
@@ -227,15 +220,12 @@ module SY
     def coerce other
       case other
       when Numeric then
-        return ç.of( Dimension.zero.standard_quantity,
-                     amount: other ), self
-      when Magnitude then
-        aE_same_dimension other
-        compat_q_1, compat_q_2 = other.quantity.coerce( quantity )
-        return other.( compat_q_2 ), self.( compat_q_1 )
+        dimensionless_magnitude =
+          Dimension.zero.standard_quantity.amount( other )
+        return dimensionless_magnitude, self
       else
-        raise TypeError, "Object #{other} cannot be coerced into a " +
-          "compatible magnitude."
+        raise TE, "#{other} cannot be coerced into a magnitude" +
+          "compatible with #{self}."
       end
     end
 
@@ -363,7 +353,7 @@ module SY
       #          0.3141                2
       #          3141.0                3
       #          0.03141               4
-      #          31410.0               5
+      #          31410.0               5n
       #          0.003141              6
       #          ...
       #          
@@ -451,7 +441,8 @@ module SY
       # assemble the superscripted product string:
       sps = SPS.( symbols, exponents )
       # and finally, interpolate the string
-      "#{number_format}#{sps == '' ? '' : '.' + sps}" % amount
+      # #{number_format}#{sps == '' ? '' : '.' + sps}" % amount
+      #{amount}#{sps == '' ? '' : '.' + sps}"
     end
 
     # Inspect string of the magnitude

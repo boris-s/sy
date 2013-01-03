@@ -1,207 +1,250 @@
 #encoding: utf-8
 
-module SY
-  # This class represents a metrological quantity.
+# This class represents a metrological quantity.
+# 
+class SY::Quantity
+  include NameMagic
+  attr_reader :dimension, :magnitude, :factorization
+  
+  # The keys of this hash are unary or binary mathematical operations on
+  # quantities. They are stored as and array, whose 1st element is the
+  # operator method, and the rest are the operands (eg. [ :/, Length, Time ],
+  # translated as Length / Time, aka. Speed).
   # 
-  class Quantity
-    include NameMagic
-    attr_reader :dimension, :magnitude, :factorization
-
-    class << self
-      # Dimension-based quantity constructor. Examples:
-      # <tt>Quantity.of Dimension.new( "L.T⁻²" )</tt>
-      # <tt>Quantity.of "L.T⁻²"</tt>
-      # 
-      def of *args
-        ꜧ = args.extract_options!
-        dim = case args.size
-              when 0 then
-                ꜧ.must_have :dimension, syn!: :of
-                ꜧ.delete :dimension
-              else args.shift end
-        args << ꜧ.merge!( dimension: Dimension.new( dim ) )
-        return new *args
-      end
-
-      # Composition-based quantity constructor. Examples:
-      # <tt>Quantity.compose( Speed => 1, Time => -1 )</tt>
-      # 
-      def compose *args
-        ꜧ = args.extract_options!
-        fac = case args.size
-              when 0 then
-                ꜧ.must_have :factorization
-                ꜧ.delete :factorization
-              else args.shift end
-        args << ꜧ.merge!( factorization: fac )
-        return new *args
-      end
-
-      # Standard quantity. Example:
-      # <tt>Quantity.standard of: Dimension.new( "L.T⁻²" )</tt>
-      # or
-      # <tt>Quantity.standard of: "L.T⁻²"
-      # (Both should give Acceleration as their result.)
-      # 
-      def standard *args
-        ꜧ = args.extract_options!
-        dim = case args.size
-              when 0 then
-                ꜧ.must_have :dimension, syn!: :of
-                ꜧ.delete :dimension
-              else args.shift end
-        return dim.standard_quantity
-      end
-
-      # Dimensionless quantity constructor alias.
-      # 
-      def dimensionless *args
-        ꜧ = args.extract_options!
-        raise TE, "Dimension not zero!" unless ꜧ[:dimension].zero? if
-          ꜧ.has? :dimension, syn!: :of
-        new *( args << ꜧ.merge!( dimension: Dimension.zero ) )
-      end
-    end
-
-    # Standard constructor of a metrological quantity. A quantity may have
-    # a name and a dimension.
-    # 
-    def initialize *args
-      ꜧ = args.extract_options!
-      if ꜧ.has? :factorization then
-        @factorization = ꜧ[:factorization]
-        @dimension = dimension_of_factorization( @factorization )
+  OPERATION_TABLE = Hash.new { |ꜧ, missing_key|
+    begin
+      operator = missing_key[0].to_sym # eg :/
+      operands = missing_key[1..-1]    # eg [Length, Time]
+    rescue NoMethodError
+      nil
+    else
+      case operator
+      when :* then
+        op1, op2 = operands.aT { size == 2 }
+        ꜧ[missing_key] = SY::Quantity.compose op1 => 1, op2 => 1
+      when :/ then
+        op1, op2 = operands.aT { size == 2 }
+        ꜧ[missing_key] = SY::Quantity.compose op1 => 1, op2 => -1
+      when :** then
+        op1, op2 = operands.aT { size == 2 }
+        ꜧ[missing_key] = SY::Quantity.compose op1 => op2.aT_is_a( Numeric )
       else
-        @dimension = SY.Dimension( ꜧ.must_have :dimension )
+        raise TypeError, "Unrecognized operator: #{operator}"
       end
-      @magnitude = Class.new( Magnitude )
-      @unit = Class.new @magnitude do include UnitMixin end
     end
+  }
 
-    def factorization
-      @factorization ||= default_factorization
-    end
+  def OPERATION_TABLE.[]( *args )
+    super args
+  end
 
-    # Writer of standard unit
+  class << self
+    # Dimension-based quantity constructor. Examples:
+    # <tt>Quantity.of Dimension.new( "L.T⁻²" )</tt>
+    # <tt>Quantity.of "L.T⁻²"</tt>
     # 
-    def standard_unit= unit
-      @standard_unit = unit.tE_kind_of ::SY::Unit
-      # Make it the most favored unit
-      @units.unshift( unit ).uniq!
-    end
-
-    # Reader of standard unit.
-    # 
-    def standard_unit
-      @standard_unit ||= Unit.of self
-    end
-
-    # Presents an array of units ordered as favored by this quantity.
-    # 
-    def units
-      @units ||= []
-    end
-
-    # Creates a new magnitude pertinent to this quantity. Takes one argument —
-    # amount of the magnitude.
-    # 
-    def new_magnitude *args
+    def of *args
       ꜧ = args.extract_options!
-      @magnitude.new *args, ꜧ.merge!( quantity: self )
+      dim = case args.size
+            when 0 then
+              ꜧ.must_have :dimension, syn!: :of
+              ꜧ.delete :dimension
+            else args.shift end
+      args << ꜧ.merge!( dimension: SY::Dimension.new( dim ) )
+      return new *args
     end
-    alias :amount :new_magnitude
 
-    # Creates a new unit pertinent to this quantity.
+    # Composition-based quantity constructor. Examples:
+    # <tt>Quantity.compose( Speed => 1, Time => -1 )</tt>
     # 
-    def new_unit *args
+    def compose *args
       ꜧ = args.extract_options!
-      @unit.new *args, ꜧ.merge!( quantity: self )
+      comp = case args.size
+             when 0 then
+               if ꜧ.has? :composition then
+                 comp = ꜧ.delete :composition
+               else
+                 comp = ꜧ.dup.tap { ꜧ.clear }
+               end
+             else
+               raise AErr, "Unexpected ordered arguments."
+             end
+      return new *args, ꜧ.merge!( composition: comp )
     end
-
-    # Quantity arithmetic: multiplication.
+    
+    # Standard quantity. Example:
+    # <tt>Quantity.standard of: Dimension.new( "L.T⁻²" )</tt>
+    # or
+    # <tt>Quantity.standard of: "L.T⁻²"
+    # (Both should give Acceleration as their result.)
     # 
-    def * other
-      ç.compose factorization.merge other.factorization do |qnt, exp1, exp2|
-        exp1 + exp2
-      end
+    def standard *args
+      ꜧ = args.extract_options!
+      dim = case args.size
+            when 0 then
+              ꜧ.must_have :dimension, syn!: :of
+              ꜧ.delete :dimension
+            else args.shift end
+      return dim.standard_quantity
     end
-
-    # Quantity arithmetic: division.
+    
+    # Dimensionless quantity constructor alias.
     # 
-    def / other
-      ç.compose factorization.merge other.factorization do |qnt, exp1, exp2|
-        exp1 - exp2
-      end
+    def dimensionless *args
+      ꜧ = args.extract_options!
+      raise TErr, "Dimension not zero!" unless ꜧ[:dimension].zero? if
+        ꜧ.has? :dimension, syn!: :of
+      new *( args << ꜧ.merge!( dimension: Dimension.zero ) )
     end
-
-    # Quantity arithmetic: power to a number.
-    # 
-    def ** number
-      ç.compose Hash[ factorization.map { |qnt, exp| [ qnt, exp * number ] } ]
+  end
+  
+  # Standard constructor of a metrological quantity. A quantity may have
+  # a name and a dimension.
+  # 
+  def initialize *args
+    ꜧ = args.extract_options!
+    if ꜧ.has? :composition then
+      @composition = ꜧ[:composition]
+      @dimension = dimension_of_composition( @composition )
+      raise AErr, "Conflict in arguments: Explicitly stated dimension " +
+        "different from the composition dimension!" unless
+        @dimension == ꜧ[:dimension] if ꜧ.has? :dimension, syn!: :of
+    else
+      @dimension = SY.Dimension( ꜧ.must_have :dimension )
     end
+    @magnitude = Class.new( SY::Magnitude )
+    @unit = Class.new @magnitude do include SY::UnitMixin end
+  end
 
-    # Inquirer whether the quantity is dimensionless.
-    # 
-    def dimensionless?
-      dimension.zero?
-    end
+  def composition
+    @composition ||= default_composition
+  end
 
-    # Make this quantity the standard quantity for its dimension.
-    # 
-    def standard
-      Dimension.standard_quantities[ dimension ]
-    end
+  # Writer of standard unit
+  # 
+  def standard_unit= unit
+    @standard_unit = unit.aT_kind_of @unit
+    # Make it the most favored unit
+    @units.unshift( unit ).uniq!
+  end
 
-    def to_s
-      if name.nil? then dimension.to_s else name.to_s end
-    end
+  # Reader of standard unit.
+  # 
+  def standard_unit *args
+    ꜧ = args.extract_options!
+    @standard_unit ||= new_unit *args
+  end
 
-    def inspect
-      "#<#{ç.name.match( /[^:]+$/ )[0]}: #{name.nil? ? dimension : name} >"
-    end
+  # Presents an array of units ordered as favored by this quantity.
+  # 
+  def units
+    @units ||= []
+  end
 
-    def coerce other
-      case other
-      when Quantity then
-        # By default, coercion between quantities doesn't exist. The basic
-        # purpose of having quantities is to avoid mutual mixing of
-        # incompatible magnitudes, as in "one cannot sum pears with apples".
-        # 
-        if other == self then return other, self else
-          raise TE, "Different quantities (up to exceptions) do not mix."
-        end
-      when Numeric then
-        return Quantity.dimensionless, self
+  # Creates a new magnitude pertinent to this quantity. Takes one argument —
+  # amount of the magnitude.
+  # 
+  def new_magnitude *args
+    ꜧ = args.extract_options!
+    @magnitude.new *args, ꜧ.merge!( quantity: self )
+  end
+
+  def amount *args
+    ꜧ = args.extract_options!
+    raise AErr, "#amount requires exactly 1 ordered argument" unless
+      args.size == 1
+    new_magnitude ꜧ.merge!( amount: args[0] )
+  end
+  alias :amount :new_magnitude
+
+  # Creates a new unit pertinent to this quantity.
+  # 
+  def new_unit *args
+    ꜧ = args.extract_options!
+    @unit.new *args, ꜧ.merge!( quantity: self )
+  end
+
+  # Quantity arithmetic: multiplication.
+  # 
+  def * other
+    OPERATION_TABLE[ :*, self, other ]
+  end
+
+  # Quantity arithmetic: division.
+  # 
+  def / other
+    OPERATION_TABLE[ :/, self, other ]
+  end
+
+  # Quantity arithmetic: power to a number.
+  # 
+  def ** number
+    OPERATION_TABLE[ :**, self, number ]
+  end
+
+  # Inquirer whether the quantity is dimensionless.
+  # 
+  def dimensionless?
+    dimension.zero?
+  end
+
+  # Make this quantity the standard quantity for its dimension.
+  # 
+  def standard
+    SY::Dimension.standard_quantities[ dimension ]
+  end
+
+  # Produces a string briefly describing the quantity.
+  # 
+  def to_s
+    if name.nil? then dimension.to_s else name.to_s end
+  end
+
+  # Produces the inspect string of the quantity.
+  # 
+  def inspect
+    "#<Quantity: #{name.nil? ? dimension : name} >"
+  end
+
+  def coerce other
+    case other
+    when Numeric then
+      return SY::Quantity.dimensionless, self
+    when SY::Quantity then
+      # By default, coercion between quantities doesn't exist. The basic
+      # purpose of having quantities is to avoid mutual mixing of
+      # incompatible magnitudes, as in "one cannot sum pears with apples".
+      # 
+      if other == self then
+        return other, self
       else
-        raise TE, "#{other} cannot be coerced into a quantity."
+        raise TErr, "Different quantities (up to exceptions) do not mix!"
       end
+    else
+      raise TErr, "A #{other.class} cannot be coerced into a quantity!"
     end
+  end
 
-    private
+  private
 
-    def same_dimension? other
-      case other
-      when Quantity then dimension == other.dimension
-      when Magnitude then dimension == other.dimension
-      when Numeric then dimensionless?
-      when Dimension then dimension == other
-      else
-        raise AE, "The object <#{other.class}:#{other.object_id}> cannot " +
-          "be coerced into quantity."
-      end
+  def same_dimension? other
+    case other
+    when Numeric then dimensionless?
+    else
+      dimension == other.dimension
     end
+  end
 
-    def default_factorization
-      dimension.to_hash.each_with_object Hash.new do |pair, ꜧ|
-        dim, exp = pair
-        ꜧ.merge!( SY.Dimension( dim ).standard_quantity => exp ) if exp > 0
-      end
+  def default_composition
+    dimension.to_hash.each_with_object Hash.new do |pair, ꜧ|
+      dim, exp = pair
+      ꜧ.merge!( SY.Dimension( dim ).standard_quantity => exp ) if exp.abs > 0
     end
+  end
 
-    def dimension_of_factorization factorization
-      factorization.map { |quantity, exponent|
-        quantity.dimension * exponent
-      }.reduce :+
-    end
-  end # class Quantity
-end # module SY
+  def dimension_of_composition comp
+    comp.map { |quantity, exponent|
+      quantity.dimension * exponent
+    }.reduce( :+ )
+  end
+end # class SY::Quantity
