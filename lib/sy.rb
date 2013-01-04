@@ -31,48 +31,36 @@ module SY
   # === Standard quantities of basic dimensions
 
   Length = Quantity.standard of: Dimension( :L )
-
   Mass = Quantity.standard of: Dimension( :M )
-
   Time = Quantity.standard of: Dimension( :T )
-
   ElectricCharge = Quantity.standard of: Dimension( :Q )
-
   Temperature = Quantity.standard of: Dimension( :Θ )
 
   # # === Their units
 
   GRAM = Unit.of Mass, abbreviation: "g"
-
   KILOGRAM = Unit.standard of: Mass, amount: 1000.g
-
   METRE = Unit.standard of: Length, abbreviation: "m"
-
   SECOND = Unit.standard of: Time, abbreviation: "s"
-
   COULOMB = Unit.standard of: ElectricCharge, abbreviation: "C"
-
   KELVIN = Unit.standard of: Temperature, abbreviation: "K"
-
   DALTON = Unit.of Mass, abbreviation: "Da", amount: 1.66053892173e-27.kg
-
   MINUTE = Unit.of Time, abbreviation: "min", amount: 60.s
-
   HOUR = Unit.of Time, abbreviation: "h", amount: 60.min
 
   
   # === Other quantities
   
-  # Speed = ( Length / Time ).standard
-  # Acceleration = ( Speed / Time ).standard
-  # Force = ( Acceleration * Mass ).standard
-  # Energy = ( Force * Length ).standard
-  # Power = ( Energy / Time ).standard
-  # Area = ( Length ** 2 ).standard
-  # Volume = ( Length ** 3 ).standard
-  # Pressure = ( Force / Area ).standard
-  # Amount = Quantity.dimensionless
-  # MoleAmount = Quantity.dimensionless
+  Speed = ( Length / Time ).standard
+  Acceleration = ( Speed / Time ).standard
+  Force = ( Acceleration * Mass ).standard
+  Energy = ( Force * Length ).standard
+  Power = ( Energy / Time ).standard
+  Area = ( Length ** 2 ).standard
+  Volume = ( Length ** 3 ).standard
+  Pressure = ( Force / Area ).standard
+  Amount = Quantity.dimensionless
+  MoleAmount = Quantity.dimensionless
 
   # # Molarity is not a standard quantity. Let the standard quantity remain
   # # unnamed with dimension L⁻³, and molarity a standalone named quantity.
