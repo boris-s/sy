@@ -13,7 +13,7 @@ Gem::Specification.new do |gem|
   gem.test_files    = gem.files.grep(%r{^(test|spec|features)/})
   gem.name          = "sy"
   gem.require_paths = ["lib"]
-  gem.version       = Sy::VERSION
+  gem.version       = SY::VERSION
 
   gem.add_dependency "activesupport"
 end

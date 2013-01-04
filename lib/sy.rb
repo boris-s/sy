@@ -1,17 +1,29 @@
 #encoding: utf-8
 
 require 'y_support/all'
-require_relative 'sy/version'
+# require_relative 'sy/version'
 
-require_relative 'sy/unit_methods_mixin'
-require_relative 'sy/fixed_assets_of_the_module'
-require_relative 'sy/dimension'
-require_relative 'sy/quantity'
-require_relative 'sy/magnitude'
-require_relative 'sy/signed_mixin'
-require_relative 'sy/signed_magnitude'
-require_relative 'sy/unit_mixin'
-require_relative 'sy/unit'
+# require_relative 'sy/unit_methods_mixin'
+# require_relative 'sy/fixed_assets_of_the_module'
+# require_relative 'sy/dimension'
+# require_relative 'sy/quantity'
+# require_relative 'sy/magnitude'
+# require_relative 'sy/signed_mixin'
+# require_relative 'sy/signed_magnitude'
+# require_relative 'sy/unit_mixin'
+# require_relative 'sy/unit'
+
+require './sy/version'
+
+require './sy/unit_methods_mixin'
+require './sy/fixed_assets_of_the_module'
+require './sy/dimension'
+require './sy/quantity'
+require './sy/magnitude'
+require './sy/signed_mixin'
+require './sy/signed_magnitude'
+require './sy/unit_mixin'
+require './sy/unit'
 
 class Numeric
   include ::SY::UnitMethodsMixin
