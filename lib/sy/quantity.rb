@@ -195,20 +195,26 @@ class SY::Quantity
 
   # Make this quantity the standard quantity for its dimension.
   # 
+  def standard!
+    SY::Dimension.standard_quantities[ dimension ] = self
+  end
+
+  # Retrieves the standard quantity for the dimension of this quantity.
+  # 
   def standard
-    SY::Dimension.standard_quantities[ dimension ]
+    dimension.standard_quantity
   end
 
   # Produces a string briefly describing the quantity.
   # 
   def to_s
-    if name.nil? then dimension.to_s else name.to_s end
+    name.nil? ? "[#{dimension}]" : name.to_s
   end
 
   # Produces the inspect string of the quantity.
   # 
   def inspect
-    "#<Quantity: #{name.nil? ? dimension : name} >"
+    "#<Quantity: #{to_s} >"
   end
 
   def coerce other

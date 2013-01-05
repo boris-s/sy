@@ -100,28 +100,28 @@ module SY
   Frequency = 1 / Time
   HERTZ = Unit.of Frequency, short: "Hz"
 
-  Speed = Quantity.standard( Length / Time )
+  Speed = ( Length / Time ).standard!
 
-  Acceleration = Quantity.standard( Speed / Time )
+  Acceleration = ( Speed / Time ).standard!
 
-  Force = Quantity.standard( Acceleration * Mass )
+  Force = ( Acceleration * Mass ).standard!
   NEWTON = Unit.standard of: Force, short: "N"
 
-  Energy = Quantity.standard( Force * Length )
+  Energy = ( Force * Length ).standard!
   JOULE = Unit.standard of: Energy, short: "J"
   # SY::CALORIE means thermochemical calorie.
   CALORIE = Unit.of Energy, short: "cal", amount: 4.184.J
 
-  Power = Quantity.standard( Energy / Time )
+  Power = ( Energy / Time ).standard!
   WATT = Unit.standard of: Power, short: "W"
 
-  Pressure = Quantity.standard( Force / Area )
+  Pressure = ( Force / Area ).standard!
   PASCAL = Unit.standard of: Pressure, abbreviation: "Pa"
 
-  ElectricCurrent = Quantity.standard( ElectricCharge / Time )
+  ElectricCurrent = ( ElectricCharge / Time ).standard!
   AMPERE = Unit.standard of: ElectricCurrent, abbreviation: "A"
 
-  ElectricPotential = Quantity.standard( Energy / ElectricCharge )
+  ElectricPotential = ( Energy / ElectricCharge ).standard!
   VOLT = Unit.standard of: ElectricPotential, abbreviation: "V"
 
   Molarity = MoleAmount / Volume

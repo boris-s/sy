@@ -75,20 +75,27 @@ module SY::ExpressibleInUnits
                       "  %s\n" +
                       "end"
     # Build the factor strings:
-    factors = [ prefixes, units, exponents ].transpose.map { |p, uς, exponent|
+    triples = [ prefixes, units, exponents ].transpose
+    factors = triples.map.with_object ' self ' do |triple, amount_ς|
+      prefix, unit_ς, exponent = triple
       # figure out the full prefix
-      full_prefix = prefix_ꜧ[ p ][ :full ].to_s
+      full_prefix = prefix_ꜧ[ prefix ][ :full ].to_s
       prefix_method_if_any = full_prefix == '' ? '' : ".#{full_prefix}"
       # figure out the unit
-      unit = known_units.find { |u| u.name.to_s == uς || u.short.to_s == uς }
+      unit = known_units.find do |u|
+        u.name.to_s == unit_ς || u.short.to_s == unit_ς
+      end
       unit_name = unit.name.to_s.upcase
       # figure out whether exponentiation will be required
       exponentiation_if_any = exponent == 1 ? '' : " ** #{exponent}"
       # build the factor string
-      "::SY.Unit(:#{unit_name})#{prefix_method_if_any}#{exponentiation_if_any}"
-    }
-    # First factor string will be 'self':
-    factors.unshift 'self'
+      # "::SY.Unit(:#{unit_name})#{prefix_method_if_any}#{exponentiation_if_any}"
+      ( "::SY.Unit( :%s )%s.to_magnitude(%s) )%s" % [ unit_name,
+                                                      prefix_method_if_any,
+                                                      amount_ς,
+                                                      exponentiation_if_any ]
+        ).tap { amount_ς.clear }
+    }.join ' * \n    '
     # And multiply all the factors toghether:
     method_body = factors.join( " * \n    " )
     # Return the finished method string:

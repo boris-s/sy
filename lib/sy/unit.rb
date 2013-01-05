@@ -223,8 +223,10 @@ module SY::Unit
 
   # Converts a unit into ordinary magnitude.
   # 
-  def to_magnitude
-    quantity.amount amount
+  def to_magnitude factor=1
+    if factor == 1 then quantity.amount( amount ) else
+      quantity.amount( amount ) * factor
+    end
   end
 
   # Some prefixes of some units are almost exclusively used in certain areas

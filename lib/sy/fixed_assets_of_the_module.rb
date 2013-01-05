@@ -181,7 +181,7 @@ module SY
 
   # Convenience dimension accessor.
   # 
-  def Dimension dim_spec
+  def Dimension dim_spec=proc{ return SY::Dimension }.call
     case dim_spec.to_s
     when '', 'nil', 'null', 'zero', '0', '⊘', 'ø' then ::SY::Dimension.zero
     else ::SY::Dimension.new dim_spec end
@@ -189,7 +189,7 @@ module SY
 
   # Convenience quantity instance accessor.
   # 
-  def Quantity quantity_spec
+  def Quantity quantity_spec=proc{ return ::SY::Quantity }.call
     ::SY::Quantity.instance quantity_spec
   end
 
@@ -199,5 +199,13 @@ module SY
     ::SY::Unit.instance unit_spec
   end
 
-  module_function :Dimension, :Quantity, :Unit
+  # Explicit magnitude constructor.
+  # 
+  def Magnitude *args
+    if args.empty? then ::SY::Magnitude else
+      ::SY::Magnitude.new *args
+    end
+  end
+
+  module_function :Dimension, :Quantity, :Unit, :Magnitude
 end
