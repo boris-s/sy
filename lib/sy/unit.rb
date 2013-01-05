@@ -79,8 +79,6 @@ module SY::Unit
 
   include NameMagic
 
-  puts "include NameMagic done"
-
   class << self
     # Constructor of units of a given quantity.
     # 
@@ -229,6 +227,9 @@ module SY::Unit
     end
   end
 
+ # factor=1
+ #  end
+
   # Some prefixes of some units are almost exclusively used in certain areas
   # of science or engineering, and their appearance would indicate such
   # specific quantity. By default, this method simply returns unit's own
@@ -280,5 +281,4 @@ module SY::Unit
   def çς
     "Unit"
   end
-  puts "Unit module done"
 end # class SY::Unit

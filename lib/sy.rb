@@ -4,14 +4,13 @@ require 'y_support/all'
 
 if caller.any? { |ς| ς.include? 'irb.rb' } then
   require './sy/version'
-  require './sy/unit_methods_mixin'
+  require './sy/expressible_in_units'
   require './sy/fixed_assets_of_the_module'
   require './sy/dimension'
   require './sy/quantity'
   require './sy/magnitude'
-  require './sy/signed_mixin'
+  require './sy/signed_magnitude_mixin'
   require './sy/signed_magnitude'
-  require './sy/unit_mixin'
   require './sy/unit'
 else
   require_relative 'sy/version'
@@ -31,7 +30,7 @@ end
 Numeric.module_exec { include SY::ExpressibleInUnits }
 
 module SY
-  DEBUG = true
+  DEBUG = false
 
   Nᴀ = AVOGADRO_CONSTANT = 6.02214e23
 

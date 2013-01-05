@@ -19,7 +19,10 @@ module SY::ExpressibleInUnits
         # Define the unit method.
         ç.module_eval write_unit_method( ß, prefixes, units, exponents )
       end
-    rescue NameError, SY::ExpressibleInUnits::IllegalRecursionError
+    rescue NameError => m
+      puts "NameError raised: #{m}" if SY::DEBUG
+      super # give up
+    rescue SY::ExpressibleInUnits::IllegalRecursionError
       super # give up
     else # invoke the defined method that we just defined
       send ß, *args, &block
@@ -56,6 +59,7 @@ module SY::ExpressibleInUnits
       .map { |ɴ, short| [ ɴ.to_s, short.to_s ] }
       .transpose
       .reduce( :+ )
+    puts known_unit_symbols.join ', ' if SY::DEBUG
     # Known prefix symbols include full prefixes and prefix abbreviations.
     known_prefixes = SY::PREFIX_TABLE.full + SY::PREFIX_TABLE.short
     # Here, we rely on SY::SPS_PARSER:
@@ -70,37 +74,45 @@ module SY::ExpressibleInUnits
     # Let's prepare SY information for further use:
     prefix_ꜧ = SY::PREFIX_TABLE.hash_full.merge( SY::PREFIX_TABLE.hash_short )
     known_units = SY::Unit.instances
+    # A procedure to find unit based on name or abbreviation:
+    find_unit = lambda do |ς|
+      known_units.find { |u| u.name.to_s == ς || u.short.to_s == ς }
+    end
+    # Return prefix method or empty ς if not necessary.
+    prefix_method_ς = lambda do |prefix|
+      full_prefix = prefix_ꜧ[ prefix ][:full].to_s
+      full_prefix == '' ? '' : ".#{full_prefix}"
+    end
+    # Return exponentiation string (suffix) or empty ς if not necessary.
+    exponentiation_ς = lambda do |exponent|
+      exponent == 1 ? '' : " ** #{exponent}"
+    end
+    # Prepare prefix / unit / exponent triples for making factor strings:
+    triples = [ prefixes, units, exponents ].transpose
+    # A procedure for triple processing before use:
+    process_triple = lambda do |prefix, unit_ς, exponent|
+      [ find_unit.( unit_ς ).name.to_s.upcase,
+        prefix_method_ς.( prefix ),
+        exponentiation_ς.( exponent ) ]
+    end
     # Method skeleton:
     method_skeleton = "def #{ß}\n" +
                       "  %s\n" +
                       "end"
-    # Build the factor strings:
-    triples = [ prefixes, units, exponents ].transpose
-    factors = triples.map.with_object ' self ' do |triple, amount_ς|
-      prefix, unit_ς, exponent = triple
-      # figure out the full prefix
-      full_prefix = prefix_ꜧ[ prefix ][ :full ].to_s
-      prefix_method_if_any = full_prefix == '' ? '' : ".#{full_prefix}"
-      # figure out the unit
-      unit = known_units.find do |u|
-        u.name.to_s == unit_ς || u.short.to_s == unit_ς
-      end
-      unit_name = unit.name.to_s.upcase
-      # figure out whether exponentiation will be required
-      exponentiation_if_any = exponent == 1 ? '' : " ** #{exponent}"
-      # build the factor string
-      # "::SY.Unit(:#{unit_name})#{prefix_method_if_any}#{exponentiation_if_any}"
-      ( "::SY.Unit( :%s )%s.to_magnitude(%s) )%s" % [ unit_name,
-                                                      prefix_method_if_any,
-                                                      amount_ς,
-                                                      exponentiation_if_any ]
-        ).tap { amount_ς.clear }
-    }.join ' * \n    '
-    # And multiply all the factors toghether:
+    factors = if triples.size < 1 then
+                []
+              else
+                first_factor = "::SY.Unit( :%s )%s.to_magnitude( self )%s" %
+                  process_triple.( *triples.shift )
+                rest = triples.map do |tr|
+                  "::SY.Unit( :%s )%s.to_magnitude%s" % process_triple.( *tr )
+                end
+                [ first_factor, *rest ]
+              end
+    # Multiply the factors toghether:
     method_body = factors.join( " * \n    " )
     # Return the finished method string:
-    puts method_skeleton % method_body if SY::DEBUG
-    return method_skeleton % method_body
+    return ( method_skeleton % method_body ).tap { |ς| puts ς if SY::DEBUG }
   end
 
   # Takes a token as the first argument, a symbol of the instance variable to

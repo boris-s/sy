@@ -265,6 +265,13 @@ class SY::Magnitude
 
 
 
+  # Gives the magnitude written "naturally", in its most favored units.
+  # It is also possible to supply a unit in which to show the magnitude
+  # as the 1st argument (by default, the most favored unit of its
+  # quantity), or even, as the 2nd argument, the number format (by default,
+  # 3 decimal places).
+
+
   # further remarks: depending on the area of science the quantity
   # is in, it should have different preferences for unit presentation.
   # Different areas prefer different units for different dimensions.
@@ -275,6 +282,8 @@ class SY::Magnitude
   
   # when attempting to present number Molarity².amount 1.73e-7.mM
   
+
+  # 
   def to_s
     # step 1: produce pairs [number, unit_presentation],
     #         where unit_presentation is an array of triples
@@ -373,46 +382,54 @@ class SY::Magnitude
     #          Mm                    +Infinity
     #          ...
     #          
-    
-    number, unit_presentation = choice
+
+    # number, unit_presentation = choice
+
+    number = self.in quantity.standard_unit
+    prefix = ''
+    unit = quantity.standard_unit
+    exponent = 1
+    unit_presentation = prefix, unit, exponent
+
     number_ς = default_amount_format % number
-    unit_presentation_ς = SY::SPS.( *unit_presentation.transpose )
+    unit_presentation_ς = SY::SPS.( [ "#{prefix}#{unit.short}" ], [ exponent ] )
     
-    return [ number_string, unit_presentation ].join '.'
+    return [ number_ς, unit_presentation_ς ].join '.'
   end
-  
-  
-  # Gives the magnitude written "naturally", in its most favored units.
-  # It is also possible to supply a unit in which to show the magnitude
-  # as the 1st argument (by default, the most favored unit of its
-  # quantity), or even, as the 2nd argument, the number format (by default,
-  # 3 decimal places).
-  # 
-  def to_s unit=quantity.units.first, number_format='%.3g'
-    begin
-      return to_string( unit ) if unit and unit.abbreviation
-    rescue
-    end
-    # otherwise, use units of basic dimensions – here be the magic:
-    hsh = dimension.to_hash
-    symbols, exponents = hsh.each_with_object Hash.new do |pair, memo|
-      dimension_letter, exponent = pair
-      std_unit = SY::Dimension.basic( dimension_letter ).standard_unit
-      memo[ std_unit.abbreviation || std_unit.name ] = exponent
-    end.to_a.transpose
-    # assemble the superscripted product string:
-    sps = SY::SPS.( symbols, exponents )
-    # and finally, interpolate the string
-    "#{number_format}#{sps == '' ? '' : '.' + sps}" % amount
-    "#{amount}#{sps == '' ? '' : '.' + sps}"
-  end
+
+  # def to_s unit=quantity.units.first, number_format='%.3g'
+  #   begin
+  #     return to_string( unit ) if unit and unit.abbreviation
+  #   rescue
+  #   end
+  #   # otherwise, use units of basic dimensions – here be the magic:
+  #   hsh = dimension.to_hash
+  #   symbols, exponents = hsh.each_with_object Hash.new do |pair, memo|
+  #     dimension_letter, exponent = pair
+  #     std_unit = SY::Dimension.basic( dimension_letter ).standard_unit
+  #     memo[ std_unit.abbreviation || std_unit.name ] = exponent
+  #   end.to_a.transpose
+  #   # assemble the superscripted product string:
+  #   sps = SY::SPS.( symbols, exponents )
+  #   # and finally, interpolate the string
+  #   "#{number_format}#{sps == '' ? '' : '.' + sps}" % amount
+  #   "#{amount}#{sps == '' ? '' : '.' + sps}"
+  # end
   
   # Inspect string of the magnitude
   # 
   def inspect
     "#<#{çς}: #{self} >"
   end
-  
+
+
+  # Treats a magnitude as a unit, in which the argument should be expressed.
+  # The method is provided mainly for compatibility with Unit#to_magnitude.
+  # 
+  def to_magnitude factor=1
+    if factor == 1 then self else self * factor end
+  end
+
   private
 
   def same_dimension? other
