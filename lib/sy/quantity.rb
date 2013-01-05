@@ -85,7 +85,7 @@ class SY::Quantity
               ꜧ.must_have :dimension, syn!: :of
               ꜧ.delete :dimension
             else args.shift end
-      return dim.standard_quantity
+      return SY.Dimension( dim ).standard_quantity
     end
     
     # Dimensionless quantity constructor alias.
@@ -94,7 +94,7 @@ class SY::Quantity
       ꜧ = args.extract_options!
       raise TErr, "Dimension not zero!" unless ꜧ[:dimension].zero? if
         ꜧ.has? :dimension, syn!: :of
-      new *( args << ꜧ.merge!( dimension: Dimension.zero ) )
+      new *( args << ꜧ.merge!( dimension: SY::Dimension.zero ) )
     end
   end
   
@@ -113,8 +113,12 @@ class SY::Quantity
       @dimension = SY.Dimension( ꜧ.must_have :dimension )
     end
     @magnitude = Class.new( SY::Magnitude )
-    @signed_magnitude = Class.new @magnitude do include SY::SignedMixin end
-    @unit = Class.new @magnitude do include SY::UnitMixin end
+    @signed_magnitude = Class.new @magnitude do
+      include SY::SignedMagnitudeMixin
+    end
+    @unit = Class.new @magnitude do
+      include SY::Unit
+    end
   end
 
   def composition

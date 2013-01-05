@@ -5,9 +5,12 @@
 # 
 class SY::Magnitude
   # TODO: privatize #new method
-  include SY::UnitMethodsMixin # ensuring that magnitudes respond to unit methods
-  include Comparable
 
+  # Magnitudes are comparable.
+  include Comparable
+  # Magnitudes respond to unit methods.
+  include SY::ExpressibleInUnits
+  
   attr_reader :quantity, :amount
 
   class << self

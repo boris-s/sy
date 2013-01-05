@@ -10,8 +10,6 @@ require 'mathn'
 require 'minitest/spec'
 require 'minitest/autorun'
 
-puts 'hello'
-
 # The following will load SY library
 require './../lib/sy'
 
@@ -34,42 +32,6 @@ describe SY do
       .must_equal [ "exa", "peta", "tera", "giga", "mega", "kilo",
                     "mili", "micro", "nano", "pico", "femto", "atto",
                     "hecto", "deka","deci", "centi", "" ].sort
-
-    # SY::SUPERSCRIPT must be a hash with the ability to convert digits into
-    # the superscript digits.
-    # 
-    '-0123456789'.each_char.map{ |c| SY::SUPERSCRIPT[ c ] }.join
-      .must_equal '⁻⁰¹²³⁴⁵⁶⁷⁸⁹'
-    [ 1, -1, 0, -1024, 234 ].map{ |n| SY::SUPERSCRIPT[ n ] }
-      .must_equal [ "¹", "⁻¹", "⁰", "⁻¹⁰²⁴", "²³⁴" ] # superscripted
-
-    # SY::SUPERSCRIPT_DOWN must ba a hash with the ability to convert
-    # superscripts back into number strings.
-    # 
-    SY::SUPERSCRIPT_DOWN[ '⁻⁰¹²³⁴⁵⁶⁷⁸⁹' ].must_equal '-0123456789'
-    SY::SUPERSCRIPT_DOWN[ '' ].must_equal ''
-
-    # "Superscripted product string" is a technical term for strings
-    # that look like this: <tt> "aaa.bb².cccc⁻¹.dd.e⁻³" </tt>
-    # SY module has closures that construct and parse such strings, called
-    # respectively SPS and SPS_PARSER. Given an array of symbols [:a, :b]
-    # and array of exponents [1, -1], SY::SPS should produce "a.b⁻¹" etc.
-    # 
-    SY::SPS.( [:a, :b], [1, -1] ).must_equal "a.b⁻¹"
-    SY::SPS.( [:a, :b], [-1, 2] ).must_equal "a⁻¹.b²"
-    SY::SPS.( [:kB, :µM, :°C], [-1, 2, 0] ).must_equal "kB⁻¹.µM²"
-
-    # As for SY::SPS_PARSER, apart from the string to pars, it requires the
-    # list of of permitted symbols and prefixes:
-    # 
-    sham_symbols = :a, :b, :c, :B, :M, :s
-    sham_prefixes = :k, :kilo, :M, :mega, :µ, :micro
-    SY::SPS_PARSER.( "kB⁻¹.µM²", sham_symbols, sham_prefixes )
-      .must_equal [["k", "µ"], ["B", "M"], [-1, 2]]
-    SY::SPS_PARSER.( "a.b.kiloc⁻²", sham_symbols, sham_prefixes )
-      .must_equal [["", "", "kilo"], ["a", "b", "c"], [1, 1, -2]]
-    SY::SPS_PARSER.( "kB.s⁻¹", sham_symbols, sham_prefixes )
-      .must_equal [["k", ""], ["B", "s"], [1, -1]]
   end
 end
 
@@ -82,9 +44,8 @@ describe SY::Dimension do
 
     # Other constructors: #basic and #zero.
     # 
-    SY::Dimension.basic( :L )
-      .must_equal SY::Dimension.new( :L )
-    SY::Dimension.zero.must_equal SY::Dimension.new()
+    SY::Dimension.basic( :L ).must_equal SY::Dimension.new( :L )
+    SY::Dimension.zero.must_equal SY::Dimension.new
 
     # SY should have table of standard quantities.
     # 
@@ -109,12 +70,10 @@ describe SY::Dimension do
 
     # Dimension arithmetic
     # 
-    ( SY.Dimension( :L ) + SY.Dimension( :M ) )
-      .must_equal SY.Dimension( 'L.M' )
-    ( SY.Dimension( :L ) - SY.Dimension( :M ) )
-      .must_equal SY.Dimension( 'L.M⁻¹' )
-    ( SY.Dimension( :L ) * 2 ).must_equal SY.Dimension( 'L²' )
-    ( SY.Dimension( M: 2 ) / 2 ).must_equal SY.Dimension( :M )
+    assert SY.Dimension( :L ) + SY.Dimension( :M ) == SY.Dimension( 'L.M' )
+    assert SY.Dimension( :L ) - SY.Dimension( :M ) == SY.Dimension( 'L.M⁻¹' )
+    assert SY.Dimension( :L ) * 2 == SY.Dimension( 'L²' )
+    assert SY.Dimension( M: 2 ) / 2 == SY.Dimension( :M )
 
     # #to_s and #inspect
     # 
@@ -760,129 +719,145 @@ end
 #     # or such
 #   end
 
-#   describe Numeric do
-    
-#     # The hallmark of SY library is extension of the Numeric class with
-#     # instance methods whose symbols are the same as recognized unit
-#     # symbols and which serve as constructors of magnitude objects.
-#     # 
-#     it "should provide metrological unit methods" do
+describe Numeric do
+  it "should provide metrological units" do
+    # Length
+    SY::METRE.must_be_kind_of SY::Unit
+    assert SY::Length.standard_unit.equal?( SY::METRE )
+    1.metre.must_be_kind_of SY::Magnitude
+    1.metre.quantity.must_equal SY::Length
+    1.m.must_equal 1.metre
+    1.mm.must_equal 0.001.metre
+    1.cm.must_equal 0.01.m
+    1.dm.must_equal 0.1.m
+    1.km.must_equal 1000.m
+    # Mass
+    SY::KILOGRAM.must_be_a SY::Unit
+    SY::GRAM.must_be_a SY::Unit
+    assert SY::Mass.standard_unit.equal?( SY::KILOGRAM )
+    1.kilogram.must_ba_a SY::Magnitude
+    1.gram.must_be_a SY::Magnitude
+    1.kilogram.quantity.must_equal SY::Mass
+    1.gram.quantity.must_equal SY::Mass
+    1.kilogram.must_equal 1000.g
+    1.miligram.must_equal 0.001.g
+    1.mg.must_equal 1.miligram
+    1.µg.must_equal 0.001.miligram
+    1.ng.must_equal 0.001.microgram
+    1.pg.must_equal 0.001.nanogram
+    SY::TON.must_be_a SY::Unit
+    1.ton.must_equal 1000.kg
+    1.t.must_equal 1.ton
+    1.kt.must_equal 1000.ton
+    1.Mt.must_equal 1000.kiloton
+      # 1.mm.quantity.units[0].name.must_equal :metre
+
+      # 1.mm.to_s.must_equal "0.001.m"
+
+      # 1.mm.inspect.must_equal "#<Magnitude: 0.001.m >"
+
+      # 1.µs.inspect.must_equal "#<Magnitude: 1e-06.s >"
+
+      # SY::AMPERE.name.must_equal :ampere
+
+      # SY::AMPERE.abbreviation.must_equal :A
+
+      # SY::AMPERE.dimension.must_equal 1.A.dimension
+
+      # 1.A.quantity.units[0].amount.must_equal 1
+
+      # SY::Magnitude.new( of: SY::ElectricCurrent, amount: 1 ).must_equal 1.A
+
+      # 1.A.quantity.units[0].name.must_equal :ampere
+
+      # 1.A.to_s( SY::AMPERE ).must_equal "1.A"
+
+      # 1.A.to_s.must_equal "1.A"
+
+      # 1.A.amount.must_equal 1
       
-#       # 1.mm.must_be_kind_of SY::Magnitude
+      # 1.A.quantity.standard_unit.abbreviation.must_equal :A
 
-#       # 1.mm.quantity.units[0].dimension.to_s.must_equal "L"
-      
-#       # 1.mm.quantity.units[0].amount.must_equal 1
+      # 1.A.inspect.must_equal "#<Magnitude: 1.A >"
 
-#       # 1.mm.quantity.units[0].name.must_equal :metre
+      # 1.l⁻¹.( SY::Molarity ).quantity.must_equal SY::Molarity
 
-#       # 1.mm.to_s.must_equal "0.001.m"
+      # x = ( SY::UNIT * SY::Nᴀ / SY::LITRE ).reframe( SY::Molarity )
 
-#       # 1.mm.inspect.must_equal "#<Magnitude: 0.001.m >"
+      # y = 1.molar
 
-#       # 1.µs.inspect.must_equal "#<Magnitude: 1e-06.s >"
+      # y.must_equal x
 
-#       # SY::AMPERE.name.must_equal :ampere
+      # 7.µM
+      #   .must_be_within_epsilon( 5.µM + 2.µM, 1e-9 )
 
-#       # SY::AMPERE.abbreviation.must_equal :A
+      # +1.s.must_equal 1.s
 
-#       # SY::AMPERE.dimension.must_equal 1.A.dimension
+      # # -1.s.must_equal -1 * 1.s # must raise
 
-#       # 1.A.quantity.units[0].amount.must_equal 1
+      # assert_equal -(1.s), +(1.s)
 
-#       # SY::Magnitude.new( of: SY::ElectricCurrent, amount: 1 ).must_equal 1.A
+      # ( 1 / 1.s )
+      #   .must_equal 1.s⁻¹
 
-#       # 1.A.quantity.units[0].name.must_equal :ampere
+      # 1.s⁻¹.( SY::Frequency ).must_equal 1.Hz
 
-#       # 1.A.to_s( SY::AMPERE ).must_equal "1.A"
+      # # 7.°C.must_equal( 8.°C - 1.K )
 
-#       # 1.A.to_s.must_equal "1.A"
+      # # (-15).°C.must_equal 258.15.K
 
-#       # 1.A.amount.must_equal 1
-      
-#       # 1.A.quantity.standard_unit.abbreviation.must_equal :A
+      # # 7000.µM.must_be_within_epsilon( 7.mM, 1e-9 )
 
-#       # 1.A.inspect.must_equal "#<Magnitude: 1.A >"
+      # ::SY::Unit.instances.map do |i|
+      #   begin
+      #     i.abbreviation
+      #   rescue
+      #   end
+      # end.must_include :M
 
-#       # 1.l⁻¹.( SY::Molarity ).quantity.must_equal SY::Molarity
+      # SY::Unit.instance_names.must_include :mol
 
-#       # x = ( SY::UNIT * SY::Nᴀ / SY::LITRE ).reframe( SY::Molarity )
+      # # Avogadro's number is defined directly in SY
+      # assert 1.mol == SY::Nᴀ.unit
 
-#       # y = 1.molar
+      # 0.7.M.must_equal( 0.7.mol.l⁻¹.reframe( SY::Molarity ) )
+      # # (if #reframe conversion method is not used, different quantities
+      # # do not compare. Arithmetics is possible because Magnitude operators
+      # # mostly give their results only in standard quantities.
 
-#       # y.must_equal x
+      # # Avogadro's number is defined directly in SY
+      # 1.mol
+      #   .must_equal SY::Nᴀ.unit
 
-#       # 7.µM
-#       #   .must_be_within_epsilon( 5.µM + 2.µM, 1e-9 )
+      # 0.7.M
+      #   .must_equal( 0.7.mol.l⁻¹.is_actually!( MOLARITY ) )
+      # # (if #is_actually! conversion method is not used, current
+      # # implementation will refuse to compare different quantities,
+      # # even if their dimensions match)
 
-#       # +1.s.must_equal 1.s
+      # 30.Hz
+      #   .must_equal 30.s⁻¹.( FREQUENCY )
 
-#       # # -1.s.must_equal -1 * 1.s # must raise
+      # # Dalton * Avogadro must be 1 gram
+      # ( 1.Da * Nᴀ )
+      #   .must_be_within_epsilon( 1.g, 1e-6 )
 
-#       # assert_equal -(1.s), +(1.s)
+      # # kilogram
+      # 1.kg.must_equal 1000.g
+      # ( 1.kg * 1.m.s⁻² ).is_actually!( FORCE ).must_be_within_epsilon 1.N, 1e-9
 
-#       # ( 1 / 1.s )
-#       #   .must_equal 1.s⁻¹
+      # # joule
+      # ( 1.N * 1.m ).is_actually!( ENERGY ).must_equal 1.J
+      # 1e-23.J.K⁻¹.must_equal 1.0e-20.mJ.K⁻¹
 
-#       # 1.s⁻¹.( SY::Frequency ).must_equal 1.Hz
+      # # pascal
+      # ( 1.N / 1.m ** 2 ).is_actually!( PRESSURE ).must_be_within_epsilon 1.Pa, 1e-9
 
-#       # # 7.°C.must_equal( 8.°C - 1.K )
+      # # watt
+      # ( 1.V * 1.A ).is_actually!( POWER ).must_be_within_epsilon 1.W, 1e-9
 
-#       # # (-15).°C.must_equal 258.15.K
-
-#       # # 7000.µM.must_be_within_epsilon( 7.mM, 1e-9 )
-
-#       # ::SY::Unit.instances.map do |i|
-#       #   begin
-#       #     i.abbreviation
-#       #   rescue
-#       #   end
-#       # end.must_include :M
-
-#       # SY::Unit.instance_names.must_include :mol
-
-#       # # Avogadro's number is defined directly in SY
-#       # assert 1.mol == SY::Nᴀ.unit
-
-#       # 0.7.M.must_equal( 0.7.mol.l⁻¹.reframe( SY::Molarity ) )
-#       # # (if #reframe conversion method is not used, different quantities
-#       # # do not compare. Arithmetics is possible because Magnitude operators
-#       # # mostly give their results only in standard quantities.
-
-#       # # Avogadro's number is defined directly in SY
-#       # 1.mol
-#       #   .must_equal SY::Nᴀ.unit
-
-#       # 0.7.M
-#       #   .must_equal( 0.7.mol.l⁻¹.is_actually!( MOLARITY ) )
-#       # # (if #is_actually! conversion method is not used, current
-#       # # implementation will refuse to compare different quantities,
-#       # # even if their dimensions match)
-
-#       # 30.Hz
-#       #   .must_equal 30.s⁻¹.( FREQUENCY )
-
-#       # # Dalton * Avogadro must be 1 gram
-#       # ( 1.Da * Nᴀ )
-#       #   .must_be_within_epsilon( 1.g, 1e-6 )
-
-#       # # kilogram
-#       # 1.kg.must_equal 1000.g
-#       # ( 1.kg * 1.m.s⁻² ).is_actually!( FORCE ).must_be_within_epsilon 1.N, 1e-9
-
-#       # # joule
-#       # ( 1.N * 1.m ).is_actually!( ENERGY ).must_equal 1.J
-#       # 1e-23.J.K⁻¹.must_equal 1.0e-20.mJ.K⁻¹
-
-#       # # pascal
-#       # ( 1.N / 1.m ** 2 ).is_actually!( PRESSURE ).must_be_within_epsilon 1.Pa, 1e-9
-
-#       # # watt
-#       # ( 1.V * 1.A ).is_actually!( POWER ).must_be_within_epsilon 1.W, 1e-9
-
-#       # # pretty representation
-#       # ( 1.m / 3.s ).to_s.must_equal( "0.33.m.s⁻¹" )
-#       # ( 1.m / 7.01e7.s ).to_s.must_equal( "1.4e-08.m.s⁻¹" )
-#     end
-#   end
-# end
+      # # pretty representation
+      # ( 1.m / 3.s ).to_s.must_equal( "0.33.m.s⁻¹" )
+      # ( 1.m / 7.01e7.s ).to_s.must_equal( "1.4e-08.m.s⁻¹" )
+  end
+end

@@ -1,151 +1,132 @@
 #encoding: utf-8
 
 require 'y_support/all'
-# require_relative 'sy/version'
 
-require_relative 'sy/unit_methods_mixin'
-require_relative 'sy/fixed_assets_of_the_module'
-require_relative 'sy/dimension'
-require_relative 'sy/quantity'
-require_relative 'sy/magnitude'
-require_relative 'sy/signed_mixin'
-require_relative 'sy/signed_magnitude'
-require_relative 'sy/unit_mixin'
-require_relative 'sy/unit'
-
-# require './sy/version'
-
-# require './sy/unit_methods_mixin'
-# require './sy/fixed_assets_of_the_module'
-# require './sy/dimension'
-# require './sy/quantity'
-# require './sy/magnitude'
-# require './sy/signed_mixin'
-# require './sy/signed_magnitude'
-# require './sy/unit_mixin'
-# require './sy/unit'
-
-class Numeric
-  include ::SY::UnitMethodsMixin
+if caller.any? { |ς| ς.include? 'irb.rb' } then
+  require './sy/version'
+  require './sy/unit_methods_mixin'
+  require './sy/fixed_assets_of_the_module'
+  require './sy/dimension'
+  require './sy/quantity'
+  require './sy/magnitude'
+  require './sy/signed_mixin'
+  require './sy/signed_magnitude'
+  require './sy/unit_mixin'
+  require './sy/unit'
+else
+  require_relative 'sy/version'
+  require_relative 'sy/expressible_in_units'
+  require_relative 'sy/fixed_assets_of_the_module'
+  require_relative 'sy/dimension'
+  require_relative 'sy/quantity'
+  require_relative 'sy/magnitude'
+  require_relative 'sy/signed_magnitude_mixin'
+  require_relative 'sy/signed_magnitude'
+  require_relative 'sy/unit'
 end
 
-# These requires will be necessary as soon as y_support is made according
-# to the structure of active_support.
+# The hallmark of SY is its extension of the Numeric class with methods
+# corresponding to selected metrological units and their abbreviations.
 # 
-# require 'y_support/core_ext/object/blank'
-# require 'y_support/core_ext/module/delegation'
-# require 'y_support/core_ext/hash/reverse_merge'
-# require 'y_support/core_ext/array/extract_options'
+Numeric.module_exec { include SY::ExpressibleInUnits }
 
 module SY
+  DEBUG = true
+
   Nᴀ = AVOGADRO_CONSTANT = 6.02214e23
 
-  # === Standard quantities of basic dimensions
+  # === Basic dimension L
 
-  Length = Quantity.standard of: Dimension( :L )
-  Mass = Quantity.standard of: Dimension( :M )
-  Time = Quantity.standard of: Dimension( :T )
-  ElectricCharge = Quantity.standard of: Dimension( :Q )
-  Temperature = Quantity.standard of: Dimension( :Θ )
+  Length = Quantity.standard of: :L
+  METRE = Unit.standard of: Length, short: "m"
 
-  # # === Their units
+  # === Basic dimension M
 
-  GRAM = Unit.of Mass, abbreviation: "g"
+  Mass = Quantity.standard of: :M
+  GRAM = Unit.of Mass, short: "g"
   KILOGRAM = Unit.standard of: Mass, amount: 1000.g
-  METRE = Unit.standard of: Length, abbreviation: "m"
-  SECOND = Unit.standard of: Time, abbreviation: "s"
-  COULOMB = Unit.standard of: ElectricCharge, abbreviation: "C"
-  KELVIN = Unit.standard of: Temperature, abbreviation: "K"
-  DALTON = Unit.of Mass, abbreviation: "Da", amount: 1.66053892173e-27.kg
-  MINUTE = Unit.of Time, abbreviation: "min", amount: 60.s
-  HOUR = Unit.of Time, abbreviation: "h", amount: 60.min
+  TON = Unit.of Mass, short: "t"
+  DALTON = Unit.of Mass, short: "Da", amount: 1.66053892173e-27.kg
 
-  
-  # === Other quantities
-  
-  Speed = ( Length / Time ).standard
-  Acceleration = ( Speed / Time ).standard
-  Force = ( Acceleration * Mass ).standard
-  Energy = ( Force * Length ).standard
-  Power = ( Energy / Time ).standard
-  Area = ( Length ** 2 ).standard
-  Volume = ( Length ** 3 ).standard
-  Pressure = ( Force / Area ).standard
-  Amount = Quantity.dimensionless
+  # === Basic dimension T
+
+  Time = Quantity.standard of: :T
+  SECOND = Unit.standard of: Time, short: "s"
+  MINUTE = Unit.of Time, short: "min", amount: 60.s
+  HOUR = Unit.of Time, short: "h", amount: 60.min
+
+  # === Basic dimension Q
+
+  ElectricCharge = Quantity.standard of: :Q
+  COULOMB = Unit.standard of: ElectricCharge, short: "C"
+
+  # === Basic dimension Θ
+
+  Temperature = Quantity.standard of: :Θ
+  KELVIN = Unit.standard of: Temperature, short: "K"
+
+  CelsiusTemperature = Quantity.of :Θ
+  CELSIUS = Unit.standard of: CelsiusTemperature, short: '°C'
+  # FIXME: Patch CelsiusTemperature to make it work with SY::Temperature
+  # alias :°C :celsius                 # with U+00B0 DEGREE SIGN
+  # alias :˚C :celsius                 # with U+02DA RING ABOVE
+  # alias :℃ :celsius                  # U+2103 DEGREE CELSIUS
+
+  # FahrenheitTemperature = Quantity.of :Θ
+  # FAHRENHEIT = Unit.standard of: FahrenheitTemperature, short: '°F'
+  # # alias :°F :fahrenheit              # with U+00B0 DEGREE SIGN
+  # # alias :˚F :fahrenheit              # with U+02DA RING ABOVE
+  # # alias :℉ :fahrenheit               # U+2109 DEGREE FAHRENHEIT
+  # # FIXME: Patch FahrenheitTemperature to make it work with SY::Temperature
+
+  # === Dimensionless quantities
+
+  Amount = Quantity.standard of: Dimension.zero
+  UNIT = Unit.standard of: Amount
+
   MoleAmount = Quantity.dimensionless
+  MOLE = Unit.standard of: MoleAmount, short: "mol", amount: Nᴀ
 
-  # # Molarity is not a standard quantity. Let the standard quantity remain
-  # # unnamed with dimension L⁻³, and molarity a standalone named quantity.
-  # # 
-  # Molarity = Amount / Volume
+  # degree, alias deg, ° # angle measure
+  # arcminute, alias ʹ, ′ # angle measure
+  # arcsecond, alias ʹʹ, ′′, ″
 
-  # ElectricCurrent = ( ElectricCharge / Time ).standard
-
-  # ElectricPotential = ( Energy / ElectricCharge ).standard
-
-  # # Again, let us the standard quantity of T⁻¹ dimension be unnamed, and
-  # # Frequency with Hz as its standard unit, be a standalone named quantity.
-  # # 
-  # Frequency = 1 / Time
-
-  # CelsiusTemperature = Quantity.of Temperature.dimension
-  # # TODO: Now we would do singleton modifications to this quantity, so that
-  # # arithmetic would work as it should.
-
-#   # # === Their units
+  # === Quantities of composite dimensions
   
-#   # NEWTON = Unit.standard of: Force, abbreviation: "N"
+  Area = Length ** 2
+  Volume = Length ** 3
+  LITRE = Unit.of Volume, short: "l", amount: 1.dm³
 
-#   # JOULE = Unit.standard of: Energy, abbreviation: "J"
+  Frequency = 1 / Time
+  HERTZ = Unit.of Frequency, short: "Hz"
 
-#   # # Using thermochemical calorie.
-#   # # 
-#   # CALORIE = Unit.of Energy, abbreviation: "cal", amount: 4.184.J
+  Speed = Quantity.standard( Length / Time )
 
-#   # WATT = Unit.standard of: Power, abbreviation: "W"
+  Acceleration = Quantity.standard( Speed / Time )
 
-#   # LITRE = Unit.of( Volume, { abbreviation: "l", amount: 1.dm³ } )
+  Force = Quantity.standard( Acceleration * Mass )
+  NEWTON = Unit.standard of: Force, short: "N"
 
-#   # PASCAL = Unit.standard of: Pressure, abbreviation: "Pa"
+  Energy = Quantity.standard( Force * Length )
+  JOULE = Unit.standard of: Energy, short: "J"
+  # SY::CALORIE means thermochemical calorie.
+  CALORIE = Unit.of Energy, short: "cal", amount: 4.184.J
 
-#   # # Instead of using mole, I find it more natural to count in "units",
-#   # # (as in 1.unit.s⁻¹).
-#   # # 
-#   # UNIT = Unit.standard of: Amount
+  Power = Quantity.standard( Energy / Time )
+  WATT = Unit.standard of: Power, short: "W"
 
-#   # # Mole in this library is defined as AVOGADRO_CONSTANT units.
-#   # # 
-#   # MOLE = Unit.standard of: MoleAmount, short: "mol", amount: UNIT * Nᴀ
+  Pressure = Quantity.standard( Force / Area )
+  PASCAL = Unit.standard of: Pressure, abbreviation: "Pa"
 
-#   # # 1.M, unit of molarity.
-#   # # 
-#   # MOLAR = Unit.standard of: Molarity, abbreviation: "M", amount: 1.mol.l⁻¹
+  ElectricCurrent = Quantity.standard( ElectricCharge / Time )
+  AMPERE = Unit.standard of: ElectricCurrent, abbreviation: "A"
 
-#   # AMPERE = Unit.standard of: ElectricCurrent, abbreviation: "A"
+  ElectricPotential = Quantity.standard( Energy / ElectricCharge )
+  VOLT = Unit.standard of: ElectricPotential, abbreviation: "V"
 
-#   # VOLT = Unit.standard of: ElectricPotential, abbreviation: "V"
+  Molarity = MoleAmount / Volume
+  MOLAR = Unit.standard of: Molarity, abbreviation: "M", amount: 1.mol.l⁻¹
 
-#   # CELSIUS = Unit.standard of: CelsiusTemperature, short: "°C"
-
-#   # HERTZ = Unit.of Frequency, short: "Hz"
+  Molality = MoleAmount / Mass
+  MOLAL = Unit.of Molality
 end
-
-# Feature proposals for later development:
-# 
-# alias :Celsius :celsius
-# alias :degree_celsius :celsius
-# alias :degree_Celsius :celsius
-# alias :°C :celsius                 # with U+00B0 DEGREE SIGN
-# alias :˚C :celsius                 # with U+02DA RING ABOVE
-# alias :℃ :celsius                  # U+2103 DEGREE CELSIUS
-# 
-# alias :Fahrenheit :fahrenheit
-# alias :degree_fahrenheit :fahrenheit
-# alias :degree_Fahrenheit :fahrenheit
-# alias :°F :fahrenheit              # with U+00B0 DEGREE SIGN
-# alias :˚F :fahrenheit              # with U+02DA RING ABOVE
-# alias :℉ :fahrenheit               # U+2109 DEGREE FAHRENHEIT
-# 
-# degree, alias deg, ° # angle measure
-# arcminute, alias ʹ, ′ # angle measure
-# arcsecond, alias ʹʹ, ′′, ″
