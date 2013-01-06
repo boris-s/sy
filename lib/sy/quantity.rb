@@ -1,11 +1,14 @@
 #encoding: utf-8
 
-# This class represents a metrological quantity.
+class SY::QuantityComposition
+end
+
+# Quantity.
 # 
 class SY::Quantity
   include NameMagic
-  attr_reader :dimension, :magnitude, :factorization
-  
+  attr_reader :dimension, :magnitude, :unit, :relationship
+
   # The keys of this hash are unary or binary mathematical operations on
   # quantities. They are stored as and array, whose 1st element is the
   # operator method, and the rest are the operands (eg. [ :/, Length, Time ],
@@ -96,29 +99,67 @@ class SY::Quantity
         ꜧ.has? :dimension, syn!: :of
       new *( args << ꜧ.merge!( dimension: SY::Dimension.zero ) )
     end
+
+    def << other
+      puts "Hello from custom #<<"
+    end
   end
   
   # Standard constructor of a metrological quantity. A quantity may have
   # a name and a dimension.
   # 
-  def initialize *args
-    ꜧ = args.extract_options!
-    if ꜧ.has? :composition then
-      @composition = ꜧ[:composition]
-      @dimension = dimension_of_composition( @composition )
-      raise AErr, "Conflict in arguments: Explicitly stated dimension " +
-        "different from the composition dimension!" unless
-        @dimension == ꜧ[:dimension] if ꜧ.has? :dimension, syn!: :of
+  def initialize args={}
+    @relative = args[:relative]      # relative vs. absolute quantity
+    if args.has? :composition then
+      @composition = SY::Quantity::Composition.new args[:composition]
+      @dimension = @composition.dimension
     else
-      @dimension = SY.Dimension( ꜧ.must_have :dimension )
+      @dimension = SY.Dimension( args.must_have :dimension, syn!: :of )
     end
-    @magnitude = Class.new( SY::Magnitude )
-    @signed_magnitude = Class.new @magnitude do
-      include SY::SignedMagnitudeMixin
+    # Prepare parametrized magnitude class
+    mixin = magnitude_mixin
+    @magnitude = Class.new do
+      include SY::Magnitude
+      include mixin
     end
+    # and unit class.
     @unit = Class.new @magnitude do
       include SY::Unit
     end
+  end
+
+  # Is the quantity relative?
+  #
+  def relative?
+    @relative ? true : false
+  end
+
+  # Is the quantity absolute? (Opposite of #relative?)
+  # 
+  def absolute?
+    ! relative?
+  end
+
+  # Relative quantity related to this quantity.
+  # 
+  def relative_quantity
+    @relative_quantity or
+      self.relative_quantity = relative? ? self : construct_relative_quantity
+  end
+
+  def relative_quantity= qnt
+    @relative_quantity = qnt
+  end
+
+  # Absolute quantity related to this quantity.
+  # 
+  def absolute_quantity
+    @absolute_quantity or
+      self.absolute_quantity = absolute? ? self : construct_absolute_quantity
+  end
+
+  def absolute_quantity= qnt
+    @absolute_quantity = qnt
   end
 
   def composition
@@ -127,17 +168,28 @@ class SY::Quantity
 
   # Writer of standard unit
   # 
-  def standard_unit= unit
-    @standard_unit = unit.aT_kind_of @unit
-    # Make it the most favored unit
-    units.unshift( unit ).uniq!
+  def standard_unit_set unit, relationship
+    @relationship = relationship
+    @standard_unit = unit.aE { |u| u.quantity == quantity }
+  end
+
+  def reletionship_set magnitude_of_other_quantity
+    # FIXME: Other quantity must be
+    # 1. other, different from this one
+    # 2. must have same relative/absolute status as this quantity
+    # 3. the partner relative/absolute quantity must not have
+    #    conflicting relationship
+    #
+    # ... actually, already dimensions wil be divided into
+    # L/ΔL, T/ΔT, M/ΔM, 
+    # 
+    @relationship = magnitude_of_other_quantity
   end
 
   # Reader of standard unit.
   # 
-  def standard_unit *args
-    ꜧ = args.extract_options!
-    @standard_unit ||= new_unit *args
+  def standard_unit args={}
+    @standard_unit ||= new_unit args
   end
 
   # Presents an array of units ordered as favored by this quantity.
@@ -146,72 +198,61 @@ class SY::Quantity
     @units ||= []
   end
 
-  # Creates a new magnitude pertinent to this quantity. Takes one argument —
-  # amount of the magnitude.
+  # Constructs a new absolute magnitude of this quantity.
   # 
-  def new_magnitude *args
-    ꜧ = args.extract_options!
-    @magnitude.new *args, ꜧ.merge!( quantity: self )
+  def new_magnitude arg
+    @magnitude.new quantity: self, amount: arg
   end
 
-  def amount *args
-    ꜧ = args.extract_options!
-    raise AErr, "#amount requires exactly 1 ordered argument" unless
-      args.size == 1
-    new_magnitude ꜧ.merge!( amount: args[0] )
-  end
-  alias :amount :new_magnitude
-
-  # Creates a new unit pertinent to this quantity.
+  # Constructs a new unit of this quantity.
   # 
-  def new_unit *args
-    ꜧ = args.extract_options!
-    @unit.new *args, ꜧ.merge!( quantity: self )
+  def new_unit args={}
+    unit.new args.merge( quantity: self )
   end
 
-  # Quantity arithmetic: multiplication.
+  # Quantity multiplication.
   # 
   def * other
     OPERATION_TABLE[ :*, self, other ]
   end
 
-  # Quantity arithmetic: division.
+  # Quantity division.
   # 
   def / other
     OPERATION_TABLE[ :/, self, other ]
   end
 
-  # Quantity arithmetic: power to a number.
+  # Quantity raising to a number.
   # 
   def ** number
     OPERATION_TABLE[ :**, self, number ]
   end
 
-  # Inquirer whether the quantity is dimensionless.
+  # Is the quantity dimensionless?
   # 
   def dimensionless?
     dimension.zero?
   end
 
-  # Make this quantity the standard quantity for its dimension.
+  # Make the quantity standard for its dimension.
   # 
   def standard!
     SY::Dimension.standard_quantities[ dimension ] = self
   end
 
-  # Retrieves the standard quantity for the dimension of this quantity.
+  # Returns the standard quantity for this quantity's dimension.
   # 
   def standard
     dimension.standard_quantity
   end
 
-  # Produces a string briefly describing the quantity.
+  # A string briefly describing the quantity.
   # 
   def to_s
     name.nil? ? "[#{dimension}]" : name.to_s
   end
 
-  # Produces the inspect string of the quantity.
+  # Inspect string.
   # 
   def inspect
     "#<Quantity: #{to_s} >"
@@ -239,6 +280,27 @@ class SY::Quantity
 
   private
 
+  def construct_relative_quantity
+    if name then
+      ç.new dimension: dimension, relative: true, name: "#{name}Difference"
+    else
+      ç.new dimension: dimension, relative: true
+    end
+  end
+
+  def construct_absolute_quantity
+    if name && name.to_s.ends_with?( "Difference" ) &&
+        ! ( stripped_name = name[0..("Difference".size - 1)] ).empty? then
+      ç.new dimension: dimension, relative: false, name: stripped_name
+    else
+      ç.new dimension: dimension, relative: false
+    end
+  end
+
+  def magnitude_mixin
+    relative? ? SY::SignedMagnitudeMixin : SY::AbsoluteMagnitudeMixin
+  end
+
   def same_dimension? other
     case other
     when Numeric then dimensionless?
@@ -248,15 +310,75 @@ class SY::Quantity
   end
 
   def default_composition
-    dimension.to_hash.each_with_object Hash.new do |pair, ꜧ|
+    ꜧ = dimension.to_hash.each_with_object Hash.new do |pair, ꜧ|
       dim, exp = pair
       ꜧ.merge!( SY.Dimension( dim ).standard_quantity => exp ) if exp.abs > 0
     end
+    return SY::Quantity::Composition.new ꜧ
   end
 
-  def dimension_of_composition comp
-    comp.map { |quantity, exponent|
-      quantity.dimension * exponent
-    }.reduce( :+ )
+  # Composition of quantities.
+  # 
+  class Composition
+    # Constructor of an empty composition.
+    # 
+    def self.empty
+      new Hash.new
+    end
+
+    attr_reader :hash
+
+    def to_hash
+      hash
+    end
+
+    delegate :empty?, to: :hash
+    
+    # Takes a hash or equivalent (including another Composition object) and
+    # uses it to construct a Composition instance.
+    # 
+    def initialize composition_hash
+      @hash = composition_hash.to_hash.modify do |key, val|
+        [ SY.Quantity( key ), Integer( val ) ]
+      end.reject { |key, val| val.zero? }
+    end
+
+    # Inquirer whether the composition is atomic. Atomic compositions
+    # consist of only a single quantity with basic dimension in exponent 1.
+    # 
+    def atomic?
+      return false if @hash.size > 1
+      qnt, exp = @hash.first
+      return false if exp != 1
+      qnt.dimension.basic? || qnt.dimension.zero?
+    end
+
+    # Merges two compositions.
+    # 
+    def merge other
+      ç.new( hash.merge( other.to_hash ) { |_, v1, v2| v1 + v2 } )
+    end
+    
+    # Try to simplify the composition by decomposing its quantities.
+    # 
+    def expand
+      return self if atomic?
+      ç.new( hash.each.reduce( ç.empty ) { |acc, pair|
+               comp, exp = pair
+               exp.times.reduce acc do |acc, _| acc.merge comp end
+             } )
+    end
+
+    # TODO: Over here, quantity factorization will be a problem
+
+    # Compositions compare by their hashes.
+    # 
+    def == other
+      hash == other.hash
+    end
+
+    def dimension
+      hash.map { |qnt, exp| qnt.dimension * exp }.reduce SY::Dimension.zero, :+
+    end
   end
 end # class SY::Quantity

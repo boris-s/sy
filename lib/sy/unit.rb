@@ -66,14 +66,15 @@ module SY::Unit
       # quantity unchanged, but can and should be overriden for those unit,
       # which have area-specific prefix use.)
       # 
-      SY::PREFIX_TABLE.full.each { |full_prefix|
+      SY::PREFIX_TABLE.full_prefixes.each do |full_prefix|
         unless full_prefix.empty?
           define_method full_prefix do
             SY::Quantity.instance( quantity_by_prefix( full_prefix ) )
-              .amount self * SY::PREFIX_TABLE.hash_full[ full_prefix ][:factor]
+              .new_magnitude( self * SY::PREFIX_TABLE
+                                .hash_full[ full_prefix ][:factor] )
           end
         end
-      }
+      end
     end # module_exec
   end # def self.included
 
@@ -95,25 +96,22 @@ module SY::Unit
       return qnt.new_unit *( ꜧ.empty? ? args : args << ꜧ )
     end
     
-    # Standard unit constructor.
+    # Standard unit constructor. Quantity must be specified in its named
+    # arguments (:quantity alias :of). In absence of other named arguments,
+    # standard unit of this quantity is retrieved. If other named argument
+    # than :quantity are supplied, a new unit instance is constructed and
+    # set as standard unit of the specified quantity.
     # 
-    def standard *args
-      ꜧ = args.extract_options!
-      qnt = case args.size
-            when 0 then
-              ꜧ.must_have( :quantity, syn!: :of )
-              ꜧ.delete :quantity
-            when 1 then args.shift
-            else
-              raise AErr, "Too many ordered arguments!"
-            end
-      args = ( ꜧ.empty? ? args : args << ꜧ )
-      if args.empty? then
-        qnt.standard_unit
-      else
-        instance = qnt.new_unit *args
-        qnt.standard_unit = instance
-      end
+    def standard args={}
+      args.must_have :quantity, syn!: :of
+      qnt = SY::Quantity.instance( args.delete :quantity )
+      return qnt.standard_unit if args.empty?
+      tuto tuto tuto
+      # now here, :amount gets different meaning
+      # it has to be extracted and replaced by 1, compulsory for standard units
+      unit_instance = qnt.new_unit( args )
+      qnt.standard_unit_set( unit_instance )
+      return unit_instance
     end
     
     # Unit abbreviations as a hash of abbreviation => unit pairs.
@@ -156,12 +154,17 @@ module SY::Unit
   # ambiguity with regard to standard prefixes and abbreviations thereof should
   # also be avoided.
   # 
-  def initialize *args
-    ꜧ = args.extract_options!
-    if ꜧ.has? :abbreviation, syn!: :short then
-      @abbreviation = ꜧ[:abbreviation].to_sym
+  def initialize args={}
+    if args.has? :abbreviation, syn!: :short then
+      @abbreviation = args.delete( :abbreviation ).to_sym
     end
-    super
+    # FIXME: Here, we would have to watch out for :amount being set
+    # if it is a number, amount is in standard units
+    # however, if it is a magnitude, especially one of another equidimensional quantity,
+    # it estableshes a relationship between this and that quantity. It means that
+    # the unit amount automatically becomes ... one ... and such relationship can
+    # only be established for standard quantity
+    super args
   end
 
   # Addition: Unit is converted to a magnitude before the operation.
@@ -221,9 +224,9 @@ module SY::Unit
 
   # Converts a unit into ordinary magnitude.
   # 
-  def to_magnitude factor=1
-    if factor == 1 then quantity.amount( amount ) else
-      quantity.amount( amount ) * factor
+  def to_magnitude factor=nil
+    if factor.nil? then quantity.new_magnitude( amount ) else
+      quantity.new_magnitude( amount ) * factor
     end
   end
 

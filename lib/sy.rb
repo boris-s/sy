@@ -1,6 +1,7 @@
 #encoding: utf-8
 
 require 'y_support/all'
+require 'bigdecimal'
 
 if caller.any? { |ς| ς.include? 'irb.rb' } then
   require './sy/version'
@@ -9,8 +10,8 @@ if caller.any? { |ς| ς.include? 'irb.rb' } then
   require './sy/dimension'
   require './sy/quantity'
   require './sy/magnitude'
-  require './sy/signed_magnitude_mixin'
-  require './sy/signed_magnitude'
+  require './sy/absolute_magnitude_mixin'
+  require './sy/relative_magnitude_mixin'
   require './sy/unit'
 else
   require_relative 'sy/version'
@@ -19,8 +20,8 @@ else
   require_relative 'sy/dimension'
   require_relative 'sy/quantity'
   require_relative 'sy/magnitude'
-  require_relative 'sy/signed_magnitude_mixin'
-  require_relative 'sy/signed_magnitude'
+  require_relative 'sy/absolute_magnitude_mixin'
+  require_relative 'sy/relative_magnitude_mixin'
   require_relative 'sy/unit'
 end
 
@@ -32,6 +33,12 @@ Numeric.module_exec { include SY::ExpressibleInUnits }
 module SY
   DEBUG = false
 
+  # === Basic settings
+
+  # Digits to take when constructing magnitude from a low-precision numeric.
+  #
+  NUMERIC_FILTER = 6
+
   Nᴀ = AVOGADRO_CONSTANT = 6.02214e23
 
   # === Basic dimension L
@@ -42,9 +49,9 @@ module SY
   # === Basic dimension M
 
   Mass = Quantity.standard of: :M
-  GRAM = Unit.of Mass, short: "g"
-  KILOGRAM = Unit.standard of: Mass, amount: 1000.g
-  TON = Unit.of Mass, short: "t"
+  KILOGRAM = Unit.standard of: Mass, short: "kg"
+  GRAM = Unit.of Mass, amount: 0.001.kg, short: "g"
+  TON = Unit.of Mass, amount: 1000.kg, short: "t"
   DALTON = Unit.of Mass, short: "Da", amount: 1.66053892173e-27.kg
 
   # === Basic dimension T
@@ -84,7 +91,7 @@ module SY
   UNIT = Unit.standard of: Amount
 
   MoleAmount = Quantity.dimensionless
-  MOLE = Unit.standard of: MoleAmount, short: "mol", amount: Nᴀ
+  MOLE = Unit.standard of: MoleAmount, short: "mol", amount: Nᴀ * UNIT
 
   # degree, alias deg, ° # angle measure
   # arcminute, alias ʹ, ′ # angle measure

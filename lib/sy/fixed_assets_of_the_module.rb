@@ -13,9 +13,34 @@ module SY
     T: :TIME
   }
 
-  # #letters singleton method is an alias for #keys
-  # 
-  BASE_DIMENSIONS.define_singleton_method :letters do keys end
+  class << BASE_DIMENSIONS
+    # Letters of base dimensions.
+    # 
+    def letters
+      keys
+    end
+
+    # Base dimensions letters with prefixes.
+    # 
+    def prefixed_letters
+      [] # none for now
+    end
+
+    # Base dimension symbols – letters and prefixed letters.
+    # 
+    def base_symbols
+      @baseß ||= letters + prefixed_letters
+    end
+    alias basic_symbols base_symbols
+
+    # Takes an sps representing a dimension, and converts it to a hash of
+    # base dimension symbols => exponents.
+    # 
+    def parse_sps( sps )
+      _, letters, exponents = ::SY::SPS_PARSER.( sps, self.letters )
+      return Hash[ letters.map( &:to_sym ).zip( exponents.map( &:to_i ) ) ]
+    end
+  end
 
   # Table of standard prefixes and their corresponding unit multiples.
   # 
@@ -37,31 +62,55 @@ module SY
                    { full: "femto", short: "f", factor: 1e-15 },
                    { full: "atto", short: "a", factor: 1e-18 } ]
 
-  # Valid full prefixes rendered as a list (simple array).
-  # 
-  def PREFIX_TABLE.full
-    map { |row| row[:full] }
-  end
 
-  # Valid shortened prefixes rendered as a list (simple array).
-  # 
-  def PREFIX_TABLE.short
-    map { |row| row[:short] }
-  end
-
-  # A hash of full prefixes => corresponding rows.
-  # 
-  def PREFIX_TABLE.hash_full
-    each_with_object Hash.new do |row, memo_hash|
-      memo_hash[ row[:full] ] = row
+  class << PREFIX_TABLE
+    # List of full prefixes.
+    # 
+    def full_prefixes
+      map { |row| row[:full] }
     end
-  end
 
-  # A hash of short prefixes => corresponding rows.
-  # 
-  def PREFIX_TABLE.hash_short
-    each_with_object Hash.new do |row, memo_hash|
-      memo_hash[ row[:short] ] = row
+    # List of prefix abbreviations.
+    # 
+    def prefix_abbreviations
+      map { |row| row[:short] }
+    end
+
+    # A hash of clue => corresponding_row pairs.
+    # 
+    def row clue
+      ( @rowꜧ ||= Hash.new do |k, ꜧ|
+          case clue
+          when Symbol then ꜧ[k] = ꜧ[k.to_s] if ꜧ[k.to_s]
+          else
+            r = find { |r| [r[:full], r[:short], r[:factor]].include? k }
+            ꜧ[k] = r if r
+          end
+        end )[clue]
+    end
+
+    # Converts a clue to a full prefix.
+    # 
+    def to_full clue
+      ( @fullꜧ ||= Hash.new { |k, ꜧ|
+          ꜧ[k] = result if result = row( clue )[:full]
+        } )[clue]
+    end
+
+    # Converts a clue to a prefix abbreviation.
+    # 
+    def to_short clue
+      ( @shortꜧ ||= Hash.new { |k, ꜧ|
+          ꜧ[k] = result if result = row( clue )[:short]
+        } )[clue]
+    end
+
+    # Converts a clue to a factor.
+    # 
+    def to_factor clue
+      ( @factorꜧ ||= Hash.new { |k, ꜧ|
+          ꜧ[k] = result if result = row( clue )[:factor]
+        } )[clue]
     end
   end
 
@@ -184,30 +233,30 @@ module SY
 
   # Convenience dimension accessor.
   # 
-  def Dimension dim_spec=proc{ return SY::Dimension }.call
-    case dim_spec.to_s
+  def Dimension id=proc{ return SY::Dimension }.call
+    case id.to_s
     when '', 'nil', 'null', 'zero', '0', '⊘', 'ø' then ::SY::Dimension.zero
-    else ::SY::Dimension.new dim_spec end
+    else ::SY::Dimension.new id end
   end
 
   # Convenience quantity instance accessor.
   # 
-  def Quantity quantity_spec=proc{ return ::SY::Quantity }.call
-    ::SY::Quantity.instance quantity_spec
+  def Quantity id=proc{ return ::SY::Quantity }.call
+    ::SY::Quantity.instance id
   end
 
   # Convenience unit instance accessor.
   # 
-  def Unit unit_spec
-    ::SY::Unit.instance unit_spec
+  def Unit id=proc{ return ::SY::Unit }.call
+    ::SY::Unit.instance id
   end
 
   # Explicit magnitude constructor.
   # 
-  def Magnitude *args
-    if args.empty? then ::SY::Magnitude else
-      ::SY::Magnitude.new *args
-    end
+  def Magnitude args=proc{ return ::SY::Magnitude }.call
+    args.must_have :quantity, syn!: :of
+    qnt = args.delete :quantity
+    ::SY::Magnitude.of qnt, args
   end
 
   module_function :Dimension, :Quantity, :Unit, :Magnitude

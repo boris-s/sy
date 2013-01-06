@@ -2,7 +2,7 @@
 
 # Qualities specific to relative magnitudes.
 # 
-module SY::SignedMagnitudeMixin
+module SY::RelativeMagnitudeMixin
   # Relative magnitude constructor takes :quantity (alias :of) named argument,
   # and :amount named argument, where :amount is allowed to be negative.
   # 
