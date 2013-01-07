@@ -249,7 +249,7 @@ module SY
 
   # Custom error class for attempts to mix incompatible quantities.
   # 
-  class IncompatibleQuantityError < StandardError; end
+  class QuantityError < StandardError; end
 
 
   # Convenience dimension accessor.

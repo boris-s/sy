@@ -781,6 +781,8 @@ describe "support of unit methods by Numerics and related features" do
     1.l⁻¹.( SY::Molarity ).quantity.must_equal SY::Molarity
     puts SY::LITRE.class
     puts SY::LITRE.class.ancestors
+    puts 1.l.class
+    puts 1.l.class.ancestors
     x = ( SY::Nᴀ / SY::LITRE ).reframe( SY::Molarity )
     y = 1.molar
     y.must_equal x

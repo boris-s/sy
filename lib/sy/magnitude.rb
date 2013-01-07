@@ -21,7 +21,7 @@ module SY::Magnitude
     def absolute *args
       ꜧ = args.extract_options!
       qnt = ꜧ[:quantity] || ꜧ[:of] || args.shift
-      return qnt.absolute_quantity.new_magnitude ꜧ[:amount]
+      return qnt.absolute.magnitude ꜧ[:amount]
     end
 
     # Constructor of relative magnitudes of a given quantity.
@@ -29,13 +29,13 @@ module SY::Magnitude
     def difference *args
       ꜧ = args.extract_options!
       qnt = ꜧ[:quantity] || ꜧ[:of] || args.shift
-      return qnt.relative_quantity.new_magnitude ꜧ[:amount]
+      return qnt.relative.magnitude ꜧ[:amount]
     end
 
     # Constructor of magnitudes of a given quantity.
     # 
     def of qnt, args={}
-      return qnt.new_magnitude args[:amount]
+      return qnt.magnitude args[:amount]
     end
   end
 
@@ -57,26 +57,19 @@ module SY::Magnitude
            :standard_unit,
            :relative?,
            :absolute?,
+           :magnitude,
            to: :quantity
-
-  def relative_quantity
-    quantity.relative
-  end
-
-  def absolute_quantity
-    quantity.absolute
-  end
 
   # Absolute value of a magnitude (reframes into the absolute quantity).
   # 
   def abs
-    absolute_quantity.new_magnitude( amount.abs )
+    quantity.absolute.magnitude( amount.abs )
   end
 
   # Rounded value of a Magnitude: A new magnitude with rounded amount.
   # 
   def round *args
-    quantity.new_magnitude( amount.round( *args ) )
+    magnitude amount.round( *args )
   end
 
   # Whether the magnitude is zero.
@@ -85,121 +78,87 @@ module SY::Magnitude
 
   # Compatible magnitudes compare by their amounts.
   # 
-  def <=> other
-    return amount <=> other.amount if quantity == other.quantity
-    raise( SY::IncompatibleQuantityError,
-           "Unable to compare #{quantity} with #{other.quantity}!" )
+  def <=> m2
+    return amount <=> m2.amount if quantity == m2.quantity
+    raise SY::QuantityError, "Unable to #{quantity} <=> #{m2.quantity}!"
   end
 
   # Addition.
   # 
-  def + other
-    return quantity.new_magnitude( amount + other.amount ) if
-      quantity = other.quantity
-    raise( SY::IncompatibleQuantityError,
-           "Unable to perform #{quantity} + #{other.quantity}!" )
+  def + m2
+    return magnitude amount + m2.amount if quantity = m2.quantity
+    raise SY::QuantityError, "Unable to #{quantity} + #{other.quantity}!"
   end
 
   # Subtraction.
   # 
-  def - other
-    return quantity.new_magnitude( amount - other.amount ) if
-      quantity = other.quantity
-    raise( SY::IncompatibleQuantityError,
-           "Unable to perform #{quantity} + #{other.quantity}!" )
+  def - m2
+    return magnitude amount - m2.amount if quantity = m2.quantity
+    raise SY::QuantityError, "Unable to #{quantity} - #{m2.quantity}!"
   end
 
   # Multiplication.
   # 
-  def * other
-    case other
-    when Numeric then
-      quantity.new_magnitude( amount * other )
-    when SY::Magnitude then
-      ( quantity * other.quantity ).new_magnitude( amount * other.amount )
-    else
-      raise TErr, "Unable to multiply a magnitude by #{other.class}!"
-    end
+  def * m2
+    ( quantity * m2.quantity ).magnitude( amount * m2.amount )
   end
 
   # Division.
   # 
-  def / other
-    case other
-    when Numeric then
-      quantity.new_magnitude( amount / other )
-    when SY::Magnitude
-      ( quantity / other.quantity ).new_magnitude( amount / other.amount )
-    else
-      raise TErr, "Unable to divide a magnitude by #{other.class}!"
-    end
+  def / m2
+    ( quantity / m2.quantity ).magnitude( amount / m2.amount )
   end
 
   # Exponentiation.
   # 
-  def ** exponent
-    case exponent
-    when Numeric then
-      ( quantity ** exponent ).new_magnitude( amount ** exponent )
-    when SY::Magnitude then
-      # Raising is allowed only to a dimensionless magnitude
-      if exponent.dimensionless? then
-        self ** exponent.to_f
-      else
-        raise TErr, "Magnitude #{exponent} not dimensionless!"
-      end
-    else
-      raise Terr, "Unable to exponentiate to a #{exponent.class}!"
-    end
+  def ** exp
+    ( quantity ** exp.amount ).magnitude( amount ** exp.amount )
   end
 
   # Type coercion for magnitudes.
   # 
-  def coerce other
-    case other
-    when Numeric then
-      qnt = SY::Dimension.zero.standard_quantity
-      qnt = relative? ? qnt.relative_quantity : qnt.absolute_quantity
-      return qnt.new_magnitude( other ), self
+  def coerce m2
+    case m2
+    when Numeric then return m2.to_magnitude, self
     else
-      raise TErr, "#{other.class} cannot be coerced into a magnitude!"
+      raise TErr, "#{self} cannot be coerced into a #{m2.class}!"
     end
   end
 
   # Expresses the magnitude numerically in multiples of another magnitude
   # (which must be of compatible quantity).
   # 
-  def in other
-    case other
-    when Symbol, String then self.in( 1.send other ) # digest it
+  def in m2
+    case m2
+    when Symbol, String then self.in( 1.send m2 ) # digest it
     else
-      return amount / other.amount if quantity == other.quantity
-      amount / other.( quantity ).amount # reframe before division
+      return amount / m2.amount if quantity == m2.quantity
+      amount / m2.( quantity ).amount # reframe before division
     end
   end
 
   # Gives the magnitude in standard unit sa float.
   # 
-  delegate :to_f, to: :in_standard_unit
+  delegate :to_f, to: :amount
 
   # Reframes a magnitude into a different quantity. Dimension must match.
   # 
   def reframe qnt
-    raise TErr, dim_complaint( qnt ) unless same_dimension? qnt
-    return qnt.new_magnitude self
+    return qnt.magnitude self if dimension == qnt.dimension
+    raise TErr, dim_complaint( qnt )
   end
   alias :call :reframe
 
   # Reframes the magnitude into its relative quantity.
   # 
   def +@
-    relative_quantity.new_magnitude( amount )
+    quantity.relative.magnitude( amount )
   end
 
   # Reframes the magnitude into its relative quantity, with negative amount.
   # 
   def -@
-    relative_quantity.new_magnitude( -amount )
+    quantity.relative.magnitude( -amount )
   end
 
   # True if amount is negative. Implicitly false for absolute quantities.
@@ -235,7 +194,7 @@ module SY::Magnitude
   
 
   # 
-  def to_s unit=quantity.units.first, amount_format=default_amount_format
+  def to_s unit=quantity.units.first, n_format=default_amount_format
     # step 1: produce pairs [number, unit_presentation],
     #         where unit_presentation is an array of triples
     #         [prefix, unit, exponent], which together give the
@@ -341,10 +300,10 @@ module SY::Magnitude
     exponent = 1
     unit_presentation = prefix, unit, exponent
 
-    number_ς = amount_format % number
+    nς = n_format % number
     unit_ς = SY::SPS.( [ "#{prefix}#{unit.short}" ], [ exponent ] )
     
-    return [ number_ς, unit_ς ].join '.'
+    [ nς, unit_ς ].join '.'
   end
 
   # def to_s unit=quantity.units.first, number_format='%.3g'

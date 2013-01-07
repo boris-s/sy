@@ -69,7 +69,7 @@ module SY::Unit
         unless prefix.empty?
           define_method prefix do
             SY::Quantity.instance( quantity_by_prefix( prefix ) )
-              .new_magnitude self * SY::PREFIX_TABLE.to_factor( prefix )
+              .magnitude( self * SY::PREFIX_TABLE.to_factor( prefix ) )
           end
         end
       end
@@ -91,7 +91,7 @@ module SY::Unit
             else
               raise AErr, "Too many ordered arguments!"
             end
-      return qnt.new_unit *( ꜧ.empty? ? args : args << ꜧ )
+      return qnt.unit *( ꜧ.empty? ? args : args << ꜧ )
     end
     
     # Standard unit constructor. In absence of other named arguments, standard
@@ -237,9 +237,7 @@ module SY::Unit
   # Converts a unit into ordinary magnitude.
   # 
   def to_magnitude factor=nil
-    if factor.nil? then quantity.new_magnitude( amount ) else
-      quantity.new_magnitude( amount ) * factor
-    end
+    factor.nil? ? magnitude( amount ) : magnitude( amount ) * factor
   end
 
  # factor=1

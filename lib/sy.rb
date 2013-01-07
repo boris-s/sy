@@ -24,22 +24,36 @@ require 'bigdecimal'
   require_relative 'sy/unit'
 
 
-# The hallmark of SY is its extension of the Numeric class with methods
-# corresponding to selected metrological units and their abbreviations.
-# 
-Numeric.module_exec { include SY::ExpressibleInUnits }
 
+# === Basic settings
+# 
 module SY
   DEBUG = false
-
-  # === Basic settings
 
   # Digits to take when constructing magnitude from a low-precision numeric.
   #
   NUMERIC_FILTER = 6
 
   Nᴀ = AVOGADRO_CONSTANT = 6.02214e23
+end
 
+
+  # === Dimensionless quantities
+module SY
+  Amount = Quantity.standard of: Dimension.zero
+end
+
+# The hallmark of SY is its extension of the Numeric class with methods
+# corresponding to selected metrological units and their abbreviations.
+# 
+class Numeric
+  include ::SY::ExpressibleInUnits
+  def amount; self end
+  def quantity; ::SY::Amount end
+  def to_magnitude; quantity.magnitude amount end
+end
+
+module SY
   # === Basic dimension L
 
   Length = Quantity.standard of: :L
@@ -84,9 +98,10 @@ module SY
   # # alias :℉ :fahrenheit               # U+2109 DEGREE FAHRENHEIT
   # # FIXME: Patch FahrenheitTemperature to make it work with SY::Temperature
 
+
+
   # === Dimensionless quantities
 
-  Amount = Quantity.standard of: Dimension.zero
   UNIT = Unit.standard of: Amount
 
   MoleAmount = Quantity.dimensionless

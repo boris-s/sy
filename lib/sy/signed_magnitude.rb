@@ -23,24 +23,20 @@ module SY::SignedMagnitude
 
   # Addition.
   # 
-  def + other
-    return quantity.new_magnitude( amount + other.amount ) if
-      quantity == other.quantity
-    return absolute_quantity.new_magnitude( amount + other.amount ) if
-      other.quantity == absolute_quantity
-    raise( SY::IncompatibleQuantityError,
-           "Unable to perform #{quantity} + #{other.quantity}!" )
+  def + m2
+    return magnitude( amount + m2.amount ) if quantity == m2.quantity
+    return quantity.absolute.magnitude( amount + m2.amount ) if
+      m2.quantity == quantity.absolute
+    raise SY::QuantityError, "Unable to perform #{quantity} + #{m2.quantity}!"
   end
 
   # Subtraction.
   # 
-  def - other
-    return quantity.new_magnitude( amount - other.amount ) if
-      other.quantity == relative_quantity
-    return relative_quantity.new_magnitude( amount - other.amount ) if
-      quantity == other.quantity
-    raise( SY::IncompatibleQuantityError,
-           "Unable to perform #{quantity} + #{other.quantity}!" )
+  def - m2
+    return magnitude( amount - m2.amount ) if m2.quantity == quantity.relative
+    return quantity.relative.magnitude( amount - m2.amount ) if
+      quantity == m2.quantity
+    raise SY::QuantityError, "Unable to perform #{quantity} + #{m2.quantity}!"
   end
 
   private

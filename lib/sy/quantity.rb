@@ -12,24 +12,19 @@ class SY::Quantity
   # translated as Length / Time, aka. Speed).
   # 
   OPERATION_TABLE = Hash.new { |ꜧ, missing_key|
-    begin
-      operator = missing_key[0].to_sym # eg :/
-      operands = missing_key[1..-1]    # eg [Length, Time]
-    rescue NoMethodError
-      nil
+    case missing_key
+    when SY::Quantity::Composition then
+      missing_key.simplify.to_quantity
     else
-      case operator
-      when :* then
-        op1, op2 = operands.aT { size == 2 }
-        ꜧ[missing_key] = SY::Quantity.compose op1 => 1, op2 => 1
-      when :/ then
-        op1, op2 = operands.aT { size == 2 }
-        ꜧ[missing_key] = SY::Quantity.compose op1 => 1, op2 => -1
-      when :** then
-        op1, op2 = operands.aT { size == 2 }
-        ꜧ[missing_key] = SY::Quantity.compose op1 => op2.aT_is_a( Numeric )
+      begin
+        operator = missing_key.shift.to_sym         # +, -, *, / ...
+        operands = missing_key.map { |e|            # Length, Time, Mass ...
+          SY::Quantity::Composition.new e => 1
+        }
+      rescue NoMethodError
+        nil
       else
-        raise TypeError, "Unrecognized operator: #{operator}"
+        ꜧ[missing_key] = operator.to_proc.call( *operands )
       end
     end
   }
@@ -159,7 +154,7 @@ class SY::Quantity
   # Reader of standard unit.
   # 
   def standard_unit args={}
-    @standard_unit ||= new_unit args
+    @standard_unit ||= unit args
   end
 
   # Presents an array of units ordered as favored by this quantity.
@@ -170,13 +165,13 @@ class SY::Quantity
 
   # Constructs a new absolute magnitude of this quantity.
   # 
-  def new_magnitude arg
+  def magnitude arg
     @Magnitude.new quantity: self, amount: arg
   end
 
   # Constructs a new unit of this quantity.
   # 
-  def new_unit args={}
+  def unit args={}
     @Unit.new( args.merge( quantity: self ) ).tap { |u| ( units << u ).uniq! }
   end
 
@@ -196,7 +191,7 @@ class SY::Quantity
     # and substitue amount 1 as required for standard units.
     args.update amount: 1
     # Replace @standard_unit with the newly constructed unit.
-    @standard_unit = new_unit( args ).tap { |u| ( units.unshift u ).uniq! }
+    @standard_unit = unit( args ).tap { |u| ( units.unshift u ).uniq! }
   end
 
   # Quantity multiplication.
@@ -389,8 +384,8 @@ class SY::Quantity
     end
 
     def prepare_import_and_export_closures
-      @export = lambda { |mgn1| @other_quantity.new_magnitude @ex.( mgn1.amount ) }
-      @import = lambda { |mgn2| @quantity.new_magnitude @im.( mgn2.amount ) }
+      @export = lambda { |mgn1| @other_quantity.magnitude @ex.( mgn1.amount ) }
+      @import = lambda { |mgn2| @quantity.magnitude @im.( mgn2.amount ) }
     end
   end
 
@@ -432,8 +427,31 @@ class SY::Quantity
 
     # Merges two compositions.
     # 
-    def merge other
-      ç.new( hash.merge( other.to_hash ) { |_, v1, v2| v1 + v2 } )
+    def + other
+      self.class.new( hash.merge( other.to_hash ) { |_, v1, v2| v1 + v2 } )
+    end
+    alias :merge :+
+
+    # Subtracts two compositions.
+    # 
+    def - other
+      self.class.new( hash.merge( other.to_hash ) { |_, v1, v2| v1 - v2 } )
+    end
+
+    # Multiplication by a number.
+    # 
+    def * number
+      self.class.new( hash.with_values do |v| v * number end )
+    end
+
+    # Division by a number.
+    # 
+    def / number
+      self.class.new( hash.with_values do |val|
+                        raise TErr, "Compositions with rational exponents " +
+                          "not implemented!" if val % number != 0
+                        val / number
+                      end )
     end
     
     # Try to simplify the composition by decomposing its quantities.
@@ -447,6 +465,23 @@ class SY::Quantity
     end
 
     # TODO: Over here, quantity factorization will be a problem
+    def simplify
+      self
+    end
+
+    def to_quantity
+      ꜧ = self.class.instance_variable_get( :@quantity ) ||
+        ç.instance_variable_set( :@quantity,
+                                 Hash.new { |ꜧ, key|
+                                   case key
+                                   when Hash then
+                                     ꜧ[key] = SY::Quantity.compose key
+                                   else
+                                     ꜧ[key.to_hash]
+                                   end
+                                 } )
+      ꜧ[self]
+    end
 
     # Compositions compare by their hashes.
     # 

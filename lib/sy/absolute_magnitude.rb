@@ -26,46 +26,38 @@ module SY::AbsoluteMagnitude
   # For absolute magnitudes, #+ method always returns a result framed in
   # corresponding relative quantity.
   # 
-  def + other
-    return quantity.new_magnitude( amount + other.amount ) if
-      other.quantity == relative_quantity
-    return relative_quantity.new_magnitude( amount + other.amount ) if
-      quantity == other.quantity
-    raise( SY::IncompatibleQuantityError,
-           "Unable to perform #{quantity} + #{other.quantity}!" )
+  def + m2
+    return magnitude amount + m2.amount if m2.quantity == quantity.relative
+    return quantity.relative.new_magnitude( amount + m2.amount ) if
+      quantity == m2.quantity
+    raise SY::QuantityError, "Unable to perform #{quantity} + #{m2.quantity}!"
   end
 
   # Addition of absolute magnitudes that returns a result framed as
   # absolute quantity.
   # 
-  def add other
-    return quantity.new_magnitude( amount + other.amount ) if
-      quantity == other.quantity
-    raise( SY::IncompatibleQuantityError,
-           "Unable to perform #add with #{other.quantity}!" )
+  def add m2
+    return magnitude( amount + m2.amount ) if quantity == m2.quantity
+    raise SY::QuantityError, "Unable to perform #add with #{m2.quantity}!"
   end
 
   # For absolute magnitudes, #- method always returns a result framed in
   # corresponding relative quantity.
   # 
-  def - other
-    return quantity.new_magnitude( amount - other.amount ) if
-      other.quantity == relative_quantity
-    return relative_quantity.new_magnitude( amount - other.amount ) if
-      quantity == other.quantity
-    raise( SY::IncompatibleQuantityError,
-           "Unable to perform #{quantity} + #{other.quantity}!" )
+  def - m2
+    return magnitude amount - m2.amount if m2.quantity == quantity.relative
+    return quantity.relative.magnitude( amount - m2.amount ) if
+      quantity == m2.quantity
+    raise( SY::QuantityError, "Unable to perform #{quantity} - #{m2.quantity}!" )
   end
 
   # Subtraction of absolute magnitudes that returns a result framed as
   # absolute quantity. (With caller being responsible for the result being
   # nonnegative.)
   # 
-  def subtract other
-    return quantity.new_magnitude( amount + other.amount ) if
-      quantity == other.quantity
-    raise( SY::IncompatibleQuantityError,
-           "Unable to perform #add with #{other.quantity}!" )
+  def subtract m2
+    return magnitude( amount + m2.amount ) if quantity == m2.quantity
+    raise( SY::QuantityError, "Unable to perform #add with #{m2.quantity}!" )
   end
 
   # "Subtraction" of absolute magnitudes, that never takes more thant the

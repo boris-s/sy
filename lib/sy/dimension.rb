@@ -111,8 +111,9 @@ class SY::Dimension
   # 
   def / number
     ç.new Hash[ SY::BASE_DIMENSIONS.base_symbols.map do |l|
-                  raise AErr, "Dimensions with rational exponents " +
-                    "not implemented" if ( exp = send l ) % number != 0
+                  exp = send l
+                  raise TErr, "Dimensions with rational exponents " +
+                    "not implemented!" if exp % number != 0
                   [ l, exp / number ]
                 end ]
   end
