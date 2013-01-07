@@ -3,17 +3,16 @@
 require 'y_support/all'
 require 'bigdecimal'
 
-if caller.any? { |ς| ς.include? 'irb.rb' } then
-  require './sy/version'
-  require './sy/expressible_in_units'
-  require './sy/fixed_assets_of_the_module'
-  require './sy/dimension'
-  require './sy/quantity'
-  require './sy/magnitude'
-  require './sy/absolute_magnitude'
-  require './sy/signed_magnitude'
-  require './sy/unit'
-else
+  # require './sy/version'
+  # require './sy/expressible_in_units'
+  # require './sy/fixed_assets_of_the_module'
+  # require './sy/dimension'
+  # require './sy/quantity'
+  # require './sy/magnitude'
+  # require './sy/absolute_magnitude'
+  # require './sy/signed_magnitude'
+  # require './sy/unit'
+
   require_relative 'sy/version'
   require_relative 'sy/expressible_in_units'
   require_relative 'sy/fixed_assets_of_the_module'
@@ -23,7 +22,7 @@ else
   require_relative 'sy/absolute_magnitude'
   require_relative 'sy/signed_magnitude'
   require_relative 'sy/unit'
-end
+
 
 # The hallmark of SY is its extension of the Numeric class with methods
 # corresponding to selected metrological units and their abbreviations.
