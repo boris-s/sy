@@ -720,7 +720,7 @@ describe "support of unit methods by Numerics and related features" do
     1.metre.amount.must_equal 1
     1.m.amount.must_equal 1
     SY::METRE.to_f.must_equal 1
-    SY::METRE.quantity.new_magnitude( 10 ).amount.must_equal 10
+    SY::METRE.quantity.magnitude( 10 ).amount.must_equal 10
     SY::METRE.mili.amount.must_equal 0.001
     1.mm.amount.must_equal 0.001
     1.m.in( :mm ).must_equal 1000
@@ -778,11 +778,15 @@ describe "support of unit methods by Numerics and related features" do
     1.A.amount.must_equal 1
     1.A.quantity.standard_unit.abbreviation.must_equal :A
     1.A.inspect.must_equal "#<Magnitude: 1.A >"
+    puts 1.mole.quantity.relationship
+    puts 1.mole.relationship.quantity
+    puts 1.mole.relationship.other_quantity
+    puts 1.mole.relationship.im.( 1 )
+    puts 1.mole.relationship.ex.( 1 )
+    puts 1.mole.relationship.import.( 1 )
+    puts 1.mole.relationship.export.( 1.mol )
+
     1.l⁻¹.( SY::Molarity ).quantity.must_equal SY::Molarity
-    puts SY::LITRE.class
-    puts SY::LITRE.class.ancestors
-    puts 1.l.class
-    puts 1.l.class.ancestors
     x = ( SY::Nᴀ / SY::LITRE ).reframe( SY::Molarity )
     y = 1.molar
     y.must_equal x

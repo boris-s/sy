@@ -4,33 +4,21 @@
 # 
 class SY::Quantity
   include NameMagic
-  attr_reader :dimension, :Magnitude, :Unit, :composition, :relationship
+  attr_reader :dimension, :Magnitude, :Unit, :composition
 
-  # The keys of this hash are unary or binary mathematical operations on
-  # quantities. They are stored as and array, whose 1st element is the
-  # operator method, and the rest are the operands (eg. [ :/, Length, Time ],
-  # translated as Length / Time, aka. Speed).
-  # 
-  OPERATION_TABLE = Hash.new { |ꜧ, missing_key|
-    case missing_key
-    when SY::Quantity::Composition then
-      missing_key.simplify.to_quantity
-    else
-      begin
-        operator = missing_key.shift.to_sym         # +, -, *, / ...
-        operands = missing_key.map { |e|            # Length, Time, Mass ...
-          SY::Quantity::Composition.new e => 1
-        }
-      rescue NoMethodError
-        nil
-      else
-        ꜧ[missing_key] = operator.to_proc.call( *operands )
-      end
-    end
-  }
-
-  def OPERATION_TABLE.[]( *args )
-    super args
+  COMPOSITION_TABLE = Hash.new do |ꜧ, key|
+    ꜧ[key] = case key.aT_is_a( Hash ).size
+             when 0 then SY::Dimension.zero.standard_quantity
+             when 1 then
+               qnt, exp = key.first
+               if exp == 1 then
+                 qnt
+               else
+                 SY::Quantity.compose key
+               end
+             else
+               SY::Quantity.compose key
+             end
   end
 
   class << self
@@ -52,19 +40,8 @@ class SY::Quantity
     # Composition-based quantity constructor. Examples:
     # <tt>Quantity.compose( Speed => 1, Time => -1 )</tt>
     # 
-    def compose *args
-      ꜧ = args.extract_options!
-      comp = case args.size
-             when 0 then
-               if ꜧ.has? :composition then
-                 comp = ꜧ.delete :composition
-               else
-                 comp = ꜧ.dup.tap { ꜧ.clear }
-               end
-             else
-               raise AErr, "Unexpected ordered arguments."
-             end
-      return new *args, ꜧ.merge!( composition: comp )
+    def compose args
+      return new composition: args
     end
     
     # Standard quantity. Example:
@@ -91,10 +68,6 @@ class SY::Quantity
         ꜧ.has? :dimension, syn!: :of
       new *( args << ꜧ.merge!( dimension: SY::Dimension.zero ) )
     end
-
-    def << other
-      puts "Hello from custom #<<"
-    end
   end
   
   # Standard constructor of a metrological quantity. A quantity may have
@@ -109,6 +82,15 @@ class SY::Quantity
     @dimension, @composition = init_dimension_and_composition( args )
     @relationship = init_relationship( args )
     @Magnitude, @Unit = prepare_parametrized_magnitude_and_unit_class
+  end
+
+  def relationship arg=nil
+    if arg.nil? then @relationship
+    elsif arg == @relationship.other_quantity then
+      @relationship
+    else
+      nil
+    end      
   end
 
   def composition
@@ -183,9 +165,10 @@ class SY::Quantity
     # Newbie help.
     explain_amount_of_standard_units if args[:amount].is_a? Numeric
     # For standard units, :amount has special meaning of :relationship.
-    args.may_have :relationship, syn!: :amount
+    args.may_have( :relationship, syn!: :amount ) and puts "relationship here: #{args[:relationship]}"
     # Call private method to take care of :relationship arg.
-    init_relationship( args )
+    @relationship = init_relationship( args )
+    puts "Relationship set: #{relationship}"
     # Remove now unneeded :relationship named argument
     args.delete :relationship
     # and substitue amount 1 as required for standard units.
@@ -197,19 +180,19 @@ class SY::Quantity
   # Quantity multiplication.
   # 
   def * other
-    OPERATION_TABLE[ :*, self, other ]
+    SY::Quantity::Composition.new( self => 1, other => 1 ).to_quantity
   end
 
   # Quantity division.
   # 
   def / other
-    OPERATION_TABLE[ :/, self, other ]
+    SY::Quantity::Composition.new( self => 1, other => -1 ).to_quantity
   end
 
   # Quantity raising to a number.
   # 
   def ** number
-    OPERATION_TABLE[ :**, self, number ]
+    SY::Quantity::Composition.new( self => number ).to_quantity
   end
 
   # Is the quantity dimensionless?
@@ -308,6 +291,7 @@ class SY::Quantity
   end
 
   def init_relationship ꜧ
+    puts "about to init relationship"
     rel = ꜧ[:relationship]
     SY::Quantity::Relationship.new( self, rel ) if rel
   end
@@ -371,8 +355,8 @@ class SY::Quantity
     def init_from_magnitude m
       @other_quantity = m.quantity.aT_not_equal( @quantity )
       ratio = m.amount
-      @ex = lambda { |amount1| amount1 / ratio }
-      @im = lambda { |amount2| amount2 * ratio }
+      @ex = lambda { |amount1| amount1 * ratio }
+      @im = lambda { |amount2| amount2 / ratio }
     end
 
     def init_from_relationship rel
@@ -392,10 +376,39 @@ class SY::Quantity
   # Composition of quantities.
   # 
   class Composition
-    # Constructor of an empty composition.
-    # 
-    def self.empty
-      new Hash.new
+    class << self
+      alias __new__ new
+
+      # The #new constructor of Composition is being changed to always
+      # return same instance, if instance with that hash as already been
+      # created.
+      # 
+      def new arg={}
+        ꜧ = case arg
+            when self then return arg
+            else arg end
+        # Let's see whether the instance already exists.
+        return instances.find { |inst| inst.to_hash == ꜧ } ||
+          __new__( ꜧ ).tap { |inst| instances << inst }
+      end
+
+      # Presents class-owned instances (array).
+      # 
+      def instances
+        return @instances ||= []
+      end
+
+      # Constructor of an empty composition.
+      # 
+      def empty
+        new Hash.new
+      end
+
+      # Simplification rules of quantity composition hashes.
+      # 
+      def simplification_rules
+        SY::QUANTITY_SIMPLIFICATION_RULES
+      end
     end
 
     attr_reader :hash
@@ -466,21 +479,18 @@ class SY::Quantity
 
     # TODO: Over here, quantity factorization will be a problem
     def simplify
-      self
+      ꜧ = hash
+      puts "simplifying #{ꜧ}" if SY::DEBUG
+      begin
+        ꜧ_old = ꜧ
+        ꜧ = simplification_rules.reduce ꜧ_old do |memo, rule| rule.( memo ) end
+      end while ꜧ != ꜧ_old
+      puts "result is #{ꜧ}" if SY::DEBUG
+      self.class.new( ꜧ )
     end
 
     def to_quantity
-      ꜧ = self.class.instance_variable_get( :@quantity ) ||
-        ç.instance_variable_set( :@quantity,
-                                 Hash.new { |ꜧ, key|
-                                   case key
-                                   when Hash then
-                                     ꜧ[key] = SY::Quantity.compose key
-                                   else
-                                     ꜧ[key.to_hash]
-                                   end
-                                 } )
-      ꜧ[self]
+      SY::Quantity::COMPOSITION_TABLE[ simplify.to_hash ]
     end
 
     # Compositions compare by their hashes.
@@ -491,6 +501,10 @@ class SY::Quantity
 
     def dimension
       hash.map { |qnt, exp| qnt.dimension * exp }.reduce SY::Dimension.zero, :+
+    end
+
+    def simplification_rules
+      self.class.simplification_rules
     end
   end
 end # class SY::Quantity

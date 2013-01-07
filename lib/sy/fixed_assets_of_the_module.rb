@@ -243,6 +243,8 @@ module SY
       '["B", "s"], [1, -1]'
   end
 
+  QSR = QUANTITY_SIMPLIFICATION_RULES = []
+
   # Custom error class for attempts to create negative magnitudes.
   # 
   class NegativeAmountError < StandardError; end

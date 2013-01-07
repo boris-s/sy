@@ -107,6 +107,7 @@ module SY::Unit
       if args.empty? then
         qnt.standard_unit 
       else
+        puts "it's gonna be a new standard unit"
         qnt.new_standard_unit( args )
       end
     end

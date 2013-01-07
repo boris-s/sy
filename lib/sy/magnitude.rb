@@ -58,6 +58,7 @@ module SY::Magnitude
            :relative?,
            :absolute?,
            :magnitude,
+           :relationship,
            to: :quantity
 
   # Absolute value of a magnitude (reframes into the absolute quantity).
@@ -144,8 +145,8 @@ module SY::Magnitude
   # Reframes a magnitude into a different quantity. Dimension must match.
   # 
   def reframe qnt
-    return qnt.magnitude self if dimension == qnt.dimension
-    raise TErr, dim_complaint( qnt )
+    raise TErr, dim_complaint( qnt ) unless dimension == qnt.dimension
+    relationship( qnt ).export.( self )
   end
   alias :call :reframe
 
@@ -194,7 +195,7 @@ module SY::Magnitude
   
 
   # 
-  def to_s unit=quantity.units.first, n_format=default_amount_format
+  def to_s unit=quantity.units.first || quantity.standard_unit, n_format=default_amount_format
     # step 1: produce pairs [number, unit_presentation],
     #         where unit_presentation is an array of triples
     #         [prefix, unit, exponent], which together give the

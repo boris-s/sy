@@ -41,6 +41,14 @@ end
   # === Dimensionless quantities
 module SY
   Amount = Quantity.standard of: Dimension.zero
+
+  # Dimensionless quantity "Amount" is disposable:
+  # 
+  QSR << lambda { |ꜧ|
+    ꜧ = ꜧ.dup
+    ꜧ.delete SY::Amount
+    ꜧ
+  }
 end
 
 # The hallmark of SY is its extension of the Numeric class with methods
@@ -105,7 +113,9 @@ module SY
   UNIT = Unit.standard of: Amount
 
   MoleAmount = Quantity.dimensionless
+  puts "just before setting a relationship"
   MOLE = Unit.standard of: MoleAmount, short: "mol", amount: UNIT * Nᴀ
+  puts "relationship set"
 
   # degree, alias deg, ° # angle measure
   # arcminute, alias ʹ, ′ # angle measure
