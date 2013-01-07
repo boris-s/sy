@@ -10,8 +10,8 @@ if caller.any? { |ς| ς.include? 'irb.rb' } then
   require './sy/dimension'
   require './sy/quantity'
   require './sy/magnitude'
-  require './sy/absolute_magnitude_mixin'
-  require './sy/relative_magnitude_mixin'
+  require './sy/absolute_magnitude'
+  require './sy/signed_magnitude'
   require './sy/unit'
 else
   require_relative 'sy/version'
@@ -20,8 +20,8 @@ else
   require_relative 'sy/dimension'
   require_relative 'sy/quantity'
   require_relative 'sy/magnitude'
-  require_relative 'sy/absolute_magnitude_mixin'
-  require_relative 'sy/relative_magnitude_mixin'
+  require_relative 'sy/absolute_magnitude'
+  require_relative 'sy/signed_magnitude'
   require_relative 'sy/unit'
 end
 
@@ -31,7 +31,7 @@ end
 Numeric.module_exec { include SY::ExpressibleInUnits }
 
 module SY
-  DEBUG = false
+  DEBUG = true
 
   # === Basic settings
 
@@ -91,7 +91,7 @@ module SY
   UNIT = Unit.standard of: Amount
 
   MoleAmount = Quantity.dimensionless
-  MOLE = Unit.standard of: MoleAmount, short: "mol", amount: Nᴀ * UNIT
+  MOLE = Unit.standard of: MoleAmount, short: "mol", amount: UNIT * Nᴀ
 
   # degree, alias deg, ° # angle measure
   # arcminute, alias ʹ, ′ # angle measure

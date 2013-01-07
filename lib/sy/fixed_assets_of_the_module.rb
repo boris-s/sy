@@ -67,50 +67,75 @@ module SY
     # List of full prefixes.
     # 
     def full_prefixes
-      map { |row| row[:full] }
+      @full ||= map { |row| row[:full] }
     end
 
     # List of prefix abbreviations.
     # 
     def prefix_abbreviations
-      map { |row| row[:short] }
+      @short ||= map { |row| row[:short] }
+    end
+    alias short_prefixes prefix_abbreviations
+
+    # List of full prefixes and short prefixes.
+    # 
+    def all_prefixes
+      @all ||= full_prefixes + prefix_abbreviations
+    end
+
+    # Parses an SPS using a list of permitted unit symbols, currying it with
+    # own #all_prefixes.
+    # 
+    def parse_sps sps, unit_symbols
+      puts "Prefix table about to SPS parse" if SY::DEBUG
+      SY::SPS_PARSER.( sps, unit_symbols, all_prefixes )
     end
 
     # A hash of clue => corresponding_row pairs.
     # 
     def row clue
-      ( @rowꜧ ||= Hash.new do |k, ꜧ|
-          case clue
-          when Symbol then ꜧ[k] = ꜧ[k.to_s] if ꜧ[k.to_s]
+      ( @rowꜧ ||= Hash.new do |ꜧ, key|
+          case key
+          when Symbol then
+            rslt = ꜧ[key.to_s]
+            ꜧ[key] = rslt if rslt
           else
-            r = find { |r| [r[:full], r[:short], r[:factor]].include? k }
-            ꜧ[k] = r if r
+            r = find { |r|
+              r[:full] == key || r[:short] == key || r[:factor] == key
+            }
+            ꜧ[key] = r if r
           end
-        end )[clue]
+        end )[ clue ]
     end
 
     # Converts a clue to a full prefix.
     # 
     def to_full clue
-      ( @fullꜧ ||= Hash.new { |k, ꜧ|
-          ꜧ[k] = result if result = row( clue )[:full]
-        } )[clue]
+      ( @fullꜧ ||= Hash.new do |ꜧ, key|
+          result = row( key )
+          puts "result assigned successfuly, it is '#{result}', key was '#{key}'"
+          result = result[:full]
+          puts "past secon #[]"
+          ꜧ[key] = result if result
+        end )[ clue ]
     end
 
     # Converts a clue to a prefix abbreviation.
     # 
     def to_short clue
-      ( @shortꜧ ||= Hash.new { |k, ꜧ|
-          ꜧ[k] = result if result = row( clue )[:short]
-        } )[clue]
+      ( @shortꜧ ||= Hash.new do |ꜧ, key|
+          result = row( key )[:short]
+          ꜧ[key] = result if result
+        end )[ clue ]
     end
 
     # Converts a clue to a factor.
     # 
     def to_factor clue
-      ( @factorꜧ ||= Hash.new { |k, ꜧ|
-          ꜧ[k] = result if result = row( clue )[:factor]
-        } )[clue]
+      ( @factorꜧ ||= Hash.new do |ꜧ, key|
+          result = row( key )[:factor]
+          ꜧ[key] = result if result
+        end )[ clue ]
     end
   end
 
@@ -172,6 +197,7 @@ module SY
       raise NameError, "Bad input string: '#{input_ς}'!" unless input_ς.empty?
       return [], [], []
     end
+    puts "Hello from SPS_PARSER, input ς is #{input_ς}" if SY::DEBUG
     # analysis of input string sections
     input_ς_sections.each_with_object [[], [], []] do |_section_, memo|
       section = _section_.dup
@@ -208,7 +234,7 @@ module SY
       raise NameError, "Zero exponents not allowed: #{exponent_ς}" if exp == 0
       # and store the interpretation
       memo[0] << chosen_prefix; memo[1] << unit_ς; memo[2] << exp
-      puts "Parser: #{chosen_prefix} + #{unit_ς} + #{exp}" if SY::DEBUG
+      puts "Parser: '#{chosen_prefix}'#{unit_ς} ** #{exp}" if SY::DEBUG
       memo
     end
   }

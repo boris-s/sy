@@ -15,16 +15,19 @@ module SY::ExpressibleInUnits
       anti_recursion_exec_with_token ß, :@SY_Units_mmiss do
         puts "Method missing: '#{ß}'" if SY::DEBUG
         # Parse the unit symbol.
-        prefixes, units, exponents = parse_unit_symbol( ß )
+        prefixes, units, exps = parse_unit_symbol( ß )
+        puts "Unit symbol parsed"
         # Define the unit method.
-        ç.module_eval write_unit_method( ß, prefixes, units, exponents )
+        self.class.module_eval write_unit_method( ß, prefixes, units, exps )
       end
     rescue NameError => m
       puts "NameError raised: #{m}" if SY::DEBUG
       super # give up
     rescue SY::ExpressibleInUnits::IllegalRecursionError
+      puts "Illegal recursion error raised on: #{ß}"
       super # give up
     else # invoke the defined method that we just defined
+      puts "about to invoke" if SY::DEBUG
       send ß, *args, &block
     end
   end
@@ -36,6 +39,7 @@ module SY::ExpressibleInUnits
     super if ß == :to_ary || ß.to_s.starts_with?( 'to_' )
     begin # prevent recurrent method_missing for the same symbol
       anti_recursion_exec_with_token ß, :@SY_Units_rmiss do
+        puts "Respond to missing asked: '#{ß}'"
         parse_unit_symbol( ß )
       end
     rescue NameError, SY::ExpressibleInUnits::IllegalRecursionError
@@ -51,19 +55,8 @@ module SY::ExpressibleInUnits
   # figures out which SY units it represents, along with prefixes and exponents. 
   # 
   def parse_unit_symbol ß
-    # Known unit symbols include all the names and abbrevs of named units.
-    ii = SY::Unit.instances
-    known_unit_symbols = ii
-      .map { |u| [ u.name, u.abbreviation ] }
-      .select { |ɴ, _| ɴ } # excludes anonymous units
-      .map { |ɴ, short| [ ɴ.to_s, short.to_s ] }
-      .transpose
-      .reduce( :+ )
-    puts known_unit_symbols.join ', ' if SY::DEBUG
-    # Known prefix symbols include full prefixes and prefix abbreviations.
-    known_prefixes = SY::PREFIX_TABLE.full + SY::PREFIX_TABLE.short
-    # Here, we rely on SY::SPS_PARSER:
-    SY::SPS_PARSER.( ß.to_s, known_unit_symbols, known_prefixes )
+    puts "Hello from #parse_unit_symbol #{ß}"
+    SY::Unit.parse_sps_using_all_prefixes( ß ) # rely on SY::Unit
   end
 
   # Taking method name symbol as the first argument, and three more arguments
@@ -71,8 +64,7 @@ module SY::ExpressibleInUnits
   # appropriate method string is written.
   # 
   def write_unit_method ß, prefixes, units, exponents
-    # Let's prepare SY information for further use:
-    prefix_ꜧ = SY::PREFIX_TABLE.hash_full.merge( SY::PREFIX_TABLE.hash_short )
+    puts "about to write #{ß}"
     known_units = SY::Unit.instances
     # A procedure to find unit based on name or abbreviation:
     find_unit = lambda do |ς|
@@ -80,9 +72,12 @@ module SY::ExpressibleInUnits
     end
     # Return prefix method or empty ς if not necessary.
     prefix_method_ς = lambda do |prefix|
-      full_prefix = prefix_ꜧ[ prefix ][:full].to_s
+      puts "About to call PREFIX TABLE.to_full with #{prefix}" if SY::DEBUG
+      full_prefix = SY::PREFIX_TABLE.to_full( prefix )
+      puts "PREFIX TABLE called, full prefix is '#{full_prefix}'"
       full_prefix == '' ? '' : ".#{full_prefix}"
     end
+    puts "About to create exponentiantion string"
     # Return exponentiation string (suffix) or empty ς if not necessary.
     exponentiation_ς = lambda do |exponent|
       exponent == 1 ? '' : " ** #{exponent}"
@@ -95,6 +90,7 @@ module SY::ExpressibleInUnits
         prefix_method_ς.( prefix ),
         exponentiation_ς.( exponent ) ]
     end
+    puts "lambdas prepared"
     # Method skeleton:
     method_skeleton = "def #{ß}\n" +
                       "  %s\n" +

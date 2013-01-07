@@ -169,7 +169,9 @@ class SY::Dimension
   # 
   def to_composition
     SY::Quantity::Composition
-      .new Hash[ [ SY::BASE_DIMENSIONS.base_symbols.map { |l| ç.base l },
+      .new Hash[ [ SY::BASE_DIMENSIONS.base_symbols
+                     .map { |l| self.class.base l }
+                     .map { |base_dim| self.class.standard_quantities[ base_dim ] },
                    to_a ].transpose ].reject { |_, exp| exp.zero? }
   end
 

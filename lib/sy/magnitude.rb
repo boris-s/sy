@@ -57,9 +57,15 @@ module SY::Magnitude
            :standard_unit,
            :relative?,
            :absolute?,
-           :relative_quantity,
-           :absolute_quantity,
            to: :quantity
+
+  def relative_quantity
+    quantity.relative
+  end
+
+  def absolute_quantity
+    quantity.absolute
+  end
 
   # Absolute value of a magnitude (reframes into the absolute quantity).
   # 

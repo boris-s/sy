@@ -1,13 +1,10 @@
 #encoding: utf-8
 
-class SY::QuantityComposition
-end
-
 # Quantity.
 # 
 class SY::Quantity
   include NameMagic
-  attr_reader :dimension, :magnitude, :unit, :relationship
+  attr_reader :dimension, :magnitude, :unit, :composition, :relationship
 
   # The keys of this hash are unary or binary mathematical operations on
   # quantities. They are stored as and array, whose 1st element is the
@@ -109,23 +106,18 @@ class SY::Quantity
   # a name and a dimension.
   # 
   def initialize args={}
-    @relative = args[:relative]      # relative vs. absolute quantity
-    if args.has? :composition then
-      @composition = SY::Quantity::Composition.new args[:composition]
-      @dimension = @composition.dimension
-    else
-      @dimension = SY.Dimension( args.must_have :dimension, syn!: :of )
-    end
-    # Prepare parametrized magnitude class
-    mixin = magnitude_mixin
-    @magnitude = Class.new do
-      include SY::Magnitude
-      include mixin
-    end
-    # and unit class.
-    @unit = Class.new @magnitude do
-      include SY::Unit
-    end
+    args.may_have :relative        # relative quantity vs. absolute quantity
+    args.may_have :composition     # quantity composition from other quantities
+    args.may_have :dimension, syn!: :of
+    args.may_have :relationship    # rel. to a chosen equidimensional qnt
+    @relative = args[:relative]
+    @dimension, @composition = init_dimension_and_composition( args )
+    @relationship = init_relationship( args )
+    @magnitude, @unit = prepare_parametrized_magnitude_and_unit_class
+  end
+
+  def composition
+    @composition ||= @dimension.to_composition
   end
 
   # Is the quantity relative?
@@ -137,53 +129,31 @@ class SY::Quantity
   # Is the quantity absolute? (Opposite of #relative?)
   # 
   def absolute?
-    ! relative?
+    not relative?
   end
 
   # Relative quantity related to this quantity.
   # 
-  def relative_quantity
-    @relative_quantity or
-      self.relative_quantity = relative? ? self : construct_relative_quantity
+  def relative
+    @relative_quantity ||= relative? ? self : construct_relative_quantity
   end
 
+  # Relative quantity setter.
+  # 
   def relative_quantity= qnt
     @relative_quantity = qnt
   end
 
   # Absolute quantity related to this quantity.
   # 
-  def absolute_quantity
-    @absolute_quantity or
-      self.absolute_quantity = absolute? ? self : construct_absolute_quantity
+  def absolute
+    @absolute_quantity ||= absolute? ? self : construct_absolute_quantity
   end
 
+  # Absolute quantity setter.
+  # 
   def absolute_quantity= qnt
     @absolute_quantity = qnt
-  end
-
-  def composition
-    @composition ||= default_composition
-  end
-
-  # Writer of standard unit
-  # 
-  def standard_unit_set unit, relationship
-    @relationship = relationship
-    @standard_unit = unit.aE { |u| u.quantity == quantity }
-  end
-
-  def reletionship_set magnitude_of_other_quantity
-    # FIXME: Other quantity must be
-    # 1. other, different from this one
-    # 2. must have same relative/absolute status as this quantity
-    # 3. the partner relative/absolute quantity must not have
-    #    conflicting relationship
-    #
-    # ... actually, already dimensions wil be divided into
-    # L/ΔL, T/ΔT, M/ΔM, 
-    # 
-    @relationship = magnitude_of_other_quantity
   end
 
   # Reader of standard unit.
@@ -208,6 +178,25 @@ class SY::Quantity
   # 
   def new_unit args={}
     unit.new args.merge( quantity: self )
+  end
+
+  # Constructor of a new standard unit (replacing the current @standard_unit).
+  # For standard units, amount is implicitly 1. So :amount name argument, when
+  # supplied, has a different meaning – sets the relationship of its quantity.
+  # 
+  def new_standard_unit args={}
+    # Newbie help.
+    explain_amount_of_standard_units if args[:amount].is_a? Numeric
+    # For standard units, :amount has special meaning of :relationship.
+    args.may_have :relationship, syn!: :amount
+    # Call private method to take care of :relationship arg.
+    init_relationship( args )
+    # Remove now unneeded :relationship named argument
+    args.delete :relationship
+    # and substitue amount 1 as required for standard units.
+    args.update amount: 1
+    # Replace @standard_unit with the newly constructed unit.
+    @standard_unit = new_unit( args )
   end
 
   # Quantity multiplication.
@@ -282,39 +271,134 @@ class SY::Quantity
 
   def construct_relative_quantity
     if name then
-      ç.new dimension: dimension, relative: true, name: "#{name}Difference"
+      self.class
+        .new dimension: dimension, relative: true, name: "#{name}Difference"
     else
-      ç.new dimension: dimension, relative: true
+      self.class.new dimension: dimension, relative: true
     end
   end
 
   def construct_absolute_quantity
-    if name && name.to_s.ends_with?( "Difference" ) &&
-        ! ( stripped_name = name[0..("Difference".size - 1)] ).empty? then
-      ç.new dimension: dimension, relative: false, name: stripped_name
+    if relative? and
+        name && name.to_s.ends_with?( "Difference" ) and
+        not ( stripped = name[0..("Difference".size - 1)] ).empty? then
+      self.class.new dimension: dimension, relative: false, name: stripped
     else
-      ç.new dimension: dimension, relative: false
+      self.class.new dimension: dimension, relative: false
     end
   end
 
   def magnitude_mixin
-    relative? ? SY::SignedMagnitudeMixin : SY::AbsoluteMagnitudeMixin
+    relative? ? SY::SignedMagnitude : SY::AbsoluteMagnitude
   end
 
   def same_dimension? other
-    case other
-    when Numeric then dimensionless?
-    else
-      dimension == other.dimension
-    end
+    dimension == other.dimension
   end
 
-  def default_composition
-    ꜧ = dimension.to_hash.each_with_object Hash.new do |pair, ꜧ|
-      dim, exp = pair
-      ꜧ.merge!( SY.Dimension( dim ).standard_quantity => exp ) if exp.abs > 0
+  def explain_amount_of_standard_units
+    raise TErr, "The amount of standard units is, by definition, 1. When " +
+      ":amount named parameter fis supplied to the construtor of a " +
+      "standard unit, it has different meaning: It must be given as " +
+      "a magnitude of another quantity of the same dimension, and it " +
+      "establishes relationship between this and the other quantity."
+  end
+
+  def init_dimension_and_composition ꜧ
+    case tentative_cmp = ꜧ[:composition]
+    when nil then
+      dim = SY.Dimension( ꜧ.must_have :dimension, syn!: :of )
+      cmp = nil
+    else
+      cmp = SY::Quantity::Composition.new( tentative_cmp )
+      dim = cmp.dimension
     end
-    return SY::Quantity::Composition.new ꜧ
+    return dim, cmp
+  end
+
+  def init_relationship ꜧ
+    rel = ꜧ[:relationship]
+    SY::Quantity::Relationship.new( self, rel ) if rel
+  end
+
+  def prepare_parametrized_magnitude_and_unit_class
+    mixin = magnitude_mixin
+    magnitude_ç = Class.new do       # parametrized magnitude class
+      include SY::Magnitude
+      include mixin
+    end
+    magnitude_ç.define_singleton_method :to_s do "Magnitude of #{self}" end
+    magnitude_ç.define_singleton_method :inspect do "Magnitude of #{self}" end
+    unit_ç = Class.new magnitude_ç do # and parametrized unit class
+      include SY::Unit
+    end
+    unit_ç.define_singleton_method :to_s do "Magnitude of #{self}" end
+    unit_ç.define_singleton_method :inspect do "Magnitude of #{self}" end
+    return magnitude_ç, unit_ç
+  end
+
+  # Relationship of quantities. Provides import and export closures to convert
+  # a quantity into another quantity.
+  #
+  # A relationship instance is immutable, has 4 important attributes and 2 more
+  # attributes supplying convenience closures. The 4 important attributes are:
+  #
+  # * quantity - source quantity in a relationship
+  # * other_quantity - target quantity in a relationship
+  # * im - import closure, converting amount of other_quantity into quantity
+  # * ex - export closure, converting amount in quantity into other_quantity
+  #
+  # The 2 convenience closures are:
+  # 
+  # * import - like im, but operates on magnitudes
+  # * export - like ex, but operates on magnitudes
+  # 
+  class Relationship
+    attr_reader :quantity, :other_quantity, :ex, :im, :export, :import
+
+    # Standard constructor takes 2 arguments: Source quantity and relationship
+    # specification. The relationship specification may be a magnitude of a
+    # different, but equidimensional quantity, in which case import and export
+    # closures are constructed using ratio specified by the magnitude, with
+    # no offset. The relationship specification may also be given explicitly,
+    # as hash of 3 named arguments: :other_quantity, :export, and :import
+    # (the latter 2 specifying export and import closure). If relationship
+    # specification is itself a Relationship instance, its other_quantity,
+    # and import/export closures are simply used without any change.
+    # 
+    def initialize qnt, relspec
+      # This quantity:
+      @quantity = qnt
+      # Prepare @other_quantity and @im / @ex closures.
+      case relspec
+      when SY::Magnitude then init_from_magnitude( relspec )
+      when SY::Quantity::Relationship then init_from_relationship( relspec )
+      else init_from_hash( relspec ) end
+      # Prepare @import and @export closures.
+      prepare_import_and_export_closures
+    end
+
+    private
+
+    def init_from_magnitude m
+      @other_quantity = m.quantity.aT_not_equal( @quantity )
+      ratio = m.amount
+      @ex = lambda { |amount1| amount1 / ratio }
+      @im = lambda { |amount2| amount2 * ratio }
+    end
+
+    def init_from_relationship rel
+      @other_quantity, @ex, @im = rel.other_quantity, rel.ex, rel.im
+    end
+
+    def init_from_hash ꜧ
+      @other_quantity, @ex, @im = ꜧ[:other_quantity], ꜧ[:ex], ꜧ[:im]
+    end
+
+    def prepare_import_and_export_closures
+      @export = lambda { |mgn1| @other_quantity.new_magnitude @ex.( mgn1.amount ) }
+      @import = lambda { |mgn2| @quantity.new_magnitude @im.( mgn2.amount ) }
+    end
   end
 
   # Composition of quantities.

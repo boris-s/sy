@@ -40,19 +40,18 @@ module SY::Unit
   def self.included target
     target.class_exec do
       # Let's set up the naming hook for NameMagic:
-      name_set_closure { |name, new_instance, old_name|
+      name_set_closure do |name, new_instance, old_name|
         ɴ = name.to_s
         up, down = ɴ.upcase, ɴ.downcase
-        raise NameError, "Unit name must be either all-upper or " +
-          "all-lower case." unless ɴ == up || ɴ = down
-        conflicter = SY::PREFIX_TABLE.find { |row|
-          full = row[:full]
-          down.starts_with? full unless full.empty?
-        }
-        raise NameError, "Name #{ɴ} starts with #{conflicter[:full]}- " +
-        "prefix." unless down == 'kilogram' if conflicter
+        unless ɴ == up || ɴ = down
+          raise NameError, "Unit must be either all-upper or all-lower case!"
+        end
+        conflicter = SY::PREFIX_TABLE.full_prefixes
+          .find { |prefix| down.starts_with? prefix unless prefix.empty? }
+        raise NameError, "Name #{ɴ} starts with #{conflicter}- prefix" unless
+          down == 'kilogram' if conflicter
         up.to_sym
-      }
+      end
 
       # name_get_closure { |name| name.to_s.downcase.to_sym }
 
@@ -66,12 +65,11 @@ module SY::Unit
       # quantity unchanged, but can and should be overriden for those unit,
       # which have area-specific prefix use.)
       # 
-      SY::PREFIX_TABLE.full_prefixes.each do |full_prefix|
-        unless full_prefix.empty?
-          define_method full_prefix do
-            SY::Quantity.instance( quantity_by_prefix( full_prefix ) )
-              .new_magnitude( self * SY::PREFIX_TABLE
-                                .hash_full[ full_prefix ][:factor] )
+      SY::PREFIX_TABLE.full_prefixes.each do |prefix|
+        unless prefix.empty?
+          define_method prefix do
+            SY::Quantity.instance( quantity_by_prefix( prefix ) )
+              .new_magnitude self * SY::PREFIX_TABLE.to_factor( prefix )
           end
         end
       end
@@ -96,22 +94,21 @@ module SY::Unit
       return qnt.new_unit *( ꜧ.empty? ? args : args << ꜧ )
     end
     
-    # Standard unit constructor. Quantity must be specified in its named
-    # arguments (:quantity alias :of). In absence of other named arguments,
-    # standard unit of this quantity is retrieved. If other named argument
-    # than :quantity are supplied, a new unit instance is constructed and
-    # set as standard unit of the specified quantity.
+    # Standard unit constructor. In absence of other named arguments, standard
+    # unit of the specified quantity is merely retrieved. If other named
+    # arguments than :quantity (alias :of) are supplied, they are forwarded to
+    # Quantity#new_standard_unit method, that resets the standard unit of the
+    # specified quantity. Note that :amount for standard units, if supplied, has
+    # special meaning of setting the relationship of that quantity.
     # 
     def standard args={}
       args.must_have :quantity, syn!: :of
       qnt = SY::Quantity.instance( args.delete :quantity )
-      return qnt.standard_unit if args.empty?
-      tuto tuto tuto
-      # now here, :amount gets different meaning
-      # it has to be extracted and replaced by 1, compulsory for standard units
-      unit_instance = qnt.new_unit( args )
-      qnt.standard_unit_set( unit_instance )
-      return unit_instance
+      if args.empty? then
+        qnt.standard_unit 
+      else
+        qnt.new_standard_unit( args )
+      end
     end
     
     # Unit abbreviations as a hash of abbreviation => unit pairs.
@@ -119,6 +116,20 @@ module SY::Unit
     def abbreviations
       ii = instances
       Hash[ ii.map( &:short ).zip( ii ).select { |short, _| ! short.nil? } ]
+    end
+
+    # Full list of known unit names and unit abbreviations.
+    # 
+    def known_symbols
+      instance_names + abbreviations.keys
+    end
+
+    # Parses an SPS, curring it with known unit names and abbreviations,
+    # and all known full and short prefixes.
+    # 
+    def parse_sps_using_all_prefixes sps
+      puts "Unit about to sps parse (#{sps})" if SY::DEBUG
+      SY::PREFIX_TABLE.parse_sps( sps, known_symbols )
     end
   end # class << self
 
@@ -158,6 +169,7 @@ module SY::Unit
     if args.has? :abbreviation, syn!: :short then
       @abbreviation = args.delete( :abbreviation ).to_sym
     end
+      
     # FIXME: Here, we would have to watch out for :amount being set
     # if it is a number, amount is in standard units
     # however, if it is a magnitude, especially one of another equidimensional quantity,
