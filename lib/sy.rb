@@ -30,7 +30,7 @@ require 'bigdecimal'
 Numeric.module_exec { include SY::ExpressibleInUnits }
 
 module SY
-  DEBUG = true
+  DEBUG = false
 
   # === Basic settings
 

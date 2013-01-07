@@ -87,7 +87,6 @@ module SY
     # own #all_prefixes.
     # 
     def parse_sps sps, unit_symbols
-      puts "Prefix table about to SPS parse" if SY::DEBUG
       SY::SPS_PARSER.( sps, unit_symbols, all_prefixes )
     end
 
@@ -113,9 +112,7 @@ module SY
     def to_full clue
       ( @fullꜧ ||= Hash.new do |ꜧ, key|
           result = row( key )
-          puts "result assigned successfuly, it is '#{result}', key was '#{key}'"
           result = result[:full]
-          puts "past secon #[]"
           ꜧ[key] = result if result
         end )[ clue ]
     end
@@ -197,7 +194,6 @@ module SY
       raise NameError, "Bad input string: '#{input_ς}'!" unless input_ς.empty?
       return [], [], []
     end
-    puts "Hello from SPS_PARSER, input ς is #{input_ς}" if SY::DEBUG
     # analysis of input string sections
     input_ς_sections.each_with_object [[], [], []] do |_section_, memo|
       section = _section_.dup
@@ -234,7 +230,6 @@ module SY
       raise NameError, "Zero exponents not allowed: #{exponent_ς}" if exp == 0
       # and store the interpretation
       memo[0] << chosen_prefix; memo[1] << unit_ς; memo[2] << exp
-      puts "Parser: '#{chosen_prefix}'#{unit_ς} ** #{exp}" if SY::DEBUG
       memo
     end
   }
