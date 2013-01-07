@@ -177,7 +177,7 @@ class SY::Quantity
   # Constructs a new unit of this quantity.
   # 
   def new_unit args={}
-    unit.new args.merge( quantity: self )
+    unit.new( args.merge( quantity: self ) ).tap { |u| ( units << u ).uniq! }
   end
 
   # Constructor of a new standard unit (replacing the current @standard_unit).
@@ -196,7 +196,7 @@ class SY::Quantity
     # and substitue amount 1 as required for standard units.
     args.update amount: 1
     # Replace @standard_unit with the newly constructed unit.
-    @standard_unit = new_unit( args )
+    @standard_unit = new_unit( args ).tap { |u| ( units.unshift u ).uniq! }
   end
 
   # Quantity multiplication.
