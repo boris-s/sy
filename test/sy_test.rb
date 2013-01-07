@@ -779,6 +779,8 @@ describe "support of unit methods by Numerics and related features" do
     1.A.quantity.standard_unit.abbreviation.must_equal :A
     1.A.inspect.must_equal "#<Magnitude: 1.A >"
     1.l⁻¹.( SY::Molarity ).quantity.must_equal SY::Molarity
+    puts SY::LITRE.class
+    puts SY::LITRE.class.ancestors
     x = ( SY::Nᴀ / SY::LITRE ).reframe( SY::Molarity )
     y = 1.molar
     y.must_equal x

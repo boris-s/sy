@@ -4,7 +4,7 @@
 # 
 class SY::Quantity
   include NameMagic
-  attr_reader :dimension, :magnitude, :unit, :composition, :relationship
+  attr_reader :dimension, :Magnitude, :Unit, :composition, :relationship
 
   # The keys of this hash are unary or binary mathematical operations on
   # quantities. They are stored as and array, whose 1st element is the
@@ -113,7 +113,7 @@ class SY::Quantity
     @relative = args[:relative]
     @dimension, @composition = init_dimension_and_composition( args )
     @relationship = init_relationship( args )
-    @magnitude, @unit = prepare_parametrized_magnitude_and_unit_class
+    @Magnitude, @Unit = prepare_parametrized_magnitude_and_unit_class
   end
 
   def composition
@@ -171,13 +171,13 @@ class SY::Quantity
   # Constructs a new absolute magnitude of this quantity.
   # 
   def new_magnitude arg
-    @magnitude.new quantity: self, amount: arg
+    @Magnitude.new quantity: self, amount: arg
   end
 
   # Constructs a new unit of this quantity.
   # 
   def new_unit args={}
-    unit.new( args.merge( quantity: self ) ).tap { |u| ( units << u ).uniq! }
+    @Unit.new( args.merge( quantity: self ) ).tap { |u| ( units << u ).uniq! }
   end
 
   # Constructor of a new standard unit (replacing the current @standard_unit).
@@ -288,10 +288,6 @@ class SY::Quantity
     end
   end
 
-  def magnitude_mixin
-    relative? ? SY::SignedMagnitude : SY::AbsoluteMagnitude
-  end
-
   def same_dimension? other
     dimension == other.dimension
   end
@@ -322,19 +318,16 @@ class SY::Quantity
   end
 
   def prepare_parametrized_magnitude_and_unit_class
-    mixin = magnitude_mixin
-    magnitude_ç = Class.new do       # parametrized magnitude class
-      include SY::Magnitude
-      include mixin
-    end
-    magnitude_ç.define_singleton_method :to_s do "Magnitude of #{self}" end
-    magnitude_ç.define_singleton_method :inspect do "Magnitude of #{self}" end
-    unit_ç = Class.new magnitude_ç do # and parametrized unit class
-      include SY::Unit
-    end
-    unit_ç.define_singleton_method :to_s do "Magnitude of #{self}" end
-    unit_ç.define_singleton_method :inspect do "Magnitude of #{self}" end
-    return magnitude_ç, unit_ç
+    mç = Class.new do include SY::Magnitude end # magnitude class
+    uç = Class.new mç do include SY::Unit end # unit class
+    mixin = relative? ? SY::SignedMagnitude : SY::AbsoluteMagnitude
+    mç.class_exec { include mixin }
+    qnλ = lambda { name ? "#{name}@%s" : "#<Quantity:#{object_id}@%s>" }
+    mç.singleton_class               # customized to_s
+      .class_exec { define_method :to_s do qnλ.call % "Magnitude" end }
+    uç.singleton_class               # customized to_s
+      .class_exec { define_method :to_s do qnλ.call % "Unit" end }
+    return mç, uç
   end
 
   # Relationship of quantities. Provides import and export closures to convert
