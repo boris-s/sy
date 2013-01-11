@@ -8,17 +8,19 @@ module SY::SignedMagnitude
   # 
   def initialize args={}
     @quantity = args[:quantity] || args[:of]
-    @amount = begin
-                BigDecimal( args[:amount] )
-              rescue ArgumentError
-                BigDecimal( args[:amount], SY::NUMERIC_FILTER )
-              rescue TypeError => err
-                if args[:amount].nil? then
-                  BigDecimal( "1", SY::NUMERIC_FILTER )
-                else
-                  raise err # tough luck
-                end
-              end
+    a = args[:amount]
+    @amount = a.nil? ? 1 : ( a.amount rescue a )
+    # @amount = begin
+    #             BigDecimal( args[:amount] )
+    #           rescue ArgumentError
+    #             BigDecimal( args[:amount], SY::NUMERIC_FILTER )
+    #           rescue TypeError => err
+    #             if args[:amount].nil? then
+    #               BigDecimal( "1", SY::NUMERIC_FILTER )
+    #             else
+    #               raise err # tough luck
+    #             end
+    #           end
   end
 
   # Addition.

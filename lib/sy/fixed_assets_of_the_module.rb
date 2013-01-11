@@ -245,14 +245,18 @@ module SY
 
   QSR = QUANTITY_SIMPLIFICATION_RULES = []
 
-  # Custom error class for attempts to create negative magnitudes.
-  # 
-  class NegativeAmountError < StandardError; end
 
-  # Custom error class for attempts to mix incompatible quantities.
+  # Mainly for mixing incompatible quantities.
   # 
   class QuantityError < StandardError; end
 
+  # Mainly for mixing incompatible dimensions.
+  # 
+  class DimensionError < StandardError; end
+
+  # Mainly for negative or otherwise impossible physical amounts.
+  # 
+  class MagnitudeError < StandardError; end
 
   # Convenience dimension accessor.
   # 

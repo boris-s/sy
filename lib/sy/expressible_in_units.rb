@@ -4,7 +4,7 @@
 # symbols corresponding to metrological units defined in SY.
 # 
 module SY::ExpressibleInUnits
-  class IllegalRecursionError < StandardError; end
+  class RecursionError < StandardError; end
 
   def method_missing ß, *args, &block
     # hack #0: working around a bug in a 3rd party library
@@ -22,7 +22,7 @@ module SY::ExpressibleInUnits
     rescue NameError => m
       puts "NameError raised: #{m}" if SY::DEBUG
       super # give up
-    rescue SY::ExpressibleInUnits::IllegalRecursionError
+    rescue SY::ExpressibleInUnits::RecursionError
       super # give up
     else # invoke the defined method that we just defined
       send ß, *args, &block
@@ -37,7 +37,7 @@ module SY::ExpressibleInUnits
       anti_recursion_exec_with_token ß, :@SY_Units_rmiss do
         parse_unit_symbol( ß )
       end
-    rescue NameError, SY::ExpressibleInUnits::IllegalRecursionError
+    rescue NameError, SY::ExpressibleInUnits::RecursionError
       false
     else
       true
@@ -88,10 +88,10 @@ module SY::ExpressibleInUnits
     factors = if triples.size < 1 then
                 []
               else
-                first_factor = "::SY.Unit( :%s )%s.to_magnitude( self )%s" %
+                first_factor = "+( ::SY.Unit( :%s )%s )%s * self" %
                   process_triple.( *triples.shift )
                 rest = triples.map do |tr|
-                  "::SY.Unit( :%s )%s.to_magnitude%s" % process_triple.( *tr )
+                  "( ::SY.Unit( :%s )%s.relative ) )%s" % process_triple.( *tr )
                 end
                 [ first_factor, *rest ]
               end
@@ -110,7 +110,7 @@ module SY::ExpressibleInUnits
     registry = self.class.instance_variable_get( inst_var ) ||
       self.class.instance_variable_set( inst_var, [] )
     if registry.include? token then
-      raise SY::ExpressibleInUnits::IllegalRecursionError
+      raise SY::ExpressibleInUnits::RecursionError
     end
     begin
       registry << token

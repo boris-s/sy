@@ -3,8 +3,21 @@
 # This class represents physical dimension of a metrological quantity.
 # 
 class SY::Dimension
+  @standard_quantities ||= Hash.new { |ꜧ, dim|
+    if dim.is_a? SY::Dimension then
+      ꜧ[ dim ] = SY::Quantity.of dim
+    else
+      ꜧ[ SY.Dimension dim ]
+    end
+  }
+
   class << self
     alias __new__ new
+
+    # attr_reader :standard_quantities
+    def standard_quantities
+      @standard_quantities
+    end
     
     # The #new constructor of SY::Dimension has been changed, so that the
     # same instance is returned, if that dimension has already been created.
@@ -27,18 +40,6 @@ class SY::Dimension
     # 
     def instances
       return @instances ||= []
-    end
-
-    # Presents standard quantities pertaining to the dimensions (hash).
-    # 
-    def standard_quantities
-      @standard_quantities ||= Hash.new { |ꜧ, dim|
-        if dim.is_a? SY::Dimension then
-          ꜧ[ dim ] = SY::Quantity.of dim
-        else
-          ꜧ[ SY.Dimension dim ]
-        end
-      }
     end
 
     # Base dimension constructor. Base dimension symbol is expeced as argument.
@@ -163,7 +164,7 @@ class SY::Dimension
   # Returns dimension's standard quantity.
   # 
   def standard_quantity
-    ç.standard_quantities[ self ]
+    self.class.standard_quantities[ self ]
   end
 
   # Returns default quantity composition for this dimension.

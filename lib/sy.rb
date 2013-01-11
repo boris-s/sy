@@ -25,6 +25,14 @@ require 'bigdecimal'
 
 
 
+# The hallmark of SY is its extension of the Numeric class with methods
+# corresponding to selected metrological units and their abbreviations.
+# 
+class Numeric
+  include ::SY::ExpressibleInUnits
+end
+
+
 # === Basic settings
 # 
 module SY
@@ -34,34 +42,35 @@ module SY
   #
   NUMERIC_FILTER = 6
 
-  Nᴀ = AVOGADRO_CONSTANT = 6.02214e23
-end
+  Amount = Quantity.standard of: Dimension.zero, relative: false
+  AmountDifference = Quantity.new of: Dimension.zero, relative: true
 
+  def self.Amount number
+    SY::Amount.magnitude number
+  end
 
-  # === Dimensionless quantities
-module SY
-  Amount = Quantity.standard of: Dimension.zero
+  Nᴀ = AVOGADRO_CONSTANT = SY.Amount 6.02214e23
 
-  # Dimensionless quantity "Amount" is disposable:
-  # 
-  QSR << lambda { |ꜧ|
-    ꜧ = ꜧ.dup
-    ꜧ.delete SY::Amount
-    ꜧ
+  # SY::Amount is disposable:
+  QSR << lambda { |ꜧ| ꜧ.delete( SY::Amount ) }
+  # # SY::AmountDifference is modulo 2:
+  # QSR << lambda { |ꜧ| r = SY::Amount.relative; ꜧ[r] = ꜧ[r] - 2 if ꜧ[r] && ꜧ[r] >= 2 }
+  # SY::AmountDifference is disposable
+  QSR << lambda { |ꜧ| ꜧ.delete( SY::AmountDifference ) }
+  # QSR << ->(ꜧ) { r = SY::Amount.relative; ꜧ[r] = ꜧ[r] - 2 if ꜧ[r] && ꜧ[r] >= 2 }
+  # Relative quantities => absolute equivalent + amount difference equivalent.
+  QSR << ->(ꜧ) {
+    r = ꜧ.find { |k, v| k.relative? }
+    if r then
+      rel, exp = r
+      ꜧ.delete rel
+      r = rel.absolute
+      ꜧ[r] = ꜧ[r] ? ꜧ[r] + exp : exp
+    end
   }
-end
+  # Any quantities with exponent zero can be deleted
+  QSR << ->(ꜧ) { ꜧ.reject! { |k, v| v == 0 } }
 
-# The hallmark of SY is its extension of the Numeric class with methods
-# corresponding to selected metrological units and their abbreviations.
-# 
-class Numeric
-  include ::SY::ExpressibleInUnits
-  def amount; self end
-  def quantity; ::SY::Amount end
-  def to_magnitude; quantity.magnitude amount end
-end
-
-module SY
   # === Basic dimension L
 
   Length = Quantity.standard of: :L
@@ -113,9 +122,7 @@ module SY
   UNIT = Unit.standard of: Amount
 
   MoleAmount = Quantity.dimensionless
-  puts "just before setting a relationship"
   MOLE = Unit.standard of: MoleAmount, short: "mol", amount: UNIT * Nᴀ
-  puts "relationship set"
 
   # degree, alias deg, ° # angle measure
   # arcminute, alias ʹ, ′ # angle measure
@@ -125,7 +132,9 @@ module SY
   
   Area = Length ** 2
   Volume = Length ** 3
-  LITRE = Unit.of Volume, short: "l", amount: 1.dm³
+
+  LitreVolume = Quantity.new of: Volume.dimension
+  LITRE = Unit.standard of: LitreVolume, short: "l", amount: 1.dm³
 
   Frequency = 1 / Time
   HERTZ = Unit.of Frequency, short: "Hz"
@@ -154,9 +163,48 @@ module SY
   ElectricPotential = ( Energy / ElectricCharge ).standard!
   VOLT = Unit.standard of: ElectricPotential, abbreviation: "V"
 
-  Molarity = MoleAmount / Volume
-  MOLAR = Unit.standard of: Molarity, abbreviation: "M", amount: 1.mol.l⁻¹
+  Molarity = MoleAmount / LitreVolume
+  # FIXME: This should raise a friendly error:
+  # MOLAR = Unit.standard of: Molarity, abbreviation: "M", amount: 1.mol.l⁻¹
+  MOLAR = Unit.standard of: Molarity, abbreviation: "M"
 
   Molality = MoleAmount / Mass
   MOLAL = Unit.of Molality
+end
+
+
+class Matrix
+
+  # Matrix multiplication.
+  #   Matrix[[2,4], [6,8]] * Matrix.identity(2)
+  #     => 2 4
+  #        6 8
+  #
+  def * arg # arg is matrix or vector or number
+    case arg
+    when Numeric
+      rows = @rows.map { |row|
+        row.map { |e| e * arg }
+      }
+      return new_matrix rows, column_size
+    when Vector
+      arg = Matrix.column_vector arg
+      result = self * arg
+      return result.column 0
+    when Matrix
+      Matrix.Raise ErrDimensionMismatch if column_size != arg.row_size
+
+      rows = Array.new( row_size ) { |i|
+        Array.new( arg.column_size ) { |j|
+          ( 0 ... column_size ).reduce { |memo, col|
+            memo + arg[ col, j ] * self[ i, col ]
+          }
+        }
+      }
+      return new_matrix( rows, arg.column_size )
+    else
+      compat_1, compat_2 = arg.coerce self
+      return compat_1 * compat_2
+    end
+  end
 end

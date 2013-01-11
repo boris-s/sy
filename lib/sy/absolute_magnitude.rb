@@ -8,18 +8,20 @@ module SY::AbsoluteMagnitude
   # 
   def initialize args={}
     @quantity = args[:quantity] || args[:of]
-    @amount = begin
-                BigDecimal( args[:amount] )
-              rescue ArgumentError
-                BigDecimal( args[:amount], SY::NUMERIC_FILTER )
-              rescue TypeError => err
-                if args[:amount].nil? then
-                  BigDecimal( "1", SY::NUMERIC_FILTER )
-                else
-                  args[:amount].in_standard_unit
-                end
-              end
-    raise SY::NegativeAmountError,
+    a = args[:amount]
+    @amount = a.nil? ? 1 : ( a.amount rescue a )
+    # @amount = begin
+    #             BigDecimal( args[:amount] )
+    #           rescue ArgumentError
+    #             BigDecimal( args[:amount], SY::NUMERIC_FILTER )
+    #           rescue TypeError => err
+    #             if args[:amount].nil? then
+    #               BigDecimal( "1", SY::NUMERIC_FILTER )
+    #             else
+    #               args[:amount].in_standard_unit
+    #             end
+    #           end
+    raise SY::MagnitudeError,
           "Unsigned magnitudes canot have negative amount!" if @amount < 0
   end
 
@@ -28,7 +30,7 @@ module SY::AbsoluteMagnitude
   # 
   def + m2
     return magnitude amount + m2.amount if m2.quantity == quantity.relative
-    return quantity.relative.new_magnitude( amount + m2.amount ) if
+    return quantity.relative.magnitude( amount + m2.amount ) if
       quantity == m2.quantity
     raise SY::QuantityError, "Unable to perform #{quantity} + #{m2.quantity}!"
   end

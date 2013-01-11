@@ -107,7 +107,6 @@ module SY::Unit
       if args.empty? then
         qnt.standard_unit 
       else
-        puts "it's gonna be a new standard unit"
         qnt.new_standard_unit( args )
       end
     end
@@ -234,15 +233,6 @@ module SY::Unit
   def inspect
     name.nil? ? inspect_when_anonymous : inspect_when_named
   end
-
-  # Converts a unit into ordinary magnitude.
-  # 
-  def to_magnitude factor=nil
-    factor.nil? ? magnitude( amount ) : magnitude( amount ) * factor
-  end
-
- # factor=1
- #  end
 
   # Some prefixes of some units are almost exclusively used in certain areas
   # of science or engineering, and their appearance would indicate such
