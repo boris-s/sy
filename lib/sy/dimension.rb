@@ -13,11 +13,7 @@ class SY::Dimension
 
   class << self
     alias __new__ new
-
-    # attr_reader :standard_quantities
-    def standard_quantities
-      @standard_quantities
-    end
+    attr_reader :standard_quantities
     
     # The #new constructor of SY::Dimension has been changed, so that the
     # same instance is returned, if that dimension has already been created.
@@ -170,11 +166,11 @@ class SY::Dimension
   # Returns default quantity composition for this dimension.
   # 
   def to_composition
-    SY::Quantity::Composition
-      .new Hash[ [ SY::BASE_DIMENSIONS.base_symbols
-                     .map { |l| self.class.base l }
-                     .map { |base_dim| self.class.standard_quantities[ base_dim ] },
-                   to_a ].transpose ].reject { |_, exp| exp.zero? }
+    SY::Composition[ SY::BASE_DIMENSIONS.base_symbols
+                       .map { |l| self.class.base l }
+                       .map { |dim| self.class.standard_quantities[ dim ] }
+                       .map { |qnt| qnt.absolute }
+                       .zip( to_a ).delete_if { |qnt, exp| exp.zero? } ]
   end
 
   delegate :standard_unit, to: :standard_quantity

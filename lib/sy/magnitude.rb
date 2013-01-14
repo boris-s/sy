@@ -50,6 +50,11 @@ module SY::Magnitude
   attr_reader :quantity, :amount
   alias in_standard_unit amount
 
+  # Delegations to amount:
+  # 
+  delegate :zero?, to: :amount
+  delegate :to_f, to: :amount
+
   # Delegations to quantity:
   # 
   delegate :dimension,
@@ -60,12 +65,6 @@ module SY::Magnitude
            :magnitude,
            :relationship,
            to: :quantity
-
-  # Absolute value of a magnitude (no reframe).
-  # 
-  def abs
-    magnitude amount.abs
-  end
 
   # Computes absolute value and reframes into the absolute quantity.
   # 
@@ -79,35 +78,49 @@ module SY::Magnitude
     quantity.relative.magnitude amount
   end
 
+  # Reframes the magnitude into its relative quantity.
+  # 
+  def +@
+    quantity.relative.magnitude( amount )
+  end
+
+  # Reframes the magnitude into its relative quantity, with negative amount.
+  # 
+  def -@
+    quantity.relative.magnitude( -amount )
+  end
+
+  # Absolute value of a magnitude (no reframe).
+  # 
+  def abs
+    magnitude amount.abs
+  end
+
   # Rounded value of a Magnitude: A new magnitude with rounded amount.
   # 
   def round *args
     magnitude amount.round( *args )
   end
 
-  # Whether the magnitude is zero.
-  # 
-  delegate :zero?, to: :amount
-
   # Compatible magnitudes compare by their amounts.
   # 
   def <=> m2
     return amount <=> m2.amount if quantity == m2.quantity
-    raise SY::QuantityError, "Unable to #{quantity} <=> #{m2.quantity}!"
+    raise SY::QuantityError, "Mismatch: #{quantity} <=> #{m2.quantity}!"
   end
 
   # Addition.
   # 
   def + m2
     return magnitude amount + m2.amount if quantity == m2.quantity
-    raise SY::QuantityError, "Unable to #{quantity} + #{other.quantity}!"
+    raise SY::QuantityError, "Mismatch: #{quantity} + #{other.quantity}!"
   end
 
   # Subtraction.
   # 
   def - m2
     return magnitude amount - m2.amount if quantity == m2.quantity
-    raise SY::QuantityError, "Unable to #{quantity} - #{m2.quantity}!"
+    raise SY::QuantityError, "Mismatch: #{quantity} - #{m2.quantity}!"
   end
 
   # Multiplication.
@@ -115,9 +128,10 @@ module SY::Magnitude
   def * m2
     case m2
     when Numeric then
-      # puts "#{self} *: #{m2} is a numeric"
       magnitude amount * m2
-    else ( quantity * m2.quantity ).magnitude( amount * m2.amount ) end
+    else
+      ( quantity * m2.quantity ).magnitude( amount * m2.amount )
+    end
   end
 
   # Division.
@@ -125,9 +139,10 @@ module SY::Magnitude
   def / m2
     case m2
     when Numeric then
-      # puts "#{self} /: #{m2} is a numeric"
       magnitude amount / m2
-    else ( quantity / m2.quantity ).magnitude( amount / m2.amount ) end
+    else
+      ( quantity / m2.quantity ).magnitude( amount / m2.amount )
+    end
   end
 
   # Exponentiation.
@@ -147,14 +162,14 @@ module SY::Magnitude
   # 
   def coerce m2
     case m2
-    when Numeric then return SY::Amount.magnitude( m2 ), self
+    when Numeric then return SY::Amount.relative.magnitude( m2 ), self
     else
       raise TErr, "#{self} cannot be coerced into a #{m2.class}!"
     end
   end
 
-  # Expresses the magnitude numerically in multiples of another magnitude
-  # (which must be of compatible quantity).
+  # Gives the magnitude as a plain number in multiples of another magnitude,
+  # supplied as argument. The quantities must match.
   # 
   def in m2
     case m2
@@ -165,33 +180,18 @@ module SY::Magnitude
     end
   end
 
-  # Gives the magnitude in standard unit sa float.
-  # 
-  delegate :to_f, to: :amount
-
   # Reframes a magnitude into a different quantity. Dimension must match.
   # 
   def reframe q2
     q2.import self
   end
 
-  # Reframes a magnitude into a <em>relative</em> quantity based on the
-  # quantity supplied as argument.
+  # Reframes a magnitude into a <em>relative</em> version of a given quantity.
+  # (If absolute quantity is supplied as an argument, its relative colleague
+  # is used to reframe.)
   # 
   def call q2
     reframe q2.relative
-  end
-
-  # Reframes the magnitude into its relative quantity.
-  # 
-  def +@
-    quantity.relative.magnitude( amount )
-  end
-
-  # Reframes the magnitude into its relative quantity, with negative amount.
-  # 
-  def -@
-    quantity.relative.magnitude( -amount )
   end
 
   # True if amount is negative. Implicitly false for absolute quantities.
@@ -205,8 +205,6 @@ module SY::Magnitude
   def nonnegative?
     amount >= 0
   end
-
-
 
   # Gives the magnitude written "naturally", in its most favored units.
   # It is also possible to supply a unit in which to show the magnitude
@@ -227,7 +225,8 @@ module SY::Magnitude
   
 
   # 
-  def to_s unit=quantity.units.first || quantity.standard_unit, number_format=default_amount_format
+  def to_s( unit=quantity.units.first || quantity.standard_unit,
+            number_format=default_amount_format )
     # step 1: produce pairs [number, unit_presentation],
     #         where unit_presentation is an array of triples
     #         [prefix, unit, exponent], which together give the
@@ -328,6 +327,8 @@ module SY::Magnitude
 
     # number, unit_presentation = choice
 
+    begin
+
     un = unit.short || unit.name
 
     if un then
@@ -362,6 +363,11 @@ module SY::Magnitude
       number_ς = number_format % number
       return number_ς if unit_ς == '' || unit_ς == 'unit'
       [ number_ς, unit_ς ].join '.'
+    end
+
+    rescue
+      number_ς = number_format % amount
+      [ number_ς, "unit[#{quantity}]" ].join '.'
     end
   end
 

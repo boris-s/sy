@@ -64,18 +64,121 @@ describe SY::Dimension do
   end
 end
 
+describe SY::Mapping do
+  it "should" do
+    i = SY::Mapping.identity
+    a, b = SY::Mapping.new( 2 ), SY::Mapping.new( 3 )
+    assert_equal 1, i.ratio
+    assert_equal 4, a.im.( 8 )
+    assert_equal 3, b.ex.( 1 )
+    assert_equal 6, (a * b).ex.( 1 )
+    assert_equal 2, (a * b / b).ex.( 1 )
+    assert_equal 4, (a ** 2).ex.( 1 )
+    assert_equal 2, a.inverse.im.( 1 )
+  end
+end
+
+describe SY::Composition do
+  it "should" do
+    assert_equal SY::Amount, SY.Dimension( :∅ ).standard_quantity
+    a = SY::Composition[ SY::Amount => 1 ]
+    l = SY::Composition[ SY::Length => 1 ]
+    assert SY::Composition.new.empty?
+    assert a.singular?
+    assert l.atomic?
+    assert_equal SY::Composition[ SY::Amount => 1, SY::Length => 1 ], a + l
+    assert_equal SY::Composition[ SY::Amount => 1, SY::Length => -1 ], a - l
+    assert_equal SY::Composition[ SY::Length => 2 ], l * 2
+    assert_equal l, l * 2 / 2
+    assert_equal l.to_hash, (a + l).simplify.to_hash
+    assert_equal SY::Amount, a.to_quantity
+    assert_equal SY::Length, l.to_quantity
+    assert_equal( SY.Dimension( 'L' ),
+                  SY::Composition[ SY::Amount => 1, SY::Length => 1 ]
+                    .to_quantity.dimension )
+    assert_equal SY.Dimension( 'L' ), l.dimension
+    assert_kind_of SY::Mapping, a.infer_mapping
+  end
+end
+
+describe SY::Quantity, SY::Magnitude do
+  before do
+    @q1 = SY::Quantity.new of: '∅'
+    @q2 = SY::Quantity.dimensionless
+    @amount_in_dozens = begin
+                          SY.Quantity( "AmountInDozens" )
+                        rescue
+                          SY::Quantity.dimensionless mapping: 12, ɴ: "AmountInDozens"
+                        end
+    @inch_length = begin
+                     SY.Quantity( "InchLength" )
+                   rescue NameError
+                     SY::Quantity.of SY::Length.dimension, ɴ: "InchLength"
+                   end
+  end
+
+  it "should" do
+    refute_equal @q1, @q2
+    assert @q1.absolute? && @q2.absolute?
+    assert @q1 == @q1.absolute
+    assert_equal false, @q1.relative?
+    assert_equal SY::Composition.new, @q1.composition
+    @q1.set_composition SY::Composition[ SY::Amount => 1 ]
+    assert_equal SY::Composition[ SY::Amount => 1 ], @q1.composition
+    @amount_in_dozens.must_be_kind_of SY::Quantity
+    d1 = @amount_in_dozens.magnitude 1
+    a12 = SY::Amount.magnitude 12
+    mda = @amount_in_dozens.mapping_to SY::Amount
+    i, e = mda.im, mda.ex
+    ia = i.( a12.amount )
+    @amount_in_dozens.magnitude ia
+    im = @amount_in_dozens.import( a12 )
+    assert_equal @amount_in_dozens.magnitude( 1 ),
+                 @amount_in_dozens.import( SY::Amount.magnitude( 12 ) )
+    assert_equal SY::Amount.magnitude( 12 ),
+                 @amount_in_dozens.export( 1, SY::Amount )
+    SY::Length.composition.must_equal SY::Composition.singular( :Length )
+  end
+
+  describe "Magnitude, Unit" do
+    before do
+      @m1 = 1.metre
+      @inch = SY::Unit.standard( of: @inch_length, amount: 2.54.cm,
+                                 ɴ: 'inch', short: '”' )
+      @i1 = @inch_length.magnitude 1
+      @il_mapping = @inch_length.mapping_to SY::Length
+    end
+    
+    it "should" do
+      @m1.quantity.must_equal SY::Length.relative
+      @inch_length.colleague.name.must_equal :InchLength±
+      @m1.to_s.must_equal "1.m"
+      @i1.amount.must_equal 1
+      assert_kind_of SY::Mapping, @il_mapping
+      assert_kind_of Numeric, @il_mapping.ratio
+      assert_in_epsilon 0.0254, @il_mapping.ratio
+      @il_mapping.ex.( 1 ).must_be_within_epsilon 0.0254
+      begin
+        impossible_mapping = @inch_length.mapping_to SY::Amount
+      rescue SY::DimensionError
+        :dimension_error
+      end.must_equal :dimension_error
+      # reframing
+      1.inch.reframe( @inch_length ).amount.must_equal 1
+      1.inch.( @inch_length ).must_equal 1.inch
+      1.inch.( SY::Length ).must_equal 2.54.cm
+      @inch_length.magnitude( 1 ).to_s.must_equal "1.”"
+      1.inch.in( :mm ).must_equal 25.4
+    end
+  end
+end
+
 describe "expected behavior" do
   it "should" do
     # Length quantity and typical units
     SY::METRE.must_be_kind_of SY::Unit
     SY::METRE.absolute?.must_equal true
-    puts
-    puts
-    puts 1.metre.quantity.composition.to_hash
-    puts
-
-    1.metre.absolute.relative?.must_equal false
-    1.m
+    1.metre.absolute.must_equal SY::METRE
     assert 1.metre.absolute != 1.metre.relative
     1.metre.relative.relative?.must_equal true
 
@@ -85,7 +188,7 @@ describe "expected behavior" do
     1.m.must_equal 1000.mm
     SY::METRE.quantity.name.must_equal :Length
     assert_in_delta 0.9.µm, 900.nm, 1e-6.nm
-    puts [ 1.m, 1.m ].min
+    [ 1.m, 1.m ].min.must_equal 1.m
     1.m + 1.m == 1.m
     assert_in_epsilon 1.m, 1.m, 0.1
     600.m.must_equal 0.6.km
@@ -135,21 +238,27 @@ describe "expected behavior" do
     1.mm.quantity.name.must_equal :Length±
     SY::Length.standard_unit.must_equal SY::METRE
     SY::Length.standard_unit.name.must_equal :metre
-    SY::Length.Unit.standard.must_equal SY::METRE
+    SY::Length.standard_unit.must_equal SY::METRE
     SY.Quantity( :Length ).object_id.must_equal SY::Length.object_id
     SY::Length.relative.object_id.must_equal SY.Quantity( :Length± ).object_id
     SY.Quantity( :Length± ).colleague.name.must_equal :Length
     SY.Quantity( :Length± ).colleague.class.must_equal SY::Quantity
     SY.Quantity( :Length± ).colleague.object_id.must_equal SY::Length.object_id
-    SY.Quantity( :Length± ).Unit.object_id.must_equal SY::Length.Unit.object_id
+    SY.Quantity( :Length± ).send( :Unit ).object_id
+      .must_equal SY::Length.send( :Unit ).object_id
     1.mm.quantity.standard_unit.name.must_equal :metre
     1.mm.to_s.must_equal "0.001.m"
     1.mm.inspect.must_equal "#<±Magnitude: 0.001.m >"
     1.µs.inspect.must_equal "#<±Magnitude: 1e-06.s >"
+
+    SY::Area.dimension.must_equal SY.Dimension( :L² )
+    SY::Area.composition.must_equal SY::Composition[ SY::Length => 2 ]
+    
     SY::AMPERE.name.must_equal :ampere
     SY::AMPERE.abbreviation.must_equal :A
     SY::AMPERE.dimension.must_equal 1.A.dimension
     SY.Magnitude( of: SY::ElectricCurrent, amount: 1 ).must_equal 1.A.absolute
+    1.A.quantity.must_equal SY::ElectricCurrent.relative
     1.A.quantity.standard_unit.name.must_equal :ampere
     1.A.to_s( SY::AMPERE ).must_equal "1.A"
     1.A.to_s.must_equal "1.A"
@@ -163,6 +272,9 @@ describe "expected behavior" do
     y = 1.molar.absolute
     y.quantity.must_equal x.quantity
     y.amount.must_equal y.amount
+    SY::MoleAmount.protected?.must_equal true
+    SY::LitreVolume.protected?.must_equal true
+    SY::MOLAR.quantity.name.must_equal :Molarity
     m = 1.µM
     1.µM.quantity.relative?.must_equal true
     1.µM.quantity.name.must_equal :Molarity±
@@ -172,14 +284,20 @@ describe "expected behavior" do
     # -1.s.must_equal -1 * 1.s # must raise
     assert_equal -(-(1.s)), +(1.s)
     1.s⁻¹.quantity.must_equal ( 1.s ** -1 ).quantity
+    1.s⁻¹.quantity.must_equal ( 1 / 1.s ).quantity
     1.s⁻¹.amount.must_equal ( 1.s ** -1 ).amount
     1.s⁻¹.must_equal 1.s ** -1
     q1 = ( 1.s⁻¹ ).quantity
+    q1.composition.to_hash.must_equal( { SY::Time => -1 } )
+    
     q2 = ( 1 / 1.s ).quantity
-    puts q1.composition.to_hash
-    puts q2.composition.to_hash
-    # q1.object_id.must_equal q2.object_id
-    # ( 1.s⁻¹ ).quantity.object_id.must_equal ( 1 / 1.s ).quantity.object_id
+    q2.composition.to_hash.must_equal( { SY::Time => -1 } )
+
+    q1.relative?.must_equal true
+    q2.relative?.must_equal true
+
+    q1.object_id.must_equal q2.object_id
+    ( 1.s⁻¹ ).quantity.object_id.must_equal ( 1 / 1.s ).quantity.object_id
     ( 1 / 1.s ).must_equal 1.s⁻¹
     1.s⁻¹.( SY::Frequency ).must_equal 1.Hz
     # 7.°C.must_equal( 8.°C - 1.K )
@@ -196,8 +314,6 @@ describe "expected behavior" do
     1.mol.quantity.object_id.must_equal SY::Nᴀ.( SY::MoleAmount ).quantity.object_id
     SY::Nᴀ.( SY::MoleAmount ).must_equal 1.mol
     0.7.mol.l⁻¹.amount.must_equal 0.7
-    q = 1.M.quantity
-    1.M.must_equal 1.mol.l⁻¹.( SY::Molarity )
     1.M.must_equal 1.mol.l⁻¹.( SY::Molarity )
     # (if #reframe conversion method is not used, different quantities
     # do not compare. Arithmetics is possible because Magnitude operators
@@ -219,6 +335,9 @@ describe "expected behavior" do
 
     # kilogram
     1.kg.must_equal 1000.g
+    SY::Speed.dimension.must_equal SY::Dimension( "L.T⁻¹" )
+    SY::Acceleration.dimension.must_equal SY::Dimension( "L.T⁻²" )
+    SY::Force.dimension.must_equal SY::Dimension( "L.M.T⁻²" )
     ( 1.kg * 1.m.s⁻² ).( SY::Force ).must_be_within_epsilon 1.N, 1e-9
 
     # joule
@@ -236,9 +355,14 @@ describe "expected behavior" do
     ( 1.m / 3.s ).to_s.must_equal( "0.333.m.s⁻¹" )
     ( 1.m / 7.01e7.s ).to_s.must_equal( "1.43e-08.m.s⁻¹" )
 
-    puts ( 1.m.s⁻¹ * 1.s ).quantity.composition.to_hash
     assert_equal 1.m, 1.s * 1.m.s⁻¹
 
-    assert_equal Matrix[[1.m]], Matrix[[1.m.s⁻¹, 2.m.s⁻¹]] * Matrix.column_vector( [1.s, 2.s] )
+    assert_equal SY::Molarity.relative, 1.mol.l⁻¹.quantity
+
+    assert_equal Matrix[[5.m]], Matrix[[1.m.s⁻¹, 2.m.s⁻¹]] * Matrix.column_vector( [1.s, 2.s] )
+    assert_equal 'Matrix[[∅]]', Matrix[[SY::STRONG_ZERO]].inspect
+    assert_equal Matrix[[2.m, 3.m], [4.m, 5.m]],
+                 Matrix[[1.m, 2.m], [3.m, 4.m]] +
+                   Matrix[[1.m, 1.m], [1.m, 1.m]]
   end
 end

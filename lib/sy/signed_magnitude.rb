@@ -8,8 +8,20 @@ module SY::SignedMagnitude
   # 
   def initialize args={}
     @quantity = args[:quantity] || args[:of]
-    a = args[:amount]
-    @amount = a.nil? ? 1 : ( a.amount rescue a )
+    amnt = args[:amount]
+    @amount = case amnt
+              when Numeric then amnt
+              when nil then 1
+              else
+                begin
+                  amnt.amount
+                rescue NameError, NoMethodError
+                  amnt
+                end
+              end
+    # BigDecimal is not going to be used by default anymore, so now these
+    # are only remaining remarks about BigDecimal use.
+    # 
     # @amount = begin
     #             BigDecimal( args[:amount] )
     #           rescue ArgumentError

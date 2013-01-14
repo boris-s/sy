@@ -243,9 +243,6 @@ module SY
       '["B", "s"], [1, -1]'
   end
 
-  QSR = QUANTITY_SIMPLIFICATION_RULES = []
-
-
   # Mainly for mixing incompatible quantities.
   # 
   class QuantityError < StandardError; end
@@ -262,7 +259,7 @@ module SY
   # 
   def Dimension id=proc{ return SY::Dimension }.call
     case id.to_s
-    when '', 'nil', 'null', 'zero', '0', '⊘', 'ø' then ::SY::Dimension.zero
+    when '', 'nil', 'null', 'zero', '0', '⊘', '∅', 'ø' then ::SY::Dimension.zero
     else ::SY::Dimension.new id end
   end
 

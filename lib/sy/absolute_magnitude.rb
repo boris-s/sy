@@ -8,19 +8,17 @@ module SY::AbsoluteMagnitude
   # 
   def initialize args={}
     @quantity = args[:quantity] || args[:of]
-    a = args[:amount]
-    @amount = a.nil? ? 1 : ( a.amount rescue a )
-    # @amount = begin
-    #             BigDecimal( args[:amount] )
-    #           rescue ArgumentError
-    #             BigDecimal( args[:amount], SY::NUMERIC_FILTER )
-    #           rescue TypeError => err
-    #             if args[:amount].nil? then
-    #               BigDecimal( "1", SY::NUMERIC_FILTER )
-    #             else
-    #               args[:amount].in_standard_unit
-    #             end
-    #           end
+    amnt = args[:amount]
+    @amount = case amnt
+              when Numeric then amnt
+              when nil then 1
+              else
+                begin
+                  amnt.amount
+                rescue NameError, NoMethodError
+                  amnt
+                end
+              end
     raise SY::MagnitudeError,
           "Unsigned magnitudes canot have negative amount!" if @amount < 0
   end
