@@ -328,43 +328,43 @@ module SY::Magnitude
     # number, unit_presentation = choice
 
     begin
-
-    un = unit.short || unit.name
-
-    if un then
-      number = self.in unit
-      number_ς = number_format % number
-
-      prefix = ''
-      exp = 1
-      # unit_presentation = prefix, unit, exp
-
-      unit_ς = SY::SPS.( [ "#{prefix}#{unit.short}" ], [ exp ] )
       
-      [ number_ς, unit_ς ].join '.'
-    else
-      number = amount
-      # otherwise, use units of component quantities
-      ꜧ = quantity.composition.to_hash
-      symbols, exponents = ꜧ.each_with_object Hash.new do |pair, memo|
-        qnt, exp = pair
-        if qnt.standard_unit.name
-          std_unit = qnt.standard_unit
-          memo[ std_unit.short || std_unit.name ] = exp
-        else
-          m = qnt.magnitude( 1 ).to_s
-          memo[ m[2..-1] ] = exp
-          number = m[0].to_i * number
-        end
-      end.to_a.transpose
-      # assemble SPS
-      unit_ς = SY::SPS.( symbols, exponents )
-      # interpolate
-      number_ς = number_format % number
-      return number_ς if unit_ς == '' || unit_ς == 'unit'
-      [ number_ς, unit_ς ].join '.'
-    end
-
+      un = unit.short || unit.name
+      
+      if un then
+        number = self.in unit
+        number_ς = number_format % number
+        
+        prefix = ''
+        exp = 1
+        # unit_presentation = prefix, unit, exp
+        
+        unit_ς = SY::SPS.( [ "#{prefix}#{unit.short}" ], [ exp ] )
+        
+        [ number_ς, unit_ς ].join '.'
+      else
+        number = amount
+        # otherwise, use units of component quantities
+        ꜧ = quantity.composition.to_hash
+        symbols, exponents = ꜧ.each_with_object Hash.new do |pair, memo|
+          qnt, exp = pair
+          if qnt.standard_unit.name
+            std_unit = qnt.standard_unit
+            memo[ std_unit.short || std_unit.name ] = exp
+          else
+            m = qnt.magnitude( 1 ).to_s
+            memo[ m[2..-1] ] = exp
+            number = m[0].to_i * number
+          end
+        end.to_a.transpose
+        # assemble SPS
+        unit_ς = SY::SPS.( symbols, exponents )
+        # interpolate
+        number_ς = number_format % number
+        return number_ς if unit_ς == '' || unit_ς == 'unit'
+        [ number_ς, unit_ς ].join '.'
+      end
+      
     rescue
       number_ς = number_format % amount
       [ number_ς, "unit[#{quantity}]" ].join '.'
