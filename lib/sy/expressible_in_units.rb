@@ -82,21 +82,29 @@ module SY::ExpressibleInUnits
         exponentiation_ς.( exponent ) ]
     end
     # Method skeleton:
-    method_skeleton = "def #{ß}\n" +
-                      "  %s\n" +
-                      "end"
-    factors = if triples.size < 1 then
-                []
-              else
-                first_factor = "+( ::SY.Unit( :%s )%s )%s * self" %
-                  process_triple.( *triples.shift )
-                rest = triples.map do |tr|
-                  "( ::SY.Unit( :%s )%s.relative ) )%s" % process_triple.( *tr )
-                end
-                [ first_factor, *rest ]
-              end
-    # Multiply the factors toghether:
-    method_body = factors.join( " * \n    " )
+    if triples.size == 1 && triples.first[-1] == 1 then
+      method_skeleton = "def #{ß}( exp=1 )\n" +
+                        "  %s\n" +
+                        "end"
+      method_body = "if exp == 1 then\n" +
+                    "  +( ::SY.Unit( :%s )%s ) * self\n" +
+                    "else\n" +
+                    "  +( ::SY.Unit( :%s )%s ) ** exp * self\n" +
+                    "end"
+      uς, pfxς, expς = process_triple.( *triples.shift )
+      method_body %= [uς, pfxς] * 2
+    else
+      method_skeleton = "def #{ß}\n" +
+                        "  %s\n" +
+                        "end"
+      factors = [ "+( ::SY.Unit( :%s )%s )%s * self" %
+                  process_triple.( *triples.shift ) ] +
+        triples.map do |ᴛ|
+          "( ::SY.Unit( :%s )%s.relative ) )%s" % process_triple.( *ᴛ )
+        end
+      # Multiply the factors toghether:
+      method_body = factors.join( " * \n    " )
+    end
     # Return the finished method string:
     return ( method_skeleton % method_body ).tap { |ς| puts ς if SY::DEBUG }
   end

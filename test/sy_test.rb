@@ -11,6 +11,7 @@ require 'minitest/spec'
 require 'minitest/autorun'
 
 # The following will load SY library
+# require 'sy'
 require './../lib/sy'
 
 # **************************************************************************
@@ -356,6 +357,10 @@ describe "expected behavior" do
     ( 1.m / 7.01e7.s ).to_s.must_equal( "1.43e-08.m.s⁻¹" )
 
     assert_equal 1.m, 1.s * 1.m.s⁻¹
+    assert_equal 1.µM.s⁻¹, 1.µM / 1.s
+    assert_equal 1.m.s⁻¹, 1.m.s( -1 )
+    assert_equal 2_000.mm.s⁻², 2.m.s( -2 )
+    assert_in_epsilon 1.µM, 1.µmol / 1.dm( 3 ).( SY::LitreVolume )
 
     assert_equal SY::Molarity.relative, 1.mol.l⁻¹.quantity
 
@@ -364,5 +369,6 @@ describe "expected behavior" do
     assert_equal Matrix[[2.m, 3.m], [4.m, 5.m]],
                  Matrix[[1.m, 2.m], [3.m, 4.m]] +
                    Matrix[[1.m, 1.m], [1.m, 1.m]]
+    assert_equal Matrix[[5.µM]], Matrix[[1.µM]] + Matrix[[2.µM.s⁻¹]] * Matrix[[2.s]]
   end
 end
