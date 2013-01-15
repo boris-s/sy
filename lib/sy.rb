@@ -43,6 +43,9 @@ module SY
     def inspect; to_s end
     def to_f; 0.0 end
     def to_i; 0 end
+    def == other
+      other == self * other
+    end
   }
 
   # Digits to take when constructing magnitude from a low-precision numeric.
