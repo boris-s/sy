@@ -340,7 +340,7 @@ class SY::Quantity
   def coerce other
     case other
     when Numeric then
-      return SY::Amount, self
+      return SY::Amount.relative, self
     when SY::Quantity then
       # By default, coercion between quantities doesn't exist. The basic
       # purpose of having quantities is to avoid mutual mixing of

@@ -118,7 +118,7 @@ module SY
   # === Quantities of composite dimensions
 
   Area = Length ** 2
-
+  
   Volume = Length ** 3
 
   LitreVolume = Quantity.of Volume.dimension

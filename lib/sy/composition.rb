@@ -66,37 +66,30 @@ class SY::Composition < Hash
   # Cache for quantity construction.
   # 
   QUANTITY_TABLE = Hash.new { |ꜧ, args|
-    if args[:name] || args[:ɴ] then
+    if args.keys.include? [:name] || args.keys.include?( :ɴ ) then
       ɴ = args.delete( :name ) || args.delete( :ɴ ) # won't cache name
-      ꜧ[args]                                       # recursion
-        .tap { |ɪ| ɪ.name = ɴ }                     # and set name afterwards
-    elsif args[:mapping] then
+      ꜧ[args].tap { |ɪ| ɪ.name = ɴ }                # recursion
+    elsif args.keys.include? :mapping then
       ᴍ = args.delete( :mapping )                   # won't cache mapping
-      ꜧ[args]                                       # recursion
-        .tap { |ɪ| ɪ.set_mapping ᴍ }                # and set mapping afterwards
+      ꜧ[args].tap { |ɪ| ɪ.set_mapping ᴍ }           # recursion
+    elsif args.keys.include? :relative then
+      ʀ = args.delete( :relative ) ? true : false   # won't cache :relative
+      ꜧ[args].send ʀ ? :relative : :absolute        # recursion
     else
-      ʀ = args.delete( :relative ) ? true : false   # will cache :relative, but
-      # has to remove it temporarily, while simplification is being done
       cᴍ = SY::Composition[ args ].simplify
-      ɪ = if cᴍ != args then                        # #simplify did bring change
-            ꜧ[ cᴍ.merge! relative: ʀ ]              # recursion
-          else # no change from #simplify
-            x = cᴍ.expand                           # we'll try to #expand now
-          if x != cᴍ then                           # #expand did bring change
-            ꜧ[ x.merge! relative: ʀ ]               # recursion
-          else # no change from #expand either
-            if x.empty? then # use standard dimensionless quantity
-              std_0_qnt = SY.Dimension( :∅ ).standard_quantity
-              ʀ ? std_0_qnt.relative : std_0_qnt.absolute
-            elsif x.singular? then
-              qnt = x.first[0]                      # unwrap the quantity
-              qnt.relative? == ʀ ? qnt : qnt.colleague
-            else
-              x.new_quantity( relative: ʀ )         # construct new quantity
-            end
-          end
-        end
-      ꜧ[ args.merge( relative: ʀ ) ] = ɪ            # act of caching
+      ꜧ[args] = if cᴍ != args then ꜧ[ cᴍ ]          # recursion while #simplify
+                else x = cᴍ.expand # we'll try to #expand now
+                  if x != cᴍ then ꜧ[ x ]            # recursion while #expand
+                  else
+                    if x.empty? then                # use std. ∅ quantity
+                      SY.Dimension( :∅ ).standard_quantity
+                    elsif x.singular? then
+                      x.first[0]                    # unwrap the quantity
+                    else # create new quantity
+                      SY::Quantity.new composition: x
+                    end
+                  end
+                end
     end
   }
 
