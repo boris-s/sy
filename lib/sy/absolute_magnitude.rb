@@ -30,8 +30,8 @@ module SY::AbsoluteMagnitude
     return magnitude amount + m2.amount if m2.quantity == quantity.relative
     return quantity.relative.magnitude( amount + m2.amount ) if
       quantity == m2.quantity
-    m1, m2 = m2.coerce( self )
-    return m1 + m2
+    o1, o2 = m2.coerce( self )
+    return o1 + o2
     raise SY::QuantityError, "Unable to perform #{quantity} + #{m2.quantity}!"
   end
 
@@ -40,8 +40,8 @@ module SY::AbsoluteMagnitude
   # 
   def add m2
     return magnitude( amount + m2.amount ) if quantity == m2.quantity
-    m1, m2 = m2.coerce( self )
-    return m1.add m2
+    o1, o2 = m2.coerce( self )
+    return o1.add o2
     raise SY::QuantityError, "Unable to perform #add with #{m2.quantity}!"
   end
 
@@ -52,8 +52,8 @@ module SY::AbsoluteMagnitude
     return magnitude amount - m2.amount if m2.quantity == quantity.relative
     return quantity.relative.magnitude( amount - m2.amount ) if
       quantity == m2.quantity
-    m1, m2 = m2.coerce( self )
-    return m1 - m2
+    o1, o2 = m2.coerce( self )
+    return o1 - o2
     raise( SY::QuantityError, "Unable to perform #{quantity} - #{m2.quantity}!" )
   end
 
@@ -63,8 +63,8 @@ module SY::AbsoluteMagnitude
   # 
   def subtract m2
     return magnitude( amount + m2.amount ) if quantity == m2.quantity
-    m1, m2 = m2.coerce( self )
-    return m1.subtract m2
+    o1, o2 = m2.coerce( self )
+    return o1.subtract o2
     raise( SY::QuantityError, "Unable to perform #add with #{m2.quantity}!" )
   end
 
