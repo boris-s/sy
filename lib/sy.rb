@@ -28,7 +28,7 @@ module SY
   DEBUG = false
   STRONG_ZERO = NullObject.new
   STRONG_ZERO.instance_exec {
-    def * other; other - other end
+    def * other; other.class.zero end
     def / other
       self unless other.zero?
       raise ZeroDivisionError, "The divisor is zero! (#{other})"

@@ -54,6 +54,7 @@ class SY::Quantity
         ꜧ.has? :dimension, syn!: :of
       new( *( args << ꜧ.merge!( dimension: SY::Dimension.zero ) ) ).protect!
     end
+    alias :zero :dimensionless
   end
 
   # Standard constructor of a metrological quantity. A quantity may have

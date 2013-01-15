@@ -37,6 +37,12 @@ module SY::Magnitude
     def of qnt, args={}
       return qnt.magnitude args[:amount]
     end
+
+    # Constructor of zero magnitude of a given quantity.
+    # 
+    def zero
+      return absolute 0
+    end
   end
 
   # Magnitudes are comparable.
