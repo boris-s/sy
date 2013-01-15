@@ -41,6 +41,8 @@ module SY::SignedMagnitude
     return magnitude( amount + m2.amount ) if quantity == m2.quantity
     return quantity.absolute.magnitude( amount + m2.amount ) if
       m2.quantity == quantity.absolute
+    m1, m2 = m2.coerce( self )
+    return m1 + m2
     raise SY::QuantityError, "Unable to perform #{quantity} + #{m2.quantity}!"
   end
 
@@ -50,6 +52,8 @@ module SY::SignedMagnitude
     return magnitude( amount - m2.amount ) if m2.quantity == quantity.relative
     return quantity.relative.magnitude( amount - m2.amount ) if
       quantity == m2.quantity
+    m1, m2 = m2.coerce( self )
+    return m1 - m2
     raise SY::QuantityError, "Unable to perform #{quantity} + #{m2.quantity}!"
   end
 
