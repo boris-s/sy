@@ -275,7 +275,8 @@ class SY::Quantity
   def * q2
     puts "#{self.name} * #{q2.name}" if SY::DEBUG
     rel = [ self, q2 ].any? &:relative
-    SY::Composition[ self => 1, q2 => 1 ].to_quantity relative: rel
+    ( SY::Composition[ self => 1 ] + SY::Composition[ q2 => 1 ] )
+      .to_quantity relative: rel
   end
 
   # Quantity division.
@@ -283,7 +284,8 @@ class SY::Quantity
   def / q2
     puts "#{self.name} / #{q2.name}" if SY::DEBUG
     rel = [ self, q2 ].any? &:relative?
-    SY::Composition[ self => 1, q2 => -1 ].to_quantity relative: rel
+    ( SY::Composition[ self => 1 ] - SY::Composition[ q2 => 1 ] )
+      .to_quantity relative: rel
   end
 
   # Quantity raising to a number.

@@ -360,6 +360,11 @@ describe "expected behavior" do
     assert_equal 1.µM.s⁻¹, 1.µM / 1.s
     assert_equal 1.m.s⁻¹, 1.m.s( -1 )
     assert_equal 2_000.mm.s⁻², 2.m.s( -2 )
+    assert_equal 3.µM, 1.µM + 2.µM
+    assert_equal SY::Amount, SY::Molarity / SY::Molarity
+    assert_equal SY::Amount( 1 ), 1.µM / 1.µM
+    assert_equal SY::Amount( 1 ), 1.µM / ( 1.µM + 0.µM )
+    assert_equal 1.µM, 1.µM * 1.µM / ( 1.µM + 0.µM )
     assert_in_epsilon 1.µM, 1.µmol / 1.dm( 3 ).( SY::LitreVolume )
 
     assert_equal SY::Molarity.relative, 1.mol.l⁻¹.quantity
@@ -367,8 +372,7 @@ describe "expected behavior" do
     assert_equal Matrix[[5.m]], Matrix[[1.m.s⁻¹, 2.m.s⁻¹]] * Matrix.column_vector( [1.s, 2.s] )
     assert_equal 'Matrix[[∅]]', Matrix[[SY::STRONG_ZERO]].inspect
     assert_equal Matrix[[2.m, 3.m], [4.m, 5.m]],
-                 Matrix[[1.m, 2.m], [3.m, 4.m]] +
-                   Matrix[[1.m, 1.m], [1.m, 1.m]]
+                 Matrix[[1.m, 2.m], [3.m, 4.m]] + Matrix[[1.m, 1.m], [1.m, 1.m]]
     assert_equal Matrix[[5.µM]], Matrix[[1.µM]] + Matrix[[2.µM.s⁻¹]] * Matrix[[2.s]]
   end
 end

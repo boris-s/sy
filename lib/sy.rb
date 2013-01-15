@@ -55,7 +55,7 @@ module SY
   Amount = Quantity.standard of: Dimension.zero
 
   def self.Amount number
-    SY::Amount.magnitude number
+    SY::Amount.relative.magnitude number
   end
 
   Nᴀ = AVOGADRO_CONSTANT = SY.Amount 6.02214e23
