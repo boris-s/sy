@@ -205,6 +205,13 @@ class Matrix
         }
       }
       return new_matrix( rows, arg.column_size )
+    when SY::Magnitude
+      rows = Array.new( row_size ) { |i|
+        Array.new( column_size ) { |j|
+          self[i, j] * arg
+        }
+      }
+      return self.class[ *rows ]
     else
       compat_1, compat_2 = arg.coerce self
       return compat_1 * compat_2
