@@ -31,6 +31,11 @@ module SY
   # 
   ZERO = NullObject.new
   ZERO.instance_exec {
+    ɪ = self
+    singleton_class.class_exec do
+      define_method :zero do ɪ end
+    end
+      
     def * other; other.class.zero end
     def / other
       self unless other.zero?
@@ -47,7 +52,12 @@ module SY
     def to_f; 0.0 end
     def to_i; 0 end
     def == other
-      other == self * other
+      z = begin
+            other.class.zero
+          rescue NoMethodError
+            return false
+          end
+      other == z
     end
   }
 
