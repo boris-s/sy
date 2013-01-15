@@ -159,6 +159,8 @@ module SY
 
   Molality = MoleAmount / Mass
   MOLAL = Unit.of Molality
+
+  Molecularity = Amount / LitreVolume
 end
 
 
