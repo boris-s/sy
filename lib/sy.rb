@@ -26,8 +26,11 @@ end
 # 
 module SY
   DEBUG = false
-  STRONG_ZERO = NullObject.new
-  STRONG_ZERO.instance_exec {
+
+  # Strong zero.
+  # 
+  ZERO = NullObject.new
+  ZERO.instance_exec {
     def * other; other.class.zero end
     def / other
       self unless other.zero?
@@ -186,7 +189,7 @@ class Matrix
 
       rows = Array.new( row_size ) { |i|
         Array.new( arg.column_size ) { |j|
-          ( 0 ... column_size ).reduce SY::STRONG_ZERO do |memo, col|
+          ( 0 ... column_size ).reduce SY::ZERO do |memo, col|
             memo + arg[ col, j ] * self[ i, col ]
           end
         }
@@ -204,7 +207,7 @@ class Matrix
   #        0 0
   #
   def Matrix.zero(row_size, column_size = row_size)
-    rows = Array.new( row_size ) { Array.new( column_size, SY::STRONG_ZERO ) }
+    rows = Array.new( row_size ) { Array.new( column_size, SY::ZERO ) }
     new rows, column_size
   end
 end
