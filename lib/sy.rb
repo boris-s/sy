@@ -28,16 +28,21 @@ module SY
   DEBUG = false
   STRONG_ZERO = NullObject.new
   STRONG_ZERO.instance_exec {
-    def * other; self end
+    def * other; other - other end
     def / other
       self unless other.zero?
       raise ZeroDivisionError, "The divisor is zero! (#{other})"
     end
     def + other; other end
     def - other; -other end
+    def coerce other
+      return self * other, other
+    end
     def zero?; true end
     def to_s; "∅" end
     def inspect; to_s end
+    def to_f; 0.0 end
+    def to_i; 0 end
   }
 
   # Digits to take when constructing magnitude from a low-precision numeric.
@@ -155,7 +160,6 @@ end
 
 
 class Matrix
-
   # Matrix multiplication.
   #   Matrix[[2,4], [6,8]] * Matrix.identity(2)
   #     => 2 4
@@ -187,5 +191,15 @@ class Matrix
       compat_1, compat_2 = arg.coerce self
       return compat_1 * compat_2
     end
+  end
+
+  # Creates a zero matrix.
+  #   Matrix.zero(2)
+  #     => 0 0
+  #        0 0
+  #
+  def Matrix.zero(row_size, column_size = row_size)
+    rows = Array.new( row_size ) { Array.new( column_size, SY::STRONG_ZERO ) }
+    new rows, column_size
   end
 end
