@@ -383,7 +383,7 @@ class SY::Quantity
 
         singleton_class.class_exec do
           define_method :zero do       # Costructor of zero magnitudes
-            absolute 0
+            new amount: 0
           end
 
           define_method :to_s do       # Customized #to_s. It must be a proc,
