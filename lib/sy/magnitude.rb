@@ -191,6 +191,7 @@ module SY::Magnitude
       rescue TypeError
         raise TypeError, "Evaluating 1.#{m2} does not result in a magnitude; " +
           "method collision with another library?"
+      end
     when SY::Magnitude then
       return amount / m2.amount if quantity == m2.quantity
       amount / m2.( quantity ).amount # reframe before division
