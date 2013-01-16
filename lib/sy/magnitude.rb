@@ -187,7 +187,7 @@ module SY::Magnitude
     case m2
     when Symbol, String then
       begin
-        eval "1.#{m2}" # digest it
+        self.in( eval "1.#{m2}" ) # digest it
       rescue TypeError
         raise TypeError, "Evaluating 1.#{m2} does not result in a magnitude; " +
           "method collision with another library?"
