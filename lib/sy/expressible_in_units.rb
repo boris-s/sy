@@ -127,4 +127,9 @@ module SY::ExpressibleInUnits
       registry.delete token
     end
   end
+
+  # FIXME: There should be an option to define by default, already at the
+  # beginning, certain methods for certain classes, to get in front of possible
+  # collisions. Collision was detected for example for #second with
+  # active_support/duration.rb
 end # module SY::UnitMethodsMixin

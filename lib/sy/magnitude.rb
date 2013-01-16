@@ -185,10 +185,17 @@ module SY::Magnitude
   # 
   def in m2
     case m2
-    when Symbol, String then self.in( 1.send m2 ) # digest it
-    else
+    when Symbol, String then
+      begin
+        eval "1.#{m2}" # digest it
+      rescue TypeError
+        raise TypeError, "Evaluating 1.#{m2} does not result in a magnitude; " +
+          "method collision with another library?"
+    when SY::Magnitude then
       return amount / m2.amount if quantity == m2.quantity
       amount / m2.( quantity ).amount # reframe before division
+    else
+      raise TypeError, "Unexpected type for Magnitude#in method! (#{m2.class})"
     end
   end
 
