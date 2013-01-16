@@ -73,6 +73,7 @@ module SY
 
   Nᴀ = AVOGADRO_CONSTANT = SY.Amount 6.02214e23
 
+
   # === Basic dimension L
 
   Length = Quantity.standard of: :L
@@ -174,6 +175,8 @@ module SY
   MOLAL = Unit.of Molality
 
   Molecularity = Amount / LitreVolume
+
+  Kʙ = BOLTZMANN_COMSTANT = 1.380648813e-23.J.K⁻¹
 end
 
 
