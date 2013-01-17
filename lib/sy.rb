@@ -176,7 +176,7 @@ module SY
 
   Molecularity = Amount / LitreVolume
 
-  Kʙ = BOLTZMANN_COMSTANT = 1.380648813e-23.J.K⁻¹
+  Kʙ = BOLTZMANN_CONSTANT = 1.380648813e-23.J.K⁻¹
 end
 
 
