@@ -118,6 +118,13 @@ module SY
   # # alias :℉ :fahrenheit               # U+2109 DEGREE FAHRENHEIT
   # # FIXME: Patch FahrenheitTemperature to make it work with SY::Temperature
 
+  TP_H₂O = TRIPLE_POINT_OF_WATER = 273.15.K
+  
+  # HUMAN_BODY_TEMPERATURE = 37.°C.( KELVIN )
+  # STANDARD_TEMPERATURE = 25.°C.( KELVIN )
+  HUMAN_BODY_TEMPERATURE = TP_H₂O + 37.K
+  STANDARD_LABORATORY_TEMPERATURE = TP_H₂O + 25.K
+
   # === Dimensionless quantities
 
   UNIT = Unit.standard of: Amount

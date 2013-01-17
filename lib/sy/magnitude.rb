@@ -203,7 +203,10 @@ module SY::Magnitude
   # Reframes a magnitude into a different quantity. Dimension must match.
   # 
   def reframe q2
-    q2.import self
+    case q2
+    when SY::Quantity then q2.import self
+    when SY::Unit then q2.quantity.import self
+    else raise TypeError, "Unable to reframe into a #{q2.class}!" end
   end
 
   # Reframes a magnitude into a <em>relative</em> version of a given quantity.
@@ -211,7 +214,10 @@ module SY::Magnitude
   # is used to reframe.)
   # 
   def call q2
-    reframe q2.relative
+    case q2
+    when SY::Quantity then q2.relative.import self
+    when SY::Unit then q2.quantity.relative.import self
+    else raise TypeError, "Unable to reframe into a #{q2.class}!" end
   end
 
   # True if amount is negative. Implicitly false for absolute quantities.
