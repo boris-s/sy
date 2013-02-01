@@ -410,7 +410,7 @@ class SY::Quantity
                     end
                   
                     define_method :to_s do       # Customized #to_s. (Same consideration
-                      qnt_ɴ_λ.call % "Unit"      # as for @Magnitude applies.)
+                      ɴλ.call % "Unit"      # as for @Magnitude applies.)
                     end
                   end
                 end
