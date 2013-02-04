@@ -1,7 +1,6 @@
 #encoding: utf-8
 
 require 'y_support/all'
-require 'bigdecimal'
 
 require_relative 'sy/version'
 require_relative 'sy/expressible_in_units'
@@ -44,7 +43,7 @@ module SY
     def + other; other end
     def - other; -other end
     def coerce other
-      return other; other.class.zero
+      return other, other.class.zero
     end
     def zero?; true end
     def to_s; "∅" end
