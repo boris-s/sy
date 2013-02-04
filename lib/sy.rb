@@ -44,7 +44,7 @@ module SY
     def + other; other end
     def - other; -other end
     def coerce other
-      return self * other, other
+      return other; other.class.zero
     end
     def zero?; true end
     def to_s; "∅" end
@@ -186,6 +186,17 @@ module SY
   Kʙ = BOLTZMANN_CONSTANT = 1.380648813e-23.J.K⁻¹
 end
 
+class << Integer
+  def zero; 0 end
+end
+
+class << Float
+  def zero; 0.0 end
+end
+
+class << Complex
+  def zero; Complex 0, 0 end
+end
 
 class Matrix
   # Matrix multiplication.
