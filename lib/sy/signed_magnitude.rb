@@ -19,33 +19,16 @@ module SY::SignedMagnitude
                   amnt
                 end
               end
-    # BigDecimal is not going to be used by default anymore, so now these
-    # are only remaining remarks about BigDecimal use.
-    # 
-    # @amount = begin
-    #             BigDecimal( args[:amount] )
-    #           rescue ArgumentError
-    #             BigDecimal( args[:amount], SY::NUMERIC_FILTER )
-    #           rescue TypeError => err
-    #             if args[:amount].nil? then
-    #               BigDecimal( "1", SY::NUMERIC_FILTER )
-    #             else
-    #               raise err # tough luck
-    #             end
-    #           end
   end
 
   # Addition.
   # 
   def + m2
-    return magnitude( amount + m2.amount ) if
-      quantity == m2.quantity
+    return magnitude( amount + m2.amount ) if quantity == m2.quantity
     return quantity.absolute.magnitude( amount + m2.amount ) if
       quantity.absolute == m2.quantity
-    return self if m2.equal? SY::ZERO
-    # o1, o2 = m2.coerce( self )
-    # return o1 + o2
-    raise SY::QuantityError, "Unable to perform #{quantity} + #{m2.quantity}!"
+    compat_1, compat_2 = m2.coerce self
+    return compat_1 + compat_2
   end
 
   # Subtraction.
@@ -54,10 +37,8 @@ module SY::SignedMagnitude
     return magnitude( amount - m2.amount ) if m2.quantity == quantity.relative
     return quantity.relative.magnitude( amount - m2.amount ) if
       quantity == m2.quantity
-    return self if m2.equal? SY::ZERO
-    # m1, m2 = m2.coerce( self )
-    # return m1 - m2
-    raise SY::QuantityError, "Unable to perform #{quantity} + #{m2.quantity}!"
+    compat_1, compat_2 = m2.coerce self
+    return compat_1 - compat_2
   end
 
   private

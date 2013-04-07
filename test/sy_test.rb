@@ -374,11 +374,10 @@ describe "expected behavior" do
     assert_equal ( 1 / SY::Time.relative ), 1.mol.s⁻¹.( 1 / SY::Time ).quantity
     assert_equal ( 1 / SY::Time ).object_id,
                  ( 1.0.µmol.min⁻¹.mg⁻¹ * 100.kDa ).( 1 / SY::Time ).quantity.object_id
-    assert_equal SY::Time.magnitude( 1 ), SY::SECOND + SY::ZERO
+    assert_equal SY::Time.magnitude( 1 ), SY::SECOND
     assert_equal Matrix[[60.mM], [60.mM]], Matrix[[1e-03.s⁻¹.M], [1e-3.s⁻¹.M]] * 60.s
 
     assert_equal Matrix[[5.m]], Matrix[[1.m.s⁻¹, 2.m.s⁻¹]] * Matrix.column_vector( [1.s, 2.s] )
-    assert_equal 'Matrix[[∅]]', Matrix[[SY::ZERO]].inspect
     assert_equal Matrix[[2.m, 3.m], [4.m, 5.m]],
                  Matrix[[1.m, 2.m], [3.m, 4.m]] + Matrix[[1.m, 1.m], [1.m, 1.m]]
     assert_equal Matrix[[5.µM]], Matrix[[1.µM]] + Matrix[[2.µM.s⁻¹]] * Matrix[[2.s]]

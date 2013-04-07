@@ -119,7 +119,7 @@ module SY::Magnitude
   # 
   def + m2
     return magnitude amount + m2.amount if quantity == m2.quantity
-    return self if m2 == SY::ZERO
+    # return self if m2 == SY::ZERO
     raise SY::QuantityError, "Mismatch: #{quantity} + #{other.quantity}!"
   end
 
@@ -127,7 +127,7 @@ module SY::Magnitude
   # 
   def - m2
     return magnitude amount - m2.amount if quantity == m2.quantity
-    return self if m2 == SY::ZERO
+    # return self if m2 == SY::ZERO
     raise SY::QuantityError, "Mismatch: #{quantity} - #{m2.quantity}!"
   end
 
@@ -137,8 +137,8 @@ module SY::Magnitude
     case m2
     when Numeric then
       magnitude amount * m2
-    when SY::ZERO then
-      return magnitude 0
+    # when SY::ZERO then
+    #   return magnitude 0
     else
       ( quantity * m2.quantity ).magnitude( amount * m2.amount )
     end
@@ -150,8 +150,8 @@ module SY::Magnitude
     case m2
     when Numeric then
       magnitude amount / m2
-    when SY::ZERO then
-      raise ZeroDivisionError, "Attempt to divide #{self} by #{SY::ZERO}."
+    # when SY::ZERO then
+    #   raise ZeroDivisionError, "Attempt to divide #{self} by #{SY::ZERO}."
     else
       ( quantity / m2.quantity ).magnitude( amount / m2.amount )
     end
@@ -513,5 +513,3 @@ module SY::Magnitude
     3
   end
 end
-
-# TODO: privatize #new method
