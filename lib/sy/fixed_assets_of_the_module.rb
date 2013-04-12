@@ -257,22 +257,22 @@ module SY
 
   # Convenience dimension accessor.
   # 
-  def Dimension id=proc{ return SY::Dimension }.call
+  def Dimension id=proc{ return ::SY::Dimension }.call
     case id.to_s
-    when '', 'nil', 'null', 'zero', '0', '⊘', '∅', 'ø' then ::SY::Dimension.zero
-    else ::SY::Dimension.new id end
+    when '', 'nil', 'null', 'zero', '0', '⊘', '∅', 'ø' then SY::Dimension.zero
+    else SY::Dimension.new id end
   end
 
   # Convenience quantity instance accessor.
   # 
   def Quantity id=proc{ return ::SY::Quantity }.call
-    ::SY::Quantity.instance id
+    SY::Quantity.instance id
   end
 
   # Convenience unit instance accessor.
   # 
   def Unit id=proc{ return ::SY::Unit }.call
-    ::SY::Unit.instance id
+    SY::Unit.instance id
   end
 
   # Explicit magnitude constructor.
@@ -280,7 +280,7 @@ module SY
   def Magnitude args=proc{ return ::SY::Magnitude }.call
     args.must_have :quantity, syn!: :of
     qnt = args.delete :quantity
-    ::SY::Magnitude.of qnt, args
+    SY::Magnitude.of qnt, args
   end
 
   module_function :Dimension, :Quantity, :Unit, :Magnitude

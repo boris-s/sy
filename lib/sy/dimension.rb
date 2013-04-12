@@ -3,11 +3,16 @@
 # This class represents physical dimension of a metrological quantity.
 # 
 class SY::Dimension
-  @standard_quantities ||= Hash.new { |ꜧ, dim|
-    if dim.is_a? SY::Dimension then
-      ꜧ[ dim ] = SY::Quantity.of dim
+  # Let's set up an instance variable (of the class) that will hold standard
+  # quantities of selected dimensions:
+  # 
+  @standard_quantities ||= Hash.new { |ꜧ, missing_key|
+    if missing_key.is_a? SY::Dimension then
+      # Create a new quantity of that dimension:
+      ꜧ[missing_key] = SY::Quantity.of missing_key
     else
-      ꜧ[ SY.Dimension dim ]
+      # Otherwise, let SY.Dimension constructor judge:
+      ꜧ[ SY.Dimension missing_key ]
     end
   }
 

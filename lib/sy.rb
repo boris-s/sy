@@ -1,6 +1,14 @@
 #encoding: utf-8
 
-require '/usr/local/lib/site_ruby/1.9.1/y_support/all'
+require 'y_support/null_object'
+require 'y_support/name_magic'
+require 'y_support/core_ext/hash'
+require 'y_support/typing'
+require 'y_support/unicode'
+
+require 'active_support/core_ext/module/delegation'
+require 'active_support/core_ext/array/extract_options'
+require 'active_support/core_ext/string/starts_ends_with'
 
 require_relative 'sy/abstract_algebra'
 require_relative 'sy/wildcard_zero'
