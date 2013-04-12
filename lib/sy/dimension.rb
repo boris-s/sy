@@ -122,7 +122,7 @@ class SY::Dimension
     SY::BASE_DIMENSIONS.base_symbols.map { |l| self.send l }
   end
 
-  # Conversion to a hash (eg. { L: 1, M: 0, T: -2, Q: 0, Θ: 0 } ).
+  # Conversion to a hash (eg. { L: 1, M: 0, T: -2, Q: 0, Θ: 0 } ).⁻³
   # 
   def to_hash
     SY::BASE_DIMENSIONS.base_symbols.each_with_object Hash.new do |l, ꜧ|

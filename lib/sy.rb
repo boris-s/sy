@@ -56,19 +56,24 @@ Numeric.class_exec { include ::SY::ExpressibleInUnits }
 module SY
   # Let SY::Amount be a standard dimensionless quantity:
   Amount = Quantity.standard of: Dimension.zero
+
   # Convenience constructor of amounts:
   def self.Amount number
     SY::Amount.relative.magnitude number
   end
+
   # AVOGADRO_CONSTANT (Nᴀ) is a certain well-known amount of things:
   Nᴀ = AVOGADRO_CONSTANT = SY.Amount 6.02214e23
+
   # Let SY::UNIT be a standard unit of SY::Amount. Note that the upcase name
   # of the constant "UNIT" implies, via YSupport's NameMagic mixin, that the
   # name of the object becomes :unit and that it is possible to use syntax
   # such as 42.unit to create magnitudes of SY::Amount.
   UNIT = Unit.standard of: Amount
+
   # Let SY::MoleAmount be another dimensionless quantity:
   MoleAmount = Quantity.dimensionless
+
   # And let SY::MOLE be its standard unit, related to SY::Amount via Nᴀ:
   MOLE = Unit.standard of: MoleAmount, short: "mol", amount: Nᴀ.unit
 
@@ -76,6 +81,7 @@ module SY
 
   # Let SY::Length be a standard quantity of basic dimension L:
   Length = Quantity.standard of: :L
+
   # Let SY::METRE be its standard unit.
   METRE = Unit.standard of: Length, short: "m"
 
@@ -83,6 +89,7 @@ module SY
   
   # Let SY::Mass be a standard quantity of basic dimension M:
   Mass = Quantity.standard of: :M
+
   # Let SY::KILOGRAM be its standard unit:
   KILOGRAM = Unit.standard of: Mass, short: "kg"
   # Let SY::GRAM be another unit of SY::Mass, equal to 0.001.kg:
@@ -96,6 +103,7 @@ module SY
 
   # Let SY::Time be a standard quantity of basic dimension T:
   Time = Quantity.standard of: :T
+
   # Let SY::SECOND be its standard unit:
   SECOND = Unit.standard of: Time, short: "s"
   # Let SY::MINUTE be another unit:
@@ -107,6 +115,7 @@ module SY
 
   # Let SY::ElectricCharge be a standard quantity of basic dimension Q:
   ElectricCharge = Quantity.standard of: :Q
+
   # And SY::COULOMB be its standard unit:
   COULOMB = Unit.standard of: ElectricCharge, short: "C"
 
@@ -114,8 +123,10 @@ module SY
 
   # Let SY::Temperature be a standard quantity of basic dimension Θ:
   Temperature = Quantity.standard of: :Θ
+
   # And  SY::KELVIN be its standard unit:
   KELVIN = Unit.standard of: Temperature, short: "K"
+
   # Now let us define a useful constant:
   TP_H₂O = TRIPLE_POINT_OF_WATER = 273.15.K
 
@@ -123,6 +134,7 @@ module SY
   # 273.15.K with respect to Kelvin temperature, and I am not sure whether
   # at this moment SY is handling this right. But nevertheless:
   CelsiusTemperature = Quantity.of :Θ
+
   # Degree celsius is SY::CELSIUS
   CELSIUS = Unit.standard of: CelsiusTemperature, short: '°C'
   # FIXME: Patch CelsiusTemperature to make it work with SY::Temperature
@@ -156,10 +168,13 @@ module SY
 
   # Quantity SY::Area is obtained by raising quantity SY::Length to 2:
   Area = Length ** 2
+
   # Quantity SY::Volume is obtained by raising quantity SY::Length to 3:
   Volume = Length ** 3
+
   # SY::LitreVolume is another quantity of the same dimension as SY::Volume:
   LitreVolume = Quantity.of Volume.dimension
+
   # SY::LITRE is the standard unit of SY::LitreVolume:
   LITRE = Unit.standard of: LitreVolume, short: "l", amount: 1.dm³
 
@@ -174,6 +189,7 @@ module SY
 
   # SY::Molarity is obtained by dividing SY::MoleAmount by SY::LitreVolume:
   Molarity = ( MoleAmount / LitreVolume ).protect!
+
   # Standard unit of SY::Molarity is SY::MOLAR:
   MOLAR = Unit.standard of: Molarity, abbreviation: "M"
 
@@ -185,6 +201,7 @@ module SY
 
   # SY::Frequency, a quantity that many will expect:
   Frequency = 1 / Time
+
   # SY::HERTZ is its unit:
   HERTZ = Unit.of Frequency, short: "Hz"
   # Fixme: it would be expected that 1.s(-1) would not present itself as 1.Hz,
@@ -193,15 +210,19 @@ module SY
   # Define SY::Speed as SY::Length / SY::Time and make it a standard quantity
   # of its dimension.
   Speed = ( Length / Time ).standard!
+
   # Similar for SY::Acceleration:
   Acceleration = ( Speed / Time ).standard!
+
   # For SY::Force...
   Force = ( Acceleration * Mass ).standard!
+
   # This time, make SY::NEWTON its standard unit:
   NEWTON = Unit.standard of: Force, short: "N"
 
   # For SY::Energy...
   Energy = ( Force * Length ).standard!
+
   # make SY::JOULE its standard unit:
   JOULE = Unit.standard of: Energy, short: "J"
   # SY::CALORIE means thermochemical calorie:
@@ -209,29 +230,34 @@ module SY
 
   # SY::Power...
   Power = ( Energy / Time ).standard!
+
   # make SY::WATT its standard unit:
   WATT = Unit.standard of: Power, short: "W"
 
   # SY::Pressure...
   Pressure = ( Force / Area ).standard!
+
   # make SY::PASCAL its standard unit:
-  PASCAL = Unit.standard of: Pressure, abbreviation: "Pa"
+  PASCAL = Unit.standard of: Pressure, short: "Pa"
 
   # SY::ElectricCurrent...
   ElectricCurrent = ( ElectricCharge / Time ).standard!
+
   # make SY::AMPERE its standard unit:
-  AMPERE = Unit.standard of: ElectricCurrent, abbreviation: "A"
+  AMPERE = Unit.standard of: ElectricCurrent, short: "A"
 
   # SY::ElectricPotential...
   ElectricPotential = ( Energy / ElectricCharge ).standard!
+
   # make SY::VOLT its standard unit:
-  VOLT = Unit.standard of: ElectricPotential, abbreviation: "V"
+  VOLT = Unit.standard of: ElectricPotential, short: "V"
 
   # FIXME: This should raise a friendly error:
   # MOLAR = Unit.standard of: Molarity, abbreviation: "M", amount: 1.mol.l⁻¹
 
   # SY::Molality...
   Molality = MoleAmount / Mass
+
   # make SY::MOLAL its unit (but don't make it a standard unit...):
   MOLAL = Unit.of Molality
 
