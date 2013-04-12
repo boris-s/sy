@@ -1,6 +1,6 @@
 #encoding: utf-8
 
-require 'y_support/all'
+require '/usr/local/lib/site_ruby/1.9.1/y_support/all'
 
 require_relative 'sy/abstract_algebra'
 require_relative 'sy/wildcard_zero'

@@ -5,7 +5,7 @@ Gem::Specification.new do |gem|
   gem.authors       = ["boris"]
   gem.email         = ["\"boris@iis.sinica.edu.tw\""]
   gem.description   = %q{Physical units library}
-  gem.summary       = %q{The simplest and most concise way of encoding physical units.}
+  gem.summary       = %q{Simple and concise way to express physical units.}
   gem.homepage      = ""
 
   gem.files         = `git ls-files`.split($\)
