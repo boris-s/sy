@@ -5,14 +5,11 @@ require 'y_support/name_magic'
 require 'y_support/core_ext/hash'
 require 'y_support/typing'
 require 'y_support/unicode'
+require 'y_support/abstract_algebra'
 
 require 'active_support/core_ext/module/delegation'
 require 'active_support/core_ext/array/extract_options'
 require 'active_support/core_ext/string/starts_ends_with'
-
-require_relative 'sy/abstract_algebra'
-require_relative 'sy/wildcard_zero'
-require_relative 'sy/matrix'
 
 require_relative 'sy/version'
 require_relative 'sy/expressible_in_units'
