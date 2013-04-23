@@ -1,5 +1,4 @@
-#encoding: utf-8
-
+# -*- coding: utf-8 -*-
 # Here, fixed assets of the main module are set up.
 # 
 module SY
