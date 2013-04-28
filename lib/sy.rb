@@ -196,7 +196,7 @@ module SY
   Molarity = ( MoleAmount / LitreVolume ).protect!
 
   # Standard unit of SY::Molarity is SY::MOLAR:
-  MOLAR = Unit.standard of: Molarity, abbreviation: "M"
+  MOLAR = Unit.standard of: Molarity, short: "M"
 
   # Let us now note the #protect! directive at the line above defining
   # SY::Molarity. Method #protect! prevents Molarity from understanding itself

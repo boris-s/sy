@@ -458,7 +458,7 @@ module SY::Magnitude
       begin
         quantity == other.quantity
       rescue NoMethodError
-        raise TErr, "#{other} does not have quantity!"
+        raise TypeError, "#{other} does not have quantity!"
       end
     end
   end

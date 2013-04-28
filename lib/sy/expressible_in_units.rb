@@ -1,42 +1,35 @@
-#encoding: utf-8
+# -*- coding: utf-8 -*-
 
-# This mixin endows a class with the capacity to respond to method
-# symbols corresponding to metrological units defined in SY.
+# This mixin provides ability to respond to SY unit symbol methods.
 # 
 module SY::ExpressibleInUnits
-  class RecursionError < StandardError; end
+  RecursionError = Class.new StandardError
 
   def method_missing ß, *args, &block
-    # hack #0: working around a bug in a 3rd party library
-    return self if ß.to_s.include?( 'begin' ) || ß.to_s.include?( 'end' )
-    # hack #1: get rid of missing methods 'to_something', esp. #to_ary
-    super if ß == :to_ary || ß.to_s.starts_with?( 'to_' )
-    begin # prevent recurrent method_missing for the same symbol
-      anti_recursion_exec_with_token ß, :@SY_Units_mmiss do
+    return self if ß.to_s =~ /begin|end/ # 3rd party bug workaround
+    super if ß.to_s =~ /to_.+/ # dissmiss :to_..., esp. :to_ary
+    begin # prevent recurrent call of method_missing for the same symbol
+      anti_recursion_exec token: ß, var: :@SY_Units_mmiss do
         puts "Method missing: '#{ß}'" if SY::DEBUG
-        # Parse the unit symbol.
-        prefixes, units, exps = parse_unit_symbol( ß )
-        # Define the unit method.
-        self.class.module_eval write_unit_method( ß, prefixes, units, exps )
+        prefixes, units, exps = parse_unit_symbol ß
+        # Define the unit method on self.class:
+        ç.module_eval write_unit_method( ß, prefixes, units, exps )
       end
-    rescue NameError => m
-      puts "NameError raised: #{m}" if SY::DEBUG
+    rescue NameError => err
+      puts "NameError raised: #{err}" if SY::DEBUG
       super # give up
     rescue SY::ExpressibleInUnits::RecursionError
       super # give up
-    else # invoke the defined method that we just defined
+    else # actually invoke the method that we just defined
       send ß, *args, &block
     end
   end
 
   def respond_to_missing? ß, *args, &block
-    str = ß.to_s
-    return false if str.start_with?( 'to_' ) ||    # speedup hack
-      str == 'begin' || str == 'end' # bugs in 3rd party library
+    # dismiss :to_... methods and /begin|end/ (3rd party bug workaround)
+    return false if ß.to_s =~ /to_.+|begin|end/
     begin
-      anti_recursion_exec_with_token ß, :@SY_Units_rmiss do
-        parse_unit_symbol( ß )
-      end
+      anti_recursion_exec token: ß, var: :@SY_Units_rmiss do parse_unit ß end
     rescue NameError, SY::ExpressibleInUnits::RecursionError
       false
     else
@@ -53,9 +46,9 @@ module SY::ExpressibleInUnits
     SY::Unit.parse_sps_using_all_prefixes( ß ) # rely on SY::Unit
   end
 
-  # Taking method name symbol as the first argument, and three more arguments
-  # representing equal-length arrays of prefixes, unit symbols and exponents,
-  # appropriate method string is written.
+  # Takes method symbol, and three more array arguments, representing prefixes,
+  # unit symbols and exponents. Generates an appropriate unit method as a string.
+  # Arrays must be of equal length. (Note: 'ß' is 'symbol', 'ς' is 'string')
   # 
   def write_unit_method ß, prefixes, units, exponents
     known_units = SY::Unit.instances
@@ -70,16 +63,14 @@ module SY::ExpressibleInUnits
       full_prefix == '' ? '' : ".#{full_prefix}"
     end
     # Return exponentiation string (suffix) or empty ς if not necessary.
-    exponentiation_ς = lambda do |exponent|
-      exponent == 1 ? '' : " ** #{exponent}"
-    end
+    exponentiation_ς = lambda do |exp| exp == 1 ? '' : " ** #{exp}" end
     # Prepare prefix / unit / exponent triples for making factor strings:
     triples = [ prefixes, units, exponents ].transpose
     # A procedure for triple processing before use:
-    process_triple = lambda do |prefix, unit_ς, exponent|
-      [ find_unit.( unit_ς ).name.to_s.upcase,
-        prefix_method_ς.( prefix ),
-        exponentiation_ς.( exponent ) ]
+    process_triple = lambda do |pfx, unit_ς, exp|
+      [ find_unit.( unit_ς ).name.to_s.upcase, 
+        prefix_method_ς.( pfx ),
+        exponentiation_ς.( exp ) ]
     end
     # Method skeleton:
     if triples.size == 1 && triples.first[-1] == 1 then
@@ -99,8 +90,8 @@ module SY::ExpressibleInUnits
                         "end"
       factors = [ "+( ::SY.Unit( :%s )%s )%s * self" %
                   process_triple.( *triples.shift ) ] +
-        triples.map do |ᴛ|
-          "( ::SY.Unit( :%s )%s.relative ) )%s" % process_triple.( *ᴛ )
+        triples.map do |triple|
+          "( ::SY.Unit( :%s )%s.relative ) )%s" % process_triple.( *triple )
         end
       # Multiply the factors toghether:
       method_body = factors.join( " * \n    " )
@@ -114,12 +105,10 @@ module SY::ExpressibleInUnits
   # supplied block, and releases the token. The method guards against double
   # execution for the same token, raising IllegalRecursionError in such case.
   # 
-  def anti_recursion_exec_with_token token, inst_var
-    registry = self.class.instance_variable_get( inst_var ) ||
-      self.class.instance_variable_set( inst_var, [] )
-    if registry.include? token then
-      raise SY::ExpressibleInUnits::RecursionError
-    end
+  def anti_recursion_exec( token: nil, var: :@SY_anti_recursion_exec )
+    registry = self.class.instance_variable_get( var ) ||
+      self.class.instance_variable_set( var, [] )
+    raise RecursionError if registry.include? token
     begin
       registry << token
       yield if block_given?

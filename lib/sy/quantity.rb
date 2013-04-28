@@ -446,10 +446,10 @@ class SY::Quantity
   end
 
   def explain_amount_of_standard_units
-    raise TErr, "The amount of standard units is, by definition, 1. When " +
-      ":amount named parameter fis supplied to the construtor of a " +
-      "standard unit, it has different meaning: It must be given as " +
-      "a magnitude of another quantity of the same dimension, and it " +
-      "establishes relationship between this and the other quantity."
+    raise TypeError, "For standard units, :amount is 1, by definition. When" +
+      ":amount parameter is supplied to a standard unit constructor, its" +
+      "meaning is different: Using a magnitude of the same dimension, but" +
+      "different quantity, it establishes conversion relationship between" +
+      "the two quantities."
   end
 end # class SY::Quantity

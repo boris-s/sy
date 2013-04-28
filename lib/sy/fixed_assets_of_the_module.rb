@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
+
 # Here, fixed assets of the main module are set up.
 # 
 module SY
-  # Basic physical dimensions.
-  # 
-  BASE_DIMENSIONS = {
+  QuantityError = Class.new StandardError # mixing incompatible quantities
+  DimensionError = Class.new StandardError # mixing incompatible dimensions
+  MagnitudeError = Class.new StandardError # creating impossible magnitude
+
+  BASE_DIMENSIONS = {                # Basic physical dimensions.
     L: :LENGTH,
     M: :MASS,
     Q: :ELECTRIC_CHARGE,
@@ -19,7 +22,8 @@ module SY
       keys
     end
 
-    # Base dimensions letters with prefixes.
+    # Base dimensions letters with prefixes. (Remark: I forgot what did I mean
+    # those prefixes for. Something important, I just forgot what.)
     # 
     def prefixed_letters
       [] # none for now
@@ -241,18 +245,6 @@ module SY
       '"kB.s⁻¹", [:g, :B, :s, :C], [:M, :k, :m, :µ] #=> ["k", ""], ' +
       '["B", "s"], [1, -1]'
   end
-
-  # Mainly for mixing incompatible quantities.
-  # 
-  class QuantityError < StandardError; end
-
-  # Mainly for mixing incompatible dimensions.
-  # 
-  class DimensionError < StandardError; end
-
-  # Mainly for negative or otherwise impossible physical amounts.
-  # 
-  class MagnitudeError < StandardError; end
 
   # Convenience dimension accessor.
   # 

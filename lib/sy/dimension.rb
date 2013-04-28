@@ -1,4 +1,4 @@
-#encoding: utf-8
+# -*- coding: utf-8 -*-
 
 # This class represents physical dimension of a metrological quantity.
 # 
@@ -46,7 +46,7 @@ class SY::Dimension
     # Base dimension constructor. Base dimension symbol is expeced as argument.
     # 
     def base symbol
-      raise AErr, "Unknown base dimension: #{symbol}" unless
+      raise ArgumentError, "Unknown base dimension: #{symbol}" unless
         SY::BASE_DIMENSIONS.base_symbols.include? symbol
       return new( symbol => 1 )
     end
@@ -76,7 +76,7 @@ class SY::Dimension
   # 
   def [] ß
     return send ß if SY::BASE_DIMENSIONS.letters.include? ß
-    raise AErr, "Unknown basic dimension: #{ß}"
+    raise ArgumentError, "Unknown basic dimension: #{ß}"
   end
 
   #Two dimensions are equal, if their exponents are equal.
