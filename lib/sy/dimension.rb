@@ -159,7 +159,7 @@ class SY::Dimension
   # Produces the inspect string of the dimension.
   # 
   def inspect
-    "#<Dimension: #{self} >"
+    "#<SY::Dimension: #{self} >"
   end
 
   # Returns dimension's standard quantity.
