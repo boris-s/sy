@@ -17,7 +17,7 @@ module SY
   ACRE = Unit.of Area, amount: ( 1.0 / 640 ).mile²
 
   # === Volume
-  PINT = Unit.of Volume, amount: 568.26125.ml
+  PINT = Unit.of Volume, amount: 568.26125.cm³
   QUART = Unit.of Volume, amount: 2.pint
   GALLON = Unit.of Volume, short: 'gal', amount: 8.pint
 
