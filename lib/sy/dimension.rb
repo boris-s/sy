@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 # This class represents physical dimension of a metrological quantity.
 # 
 class SY::Dimension

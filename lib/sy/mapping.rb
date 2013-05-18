@@ -1,5 +1,4 @@
-#encoding: utf-8
-
+# -*- coding: utf-8 -*-
 # Represents relationship of two quantities. Provides import and export
 # conversion closures. Instances are immutable and have 2 attributes:
 #
@@ -21,18 +20,14 @@ class SY::Mapping
   attr_reader :ex, :im, :ratio
 
   # Takes either a magnitude (1 argument), or 2 named arguments :im, :ex
-  # speficying amount import and export closure. For a magnitude, these
-  # closures are constructed automatically, assuming simple ratio rule.
+  # specifying the amount import and amount export closure. If a ratio is given,
+  # these closures are constructed automatically, assuming simple ratio rule. If
+  # a ratio is not given, both :ex and :im closures must be given.
   # 
-  def initialize arg
-    case arg
-    when Hash then
-      @ex, @im = arg[:ex], arg[:im]
-    else
-      @ratio = r = arg
-      @ex = lambda { |amount1| amount1 * r }
-      @im = lambda { |amount2| amount2 / r }
-    end
+  def initialize( ratio=nil,
+                  ex: lambda { |amnt1| amnt1 * ratio },
+                  im: lambda { |amnt2| amnt2 / ratio } )
+    @ratio, @ex, @im = ratio, ex, im
   end
 
   def import magnitude, from_quantity

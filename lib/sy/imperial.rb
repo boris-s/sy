@@ -18,6 +18,8 @@ module SY
 
   # === Volume
   PINT = Unit.of Volume, amount: 568.26125.cm³
+  # FIXME: PINT = Unit.of Volume, amount: 568.26125.ml didn't work, it gave 1000 times more value
+  # something is wrong with the conversion mechanics
   QUART = Unit.of Volume, amount: 2.pint
   GALLON = Unit.of Volume, short: 'gal', amount: 8.pint
 

@@ -1,5 +1,4 @@
-#encoding: utf-8
-
+# -*- coding: utf-8 -*-
 # Composition of quantities.
 # 
 class SY::Composition < Hash
@@ -11,6 +10,7 @@ class SY::Composition < Hash
   SR << -> ꜧ {
     ꜧ.reject! { |qnt, _| qnt == SY::Amount || qnt == SY::Amount.relative }
   }
+
   # Relative quantities of the composition are absolutized:
   SR << -> ꜧ {
     ꜧ.select { |qnt, _| qnt.relative? }.each { |qnt, exp|
@@ -18,10 +18,14 @@ class SY::Composition < Hash
       ꜧ.update qnt.absolute => exp
     }
   }
+
   # Any quantities with exponent zero can be deleted:
   SR << -> ꜧ {
     ꜧ.reject! { |_, exp| exp == 0 }
   }
+
+  # TODO: This undocumented simplification rule simplifies MoleAmount and
+  # LitreVolume into Molarity.
   # 
   SR << -> ꜧ {
     begin
@@ -170,14 +174,14 @@ class SY::Composition < Hash
     SY::Quantity.new args.merge( composition: self )
   end
 
-  # Dimension of a quantity composition is the sum of its dimensions.
+  # Dimension of a composition is the sum of its member quantities' dimensions.
   # 
   def dimension
     map { |qnt, exp| qnt.dimension * exp }.reduce SY::Dimension.zero, :+
   end
 
-  # Infers the mapping of the composition's quantity. (Mapping
-  # defines mapping of a quantity to the standard quantity of its dimension.)
+  # Infers the mapping of the composition's quantity. ('Mapping' means mapping
+  # of the quantity to the standard quantity of its dimension.)
   # 
   def infer_mapping
     puts "#infer_mapping; hash is #{self}" if SY::DEBUG

@@ -1,5 +1,4 @@
-#encoding: utf-8
-
+# -*- coding: utf-8 -*-
 # Qualities specific to absolute magnitudes.
 # 
 module SY::AbsoluteMagnitude

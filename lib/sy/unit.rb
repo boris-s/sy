@@ -6,16 +6,15 @@
 module SY::Unit
   def self.pre_included target
     class << target
-      # Overriding this method from NameMagic mixin makes sure that all Unit
-      # subclasses have the same namespace in Unit class, rather then each
-      # parametrized subclass its own.
+      # Overriding this method from NameMagic mixin ensures, that all Unit
+      # subclasses use common namespace (Unit), rather than each their own.
       # 
       def namespace
         SY::Unit
       end
 
-      # Tweaking instance accessor from NameMagic, to make it accept unit
-      # abbreviations, and unit names regardless of capitalization
+      # Tweaking instance accessor from NameMagic to make it accept unit
+      # abbreviations and unit names regardless of capitalization
       # 
       def instance arg
         begin

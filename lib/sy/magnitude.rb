@@ -1,22 +1,21 @@
-#encoding: utf-8
-
-# In physics, difference between absolute and relative magnitudes is well
-# understood. The magnitude class here represents absolute magnitude – physical
-# number of unit objects making up the amount of some metrological quantity.
-# Amounts of absolute magnitudes may not be negative. When one desires to
-# represent <em>difference</me> between magnitudes, which can be positive as
-# well as negative, relative magnitude has to be used.
+# -*- coding: utf-8 -*-
+# This class here represents absolute magnitude – physical number of unit
+# objects, that make up the amount of some metrological quantity. Amount of
+# an absolute magnitudes may not be negative – physical amounts cannot have
+# negative number of unit objects. But as for the <em>difference</me> between
+# magnitudes, this can be positive as well as negative – relative magnitudes
+# are used for this purpose.
 #
 # While ordinary #+ and #- methods of absolute magnitudes return relative
-# relative magnitudes, absolute magnitudes have additional methods #add and
-# #subtract, which return absolute magnitudes (it is the responsibility of the
-# caller to avoid negative results). Furthermore, absolute magnitudes have
-# special subtraction method #take, which guards against subtracting more than
-# the magnitude's amount.
+# magnitudes, absolute magnitudes have additional methods #add and #subtract,
+# that return absolute magnitudes (it is the responsibility of the caller to
+# avoid negative results). Furthermore, absolute magnitudes have one more
+# special method #take, which perfoms #subtract whilst protecting against
+# subtraction of more than, there is to take.
 # 
 module SY::Magnitude
   class << self
-    # Constructor of absolute magnitudes of a given quantity.
+    # Constructs absolute magnitudes of a given quantity.
     # 
     def absolute *args
       ꜧ = args.extract_options!
@@ -24,7 +23,7 @@ module SY::Magnitude
       return qnt.absolute.magnitude ꜧ[:amount]
     end
 
-    # Constructor of relative magnitudes of a given quantity.
+    # Constructs relative magnitudes of a given quantity.
     # 
     def difference *args
       ꜧ = args.extract_options!
@@ -32,13 +31,13 @@ module SY::Magnitude
       return qnt.relative.magnitude ꜧ[:amount]
     end
 
-    # Constructor of magnitudes of a given quantity.
+    # Constructs magnitudes of a given quantity.
     # 
     def of qnt, args={}
       return qnt.magnitude args[:amount]
     end
 
-    # Constructor of zero magnitude of a given quantity.
+    # Returns zero magnitude of a given quantity.
     # 
     def zero
       return absolute 0

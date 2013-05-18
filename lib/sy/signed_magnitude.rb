@@ -3,12 +3,12 @@
 # Qualities specific to relative magnitudes.
 # 
 module SY::SignedMagnitude
-  # Relative magnitude constructor takes :quantity (alias :of) named argument,
-  # and :amount named argument, where :amount is allowed to be negative.
+  # Relative magnitude constructor takes :quantity (alias :of) argument and
+  # :amount argument. Amount is allowed to be negative.
   # 
-  def initialize args={}
-    @quantity = args[:quantity] || args[:of]
-    amnt = args[:amount]
+  def initialize **named_args
+    @quantity = named_args[:quantity] || named_args[:of]
+    amnt = named_args[:amount]
     @amount = case amnt
               when Numeric then amnt
               when nil then 1
