@@ -141,7 +141,7 @@ module SY
   CelsiusTemperature = Quantity.of :Θ
 
   # Degree celsius is SY::CELSIUS
-  CELSIUS = Unit.standard of: CelsiusTemperature, short: '°C', measure: SY::Measure.simple_offset( TRIPLE_POINT_OF_WATER )
+  CELSIUS = Unit.standard of: CelsiusTemperature, short: '°C', measure: SY::Measure.simple_offset( TRIPLE_POINT_OF_WATER.in( :K ) )
 
   class << CelsiusTemperature
     # FIXME: Patch CelsiusTemperature to make it work with SY::Temperature
