@@ -5,21 +5,21 @@ module SY::AbsoluteMagnitude
   # Absolute magnitude constructor takes :quantity (alias :of) named argument,
   # and :amount named argument, where amount must be nonnegative.
   # 
-  def initialize args={}
-    @quantity = args[:quantity] || args[:of]
-    amnt = args[:amount]
-    @amount = case amnt
-              when Numeric then amnt
+  def initialize( of: ( fail ArgumentError, ":of argument missing!" ),
+                  amount: nil )
+    @quantity = of
+    @amount = case amount
+              when Numeric then amount
               when nil then 1
               else
                 begin
-                  amnt.amount
+                  amount.amount
                 rescue NameError, NoMethodError
-                  amnt
+                  amount
                 end
               end
-    raise SY::MagnitudeError,
-          "Unsigned magnitudes canot have negative amount!" if @amount < 0
+    fail SY::MagnitudeError, "Unsigned magnitudes may not have negative " +
+      "amount!" if @amount < 0
   end
 
   # For absolute magnitudes, #+ method always returns a result framed in

@@ -12,7 +12,7 @@ class SY::Quantity
   RELATIVE_QUANTITY_NAME_SUFFIX = "±"
 
   attr_reader :MagnitudeModule, :Magnitude, :Unit
-  attr_reader :dimension, :composition, :mapping
+  attr_reader :dimension, :composition
 
   class << self
     # Dimension-based quantity constructor. Examples:
@@ -23,10 +23,10 @@ class SY::Quantity
       ꜧ = args.extract_options!
       dim = case args.size
             when 0 then
-              ꜧ.must_have :dimension, syn!: :of
+              ꜧ.must_have :dimension
               ꜧ.delete :dimension
             else args.shift end
-      args << ꜧ.merge!( dimension: SY::Dimension.new( dim ) )
+      args << ꜧ.merge!( of: SY::Dimension.new( dim ) )
       return new( *args ).protect!
     end
     
@@ -36,14 +36,10 @@ class SY::Quantity
     # <tt>Quantity.standard of: "L.T⁻²"
     # (Both should give Acceleration as their result.)
     # 
-    def standard *args
-      ꜧ = args.extract_options!
-      dim = case args.size
-            when 0 then
-              ꜧ.must_have :dimension, syn!: :of
-              ꜧ.delete :dimension
-            else args.shift end
-      return SY.Dimension( dim ).standard_quantity
+    def standard( of: nil )
+      fail ArgumentError, "Dimension (:of argument) must be given!" if of.nil?
+      puts "Constructing standard quantity of #{of} dimension" if SY::DEBUG
+      return SY.Dimension( of ).standard_quantity
     end
 
     # Dimensionless quantity constructor alias.
@@ -52,7 +48,7 @@ class SY::Quantity
       ꜧ = args.extract_options!
       raise TErr, "Dimension not zero!" unless ꜧ[:dimension].zero? if
         ꜧ.has? :dimension, syn!: :of
-      new( *( args << ꜧ.merge!( dimension: SY::Dimension.zero ) ) ).protect!
+      new( *( args << ꜧ.merge!( of: SY::Dimension.zero ) ) ).protect!
     end
     alias :zero :dimensionless
   end
@@ -60,21 +56,26 @@ class SY::Quantity
   # Standard constructor of a metrological quantity. A quantity may have
   # a name and a dimension.
   # 
-  def initialize args
-    puts "Quantity init #{args}" if SY::DEBUG
-    @relative = args[:relative]
-    comp = args[:composition]
-    if comp.nil? then # composition not given
-      puts "Composition not received, dimension expected." if SY::DEBUG
-      dim = args[:dimension] || args[:of]
-      @dimension = SY.Dimension( dim )
+  def initialize( relative: nil, composition: nil, of: nil, measure: nil, amount: nil, **nn )
+    puts "Quantity init relative: #{relative}, composition: #{composition}, measure: #{measure}, #{nn}" if SY::DEBUG
+    @relative = relative
+    if composition.nil? then
+      puts "Composition not given, dimension expected." if SY::DEBUG
+      @dimension = SY.Dimension( of )
     else
-      puts "Composition received (#{comp})." if SY::DEBUG
-      @composition = SY::Composition[ comp ]
+      puts "Composition received (#{composition})." if SY::DEBUG
+      @composition = SY::Composition[ composition ]
       @dimension = @composition.dimension
     end
-    rel = args[:mapping] || args[:ratio]
-    @mapping = SY::Mapping.new( rel ) if rel
+    @measure = measure.is_a?( SY::Measure ) ? measure :
+      if measure.nil? then
+        if amount.nil? then nil else
+          SY::Measure.simple_scale( amount )
+        end
+      else
+        fail ArgumentError, ":amount and :measure shouldn't be both supplied" unless amount.nil?
+        SY::Measure.simple_scale( measure )
+      end
     puts "Composition of the initialized instance is #{composition}." if SY::DEBUG
   end
 
@@ -132,56 +133,52 @@ class SY::Quantity
           "match the dimension" do |comp| comp.dimension == dimension end
   end
 
-  # Acts as mapping setter.
+  # Acts as setter of measure (of the pertinent standard quantity).
   # 
-  def set_mapping mapping
-    @mapping = SY::Mapping.new( mapping )
+  def set_measure measure
+    @measure = if measure.is_a?( SY::Measure ) then
+                 measure
+               else
+                 SY::Measure.simple_scale( measure )
+               end
   end
 
-  def import magnitude2
-    quantity2, amount2 = magnitude2.quantity, magnitude2.amount
-    magnitude mapping_to( quantity2 ).im.( amount2 )
-  end
-
-  def export amount1, quantity2
-    mapping_to( quantity2 ).export( magnitude( amount1 ), quantity2 )
-  end
-
-  # Asks for a mapping of this quantity to another quantity.
+  # Converts magnitude of another quantity to a magnitude of this quantity.
   # 
-  def mapping_to( q2 )
-    puts "#{self.inspect} asked about mapping to #{q2}" if SY::DEBUG
-    return SY::Mapping.identity if q2 == self or q2 == colleague
-    puts "this mapping is not an identity" if SY::DEBUG
-    raise SY::DimensionError, "#{self} vs. #{q2}!" unless same_dimension? q2
-    if standardish? then
-      puts "#{self} is a standardish quantity, will invert the #{q2} mapping" if SY::DEBUG
-      return q2.mapping_to( self ).inverse
-    end
-    puts "#{self} is not a standardish quantity" if SY::DEBUG
-    m1 = begin
-           if @mapping then
-             puts "#{self} has @mapping defined" if SY::DEBUG
-             @mapping
-           elsif colleague.mapping then
-             puts "#{colleague} has @mapping defined" if SY::DEBUG
-             colleague.mapping
-           else
-             puts "Neither #{self} nor its colleague has @mapping defined" if SY::DEBUG
-             puts "Will ask #{self}.composition to infer the mapping" if SY::DEBUG
-             composition.infer_mapping
-           end
-         rescue NoMethodError
-           raise SY::QuantityError,"Mapping from #{self} to #{q2} cannot be inferred!"
-         end
-    if q2.standardish? then
-      puts "#{q2} is standardish, obtained mapping can be returned directly." if SY::DEBUG
-      return m1
-    else
-      puts "#{q2} not standardish, obtained mapping maps only to #{standard}, and " +
-        "therefrom, composition with mapping from #{standard} to #{q2} will be needed" if SY::DEBUG
-      return m1 * standard.mapping_to( q2 )
-    end
+  def read magnitude_of_other_quantity
+    other_quantity = magnitude_of_other_quantity.quantity
+    other_amount = magnitude_of_other_quantity.amount
+    magnitude measure( of: other_quantity ).r.( other_amount )
+  end
+
+  # Converts an amount of this quantity to a magnitude of other quantity.
+  # 
+  def write amount_of_this_quantity, other_quantity
+    measure( of: other_quantity )
+      .write( magnitude( amount_of_this_quantity ), other_quantity )
+  end
+
+  # Creates a measure of a specified other quantity. If no :of is specified,
+  # simply acts as a getter of @measure attribute.
+  # 
+  def measure( of: nil )
+    return @measure if of.nil? # act as simple getter if :of not specified
+    puts "#{self.inspect} asked about measure of #{of}" if SY::DEBUG
+    return SY::Measure.identity if of == self or of == colleague
+    raise SY::DimensionError, "#{self} vs. #{of}!" unless same_dimension? of
+    return of.measure( of: of.standard ).inverse if standardish?
+    m = begin
+          puts "composition is #{composition}, class #{composition.class}" if SY::DEBUG
+          measure ||
+            colleague.measure ||
+            composition.infer_measure
+        rescue NoMethodError
+          fail SY::QuantityError, "Measure of #{of} by #{self} impossible!"
+        end
+    return m if of.standardish?
+    puts "#{of} not standardish, obtained measure relates to #{standard}, and " +
+      "it will have to be extended to #{of}." if SY::DEBUG
+    return m * standard.measure( of: of )
   end
 
   # Is the quantity relative?
@@ -216,9 +213,9 @@ class SY::Quantity
       same_dimension? q2
     raise SY::QuantityError, "#{self} an #{q2} are both " +
       "{relative? ? 'relative' : 'absolute'}!" if relative? == q2.relative?
-    if mapping && q2.mapping then
-      raise SY::QuantityError, "Mapping mismatch: #{self}, #{q2}!" unless
-        mapping == q2.mapping
+    if measure && q2.measure then
+      raise SY::QuantityError, "Measure mismatch: #{self}, #{q2}!" unless
+        measure == q2.measure
     end
     @colleague = q2
     q2.instance_variable_set :@colleague, self
@@ -244,31 +241,38 @@ class SY::Quantity
 
   # Constructs a new absolute magnitude of this quantity.
   # 
-  def magnitude arg
-    Magnitude().new quantity: self, amount: arg
+  def magnitude amount
+    Magnitude().new of: self, amount: amount
   end
 
   # Constructs a new unit of this quantity.
   # 
-  def unit args={}
-    Unit().new( args.merge( quantity: self ) ).tap { |u| ( units << u ).uniq! }
+  def unit **nn
+    Unit().new( nn.update( of: self ) ).tap { |u| ( units << u ).uniq! }
   end
 
-  # Constructor of a new standard unit (replacing the current @standard_unit).
-  # For standard units, amount is implicitly 1. So :amount name argument, when
-  # supplied, has a different meaning – sets the mapping of its quantity.
+  # Constructor of a new standard unit (replacing current @standard_unit).
+  # For standard units, amount is implicitly 1. So :amount argument here has
+  # different meaning – it sets the measure of the quantity. Measure can also
+  # be specified more explicitly by :measure named argument.
   # 
-  def new_standard_unit args={}
-    explain_amount_of_standard_units if args[:amount].is_a? Numeric # n00b help
+  def new_standard_unit( amount: nil, measure: nil, **nn )
+    explain_amount_of_standard_units if amount.is_a? Numeric # n00b help
     # For standard units, amount has special meaning of setting up mapping.
-    args.may_have( :mapping, syn!: :amount )
-    ᴍ = args.delete( :mapping )
-    set_mapping( ᴍ.amount ) if ᴍ
-    args.update amount: 1 # substitute amount 1 as required for standard units
+    if measure then
+      raise ArgumentError, "When :measure is specified, :amount must not be " +
+        "expliticly specified." unless amount.nil?
+      raise TypeError, ":measure argument must be a SY::Measure!" unless
+        measure.is_a? SY::Measure
+      set_measure( measure )
+    else
+      set_measure( SY::Measure.simple_scale( amount.nil? ? 1 : amount.amount ) )
+    end
     # Replace @standard_unit with the newly constructed unit.
     Unit().instance_variable_set( :@standard,
-                                 unit( args )
-                                   .tap { |u| ( units.unshift u ).uniq! } )
+                                  unit( **nn ).tap do |u|
+                                    ( units.unshift u ).uniq!
+                                  end )
   end
 
   # Quantity multiplication.
@@ -311,6 +315,8 @@ class SY::Quantity
   # Returns the standard quantity for this quantity's dimension.
   # 
   def standard
+    puts "Dimension of this quantity is #{dimension}" if SY::DEBUG
+    puts "Its standard quantity is #{dimension.standard_quantity}" if SY::DEBUG
     dimension.standard_quantity
   end
 
@@ -363,7 +369,7 @@ class SY::Quantity
   # 
   def MagnitudeModule
     @MagnitudeModule ||= if absolute? then
-                           Module.new { include SY::Magnitude }
+                           Module.new { include ::SY::Magnitude }
                          else
                            absolute.MagnitudeModule
                          end
@@ -372,26 +378,25 @@ class SY::Quantity
   # Parametrized magnitude class.
   # 
   def Magnitude
-    if @Magnitude then @Magnitude else
-      mmod = MagnitudeModule()
-      mixin = relative? ? SY::SignedMagnitude : SY::AbsoluteMagnitude
-      qnt_ɴ_λ = -> { name ? "#{name}@%s" : "#<Quantity:#{object_id}@%s>" }
+    @Magnitude or
+      ( mmod = MagnitudeModule()
+        mixin = relative? ? ::SY::SignedMagnitude : ::SY::AbsoluteMagnitude
+        qnt_ɴ_λ = -> { name ? "#{name}@%s" : "#<Quantity:#{object_id}@%s>" }
 
-      @Magnitude = Class.new do
-        include mmod
-        include mixin
+        @Magnitude = Class.new do
+          include mmod
+          include mixin
 
-        singleton_class.class_exec do
-          define_method :zero do       # Costructor of zero magnitudes
-            new amount: 0
+          singleton_class.class_exec do
+            define_method :zero do       # Costructor of zero magnitudes
+              new amount: 0
+            end
+
+            define_method :to_s do       # Customized #to_s. It must be a proc,
+              qnt_ɴ_λ.call % "Magnitude" # since the quantity owning @Magnitude
+            end                          # might not be named yet as of now.
           end
-
-          define_method :to_s do       # Customized #to_s. It must be a proc,
-            qnt_ɴ_λ.call % "Magnitude" # since the quantity owning @Magnitude
-          end                          # might not be named yet as of now.
-        end
-      end
-    end
+        end )
   end
 
   # Parametrized unit class.
@@ -405,12 +410,12 @@ class SY::Quantity
                   include SY::Unit
 
                   singleton_class.class_exec do
-                    define_method :standard do |args={}|      # Customized #standard.
-                      @standard ||= new args.merge( quantity: qnt )
+                    define_method :standard do |**nn|      # Customized #standard.
+                      @standard ||= new **nn.update( of: qnt )
                     end
                   
                     define_method :to_s do       # Customized #to_s. (Same consideration
-                      ɴλ.call % "Unit"      # as for @Magnitude applies.)
+                      ɴλ.call % "Unit"           # as for @Magnitude applies.)
                     end
                   end
                 end

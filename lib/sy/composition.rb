@@ -107,6 +107,8 @@ class SY::Composition < Hash
   # is a base dimension.
   # 
   def atomic?
+    puts "composition is #{self}" if SY::DEBUG
+    puts "first[0].dimension is #{first[0].dimension}" if SY::DEBUG
     singular? && first[0].dimension.base?
   end
 
@@ -180,15 +182,22 @@ class SY::Composition < Hash
     map { |qnt, exp| qnt.dimension * exp }.reduce SY::Dimension.zero, :+
   end
 
-  # Infers the mapping of the composition's quantity. ('Mapping' means mapping
-  # of the quantity to the standard quantity of its dimension.)
+  # Infers the measure of the composition's quantity. ('Measure' means measure
+  # of the pertinent standard quantity.)
   # 
-  def infer_mapping
-    puts "#infer_mapping; hash is #{self}" if SY::DEBUG
+  def infer_measure
+    puts "#infer_measure; hash is #{self}" if SY::DEBUG
     map do |qnt, exp|
-      qnt.standardish? ? SY::Mapping.identity :
-        qnt.mapping_to( qnt.standard ) ** exp
-    end.reduce( SY::Mapping.identity, :* )
+      puts "#infer_measure: doing quantity #{qnt} with exponent #{exp}!" if SY::DEBUG
+      if qnt.standardish? then
+        puts "#{qnt} standardish" if SY::DEBUG
+        SY::Measure.identity
+      else
+        puts "#{qnt} not standardish" if SY::DEBUG
+        puts "its measure is #{qnt.measure}, class #{qnt.measure.class}" if SY::DEBUG
+        qnt.measure( of: qnt.standard ) ** exp
+      end
+    end.reduce( SY::Measure.identity, :* )
   end
 
   # Simple composition is one that is either empty or singular.

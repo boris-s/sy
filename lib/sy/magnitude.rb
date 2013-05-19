@@ -203,8 +203,8 @@ module SY::Magnitude
   # 
   def reframe q2
     case q2
-    when SY::Quantity then q2.import self
-    when SY::Unit then q2.quantity.import self
+    when SY::Quantity then q2.read self
+    when SY::Unit then q2.quantity.read self
     else raise TypeError, "Unable to reframe into a #{q2.class}!" end
   end
 
@@ -214,8 +214,8 @@ module SY::Magnitude
   # 
   def call q2
     case q2
-    when SY::Quantity then q2.relative.import self
-    when SY::Unit then q2.quantity.relative.import self
+    when SY::Quantity then q2.relative.read self
+    when SY::Unit then q2.quantity.relative.read self
     else raise TypeError, "Unable to reframe into a #{q2.class}!" end
   end
 
@@ -391,6 +391,7 @@ module SY::Magnitude
       end
       
     rescue
+      fail
       number_ς = number_format % amount
       [ number_ς, "unit[#{quantity}]" ].join '.'
     end

@@ -58,12 +58,10 @@ class SY::Measure
 
   # The constructor expects :r and :w arguments for read and write closure.
   # 
-  def initialize ratio: nil,
-    r: ( fail ArgumentError, ":r closure not specified!" unless ratio ),
-    w: ( fail ArgumentError, ":w closure not specified!" unless ratio )
+  def initialize( ratio: nil, r: nil, w: nil )
     if ratio.nil?
-      fail TypeError, ":r and :w arguments must both be closures!" unless
-        r.is_a?( Proc ) && w.is_a?( Proc )
+      fail TypeError, ":r and :w arguments must both be closures if ratio " +
+        "not given!" unless r.is_a?( Proc ) && w.is_a?( Proc )
       @ratio, @r, @w = nil, r, w
     else
       fail ArgumentError, ":r or :w must not be given if :ratio given!" if r || w
@@ -134,4 +132,4 @@ class SY::Measure
   def []( *args )
     send *args
   end
-end # class SY::Mapping
+end # class SY::Measure

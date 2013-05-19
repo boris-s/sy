@@ -14,7 +14,7 @@ require 'active_support/core_ext/string/starts_ends_with'
 require_relative 'sy/version'
 require_relative 'sy/expressible_in_units'
 require_relative 'sy/fixed_assets_of_the_module'
-require_relative 'sy/mapping'
+require_relative 'sy/measure'
 require_relative 'sy/dimension'
 require_relative 'sy/quantity'
 require_relative 'sy/composition'
@@ -141,8 +141,12 @@ module SY
   CelsiusTemperature = Quantity.of :Θ
 
   # Degree celsius is SY::CELSIUS
-  CELSIUS = Unit.standard of: CelsiusTemperature, short: '°C'
-  # FIXME: Patch CelsiusTemperature to make it work with SY::Temperature
+  CELSIUS = Unit.standard of: CelsiusTemperature, short: '°C', measure: SY::Measure.simple_offset( TRIPLE_POINT_OF_WATER )
+
+  class << CelsiusTemperature
+    # FIXME: Patch CelsiusTemperature to make it work with SY::Temperature
+  end
+
   # alias :°C :celsius                 # with U+00B0 DEGREE SIGN
   # alias :˚C :celsius                 # with U+02DA RING ABOVE
   # alias :℃ :celsius                  # U+2103 DEGREE CELSIUS
@@ -258,7 +262,7 @@ module SY
   VOLT = Unit.standard of: ElectricPotential, short: "V"
 
   # FIXME: This should raise a friendly error:
-  # MOLAR = Unit.standard of: Molarity, abbreviation: "M", amount: 1.mol.l⁻¹
+  # MOLAR = Unit.standard of: Molarity, short: "M", amount: 1.mol.l⁻¹
 
   # SY::Molality...
   Molality = MoleAmount / Mass

@@ -100,14 +100,11 @@ module SY::Unit
     # specified quantity. Note that :amount for standard units, if supplied, has
     # special meaning of setting the relationship of that quantity.
     # 
-    def standard args={}
-      args.must_have :quantity, syn!: :of
-      qnt = SY::Quantity.instance( args.delete :quantity )
-      if args.empty? then
-        qnt.standard_unit 
-      else
-        qnt.new_standard_unit( args )
-      end
+    def standard( of: nil, **nn )
+      puts "Constructing a standard unit of #{of}." if SY::DEBUG
+      fail ArgumentError, ":of argument missing!" if of.nil?
+      qnt = SY::Quantity.instance( of )
+      nn.empty? ? qnt.standard_unit : qnt.new_standard_unit( **nn )
     end
     
     # Unit abbreviations as a hash of abbreviation => unit pairs.
@@ -164,10 +161,8 @@ module SY::Unit
   # ambiguity with regard to standard prefixes and abbreviations thereof should
   # also be avoided.
   # 
-  def initialize args={}
-    if args.has? :abbreviation, syn!: :short then
-      @abbreviation = args.delete( :abbreviation ).to_sym
-    end
+  def initialize( short: nil, **nn )
+    @abbreviation = short.to_sym if short
       
     # FIXME: Here, we would have to watch out for :amount being set
     # if it is a number, amount is in standard units
@@ -175,7 +170,7 @@ module SY::Unit
     # it estableshes a relationship between this and that quantity. It means that
     # the unit amount automatically becomes ... one ... and such relationship can
     # only be established for standard quantity
-    super args
+    super( **nn )
   end
 
   # Addition: Unit is converted to a magnitude before the operation.
