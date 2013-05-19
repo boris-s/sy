@@ -2,9 +2,9 @@
 # Here, fixed assets of the main module are set up.
 # 
 module SY
-  QuantityError = Class.new StandardError # mixing incompatible quantities
-  DimensionError = Class.new StandardError # mixing incompatible dimensions
-  MagnitudeError = Class.new StandardError # creating impossible magnitude
+  QuantityError = Class.new TypeError # mixing incompatible quantities
+  DimensionError = Class.new TypeError # mixing incompatible dimensions
+  MagnitudeError = Class.new TypeError # creating impossible magnitude
 
   BASE_DIMENSIONS = {                # Basic physical dimensions.
     L: :LENGTH,
