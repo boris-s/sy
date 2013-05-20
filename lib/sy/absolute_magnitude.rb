@@ -1,19 +1,30 @@
 # -*- coding: utf-8 -*-
-# Qualities specific to absolute magnitudes.
+# Qualities specific to absolute magnitudes (mixin).
+#
+# Absolute magnitude may not be negative  – physical amounts cannot have
+# negative number of unit objects. (<em>Difference</me> between magnitudes
+# (relative magnitude) can be positive as well as negative.
+#
+# While ordinary #+ and #- methods of absolute magnitudes return relative
+# magnitudes, absolute magnitudes have additional methods #add and #subtract,
+# that return absolute magnitudes (it is the responsibility of the caller to
+# avoid negative results). Furthermore, absolute magnitudes have one more
+# special method #take, which perfoms #subtract whilst protecting against
+# subtraction of more than, there is to take.
 # 
 module SY::AbsoluteMagnitude
   # Absolute magnitude constructor takes :quantity (alias :of) named argument,
   # and :amount named argument, where amount must be nonnegative.
   # 
-  def initialize( of: ( fail ArgumentError, ":of argument missing!" ),
-                  amount: nil )
+  def initialize( of: nil, amount: nil )
+    fail ArgumentError, "Quantity (:of) argument missing!" if of.nil?
     @quantity = of
     @amount = case amount
               when Numeric then amount
               when nil then 1
               else
                 begin
-                  amount.amount
+                  amount.( @quantity ).amount
                 rescue NameError, NoMethodError
                   amount
                 end

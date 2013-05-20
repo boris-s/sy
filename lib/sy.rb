@@ -77,7 +77,7 @@ module SY
   UNIT = Unit.standard of: Amount
 
   # Let SY::MoleAmount be another dimensionless quantity:
-  MoleAmount = Quantity.dimensionless
+  MoleAmount = Quantity.dimensionless # TODO: coerces: Amount
 
   # And let SY::MOLE be its standard unit, related to SY::Amount via Nᴀ:
   MOLE = Unit.standard of: MoleAmount, short: "mol", amount: Nᴀ.unit
@@ -138,13 +138,24 @@ module SY
   # Celsius temperature is a little bit peculiar in that it has offset of
   # 273.15.K with respect to Kelvin temperature, and I am not sure whether
   # at this moment SY is handling this right. But nevertheless:
-  CelsiusTemperature = Quantity.of :Θ
+  CelsiusTemperature = Quantity.of :Θ # coerces_to: Temperature
+
+  CELSIUS_MEASURE = SY::Measure.simple_offset( TRIPLE_POINT_OF_WATER.in( :K ) )
 
   # Degree celsius is SY::CELSIUS
-  CELSIUS = Unit.standard of: CelsiusTemperature, short: '°C', measure: SY::Measure.simple_offset( TRIPLE_POINT_OF_WATER.in( :K ) )
+  CELSIUS = Unit.standard( of: CelsiusTemperature,
+                           short: '°C', measure: CELSIUS_MEASURE )
 
   class << CelsiusTemperature
     # FIXME: Patch CelsiusTemperature to make it work with SY::Temperature
+    # 1.°C + 1.K #=> 2.°C
+    # 1.°C - 1.°C #=> 0.K (unambiguous)
+    # 1.°C + 1.°C #=> QuantityError (ambiguous)
+    # 1.K +- 1.°C #=> QuantityError (ambiguous)
+    # 1.°C +- 1.K #=> 2.°C
+    # 1.mm.°C⁻¹ #=> 1.mm.K⁻¹ etc.
+    # 1.mm.°C #=> 1.mm.K etc.
+    # 1.mm */ 1.°C #=> QuantityError (ambiguous)
   end
 
   # alias :°C :celsius                 # with U+00B0 DEGREE SIGN
@@ -182,7 +193,7 @@ module SY
   Volume = Length ** 3
 
   # SY::LitreVolume is another quantity of the same dimension as SY::Volume:
-  LitreVolume = Quantity.of Volume.dimension
+  LitreVolume = Quantity.of Volume.dimension # TODO: coerces_to: Volume
 
   # SY::LITRE is the standard unit of SY::LitreVolume:
   LITRE = Unit.standard of: LitreVolume, short: "l", amount: 1.dm³

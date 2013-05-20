@@ -12,7 +12,7 @@ class SY::Quantity
   RELATIVE_QUANTITY_NAME_SUFFIX = "±"
 
   attr_reader :MagnitudeModule, :Magnitude, :Unit
-  attr_reader :dimension, :composition
+  attr_reader :dimension, :composition, :units
 
   class << self
     # Dimension-based quantity constructor. Examples:
@@ -58,6 +58,7 @@ class SY::Quantity
   # 
   def initialize( relative: nil, composition: nil, of: nil, measure: nil, amount: nil, **nn )
     puts "Quantity init relative: #{relative}, composition: #{composition}, measure: #{measure}, #{nn}" if SY::DEBUG
+    @units = [] # array of units as favored by this quantity
     @relative = relative
     if composition.nil? then
       puts "Composition not given, dimension expected." if SY::DEBUG
@@ -233,12 +234,6 @@ class SY::Quantity
     Unit().standard
   end
 
-  # Presents an array of units ordered as favored by this quantity.
-  # 
-  def units
-    @units ||= []
-  end
-
   # Constructs a new absolute magnitude of this quantity.
   # 
   def magnitude amount
@@ -248,7 +243,8 @@ class SY::Quantity
   # Constructs a new unit of this quantity.
   # 
   def unit **nn
-    Unit().new( nn.update( of: self ) ).tap { |u| ( units << u ).uniq! }
+    Unit().new( nn.update( of: self ) )
+      .tap { |u| ( units << u ).uniq! } # add it to the @units array
   end
 
   # Constructor of a new standard unit (replacing current @standard_unit).
@@ -380,7 +376,7 @@ class SY::Quantity
   def Magnitude
     @Magnitude or
       ( mmod = MagnitudeModule()
-        mixin = relative? ? ::SY::SignedMagnitude : ::SY::AbsoluteMagnitude
+        mixin = relative? ? SY::SignedMagnitude : SY::AbsoluteMagnitude
         qnt_ɴ_λ = -> { name ? "#{name}@%s" : "#<Quantity:#{object_id}@%s>" }
 
         @Magnitude = Class.new do

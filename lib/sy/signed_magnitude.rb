@@ -1,22 +1,21 @@
-#encoding: utf-8
-
-# Qualities specific to relative magnitudes.
+# -*- coding: utf-8 -*-
+# Qualities specific to relative magnitudes (mixin).
 # 
 module SY::SignedMagnitude
   # Relative magnitude constructor takes :quantity (alias :of) argument and
   # :amount argument. Amount is allowed to be negative.
   # 
-  def initialize **named_args
-    @quantity = named_args[:quantity] || named_args[:of]
-    amnt = named_args[:amount]
-    @amount = case amnt
-              when Numeric then amnt
+  def initialize( of: nil, amount: nil )
+    fail ArgumentError, "Quantity (:of) argument missing!" if of.nil?
+    @quantity = of
+    @amount = case amount
+              when Numeric then amount
               when nil then 1
               else
                 begin
-                  amnt.amount
+                  amount.( @quantity ).amount
                 rescue NameError, NoMethodError
-                  amnt
+                  amount
                 end
               end
   end

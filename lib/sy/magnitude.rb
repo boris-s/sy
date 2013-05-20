@@ -1,17 +1,6 @@
 # -*- coding: utf-8 -*-
-# This class here represents absolute magnitude – physical number of unit
-# objects, that make up the amount of some metrological quantity. Amount of
-# an absolute magnitudes may not be negative – physical amounts cannot have
-# negative number of unit objects. But as for the <em>difference</me> between
-# magnitudes, this can be positive as well as negative – relative magnitudes
-# are used for this purpose.
-#
-# While ordinary #+ and #- methods of absolute magnitudes return relative
-# magnitudes, absolute magnitudes have additional methods #add and #subtract,
-# that return absolute magnitudes (it is the responsibility of the caller to
-# avoid negative results). Furthermore, absolute magnitudes have one more
-# special method #take, which perfoms #subtract whilst protecting against
-# subtraction of more than, there is to take.
+# This module stores assets pertaining to a magnitude – be it absolute magnitude
+# (physical number of unit objects), or relative magnitude (magnitude differnce).
 # 
 module SY::Magnitude
   class << self
@@ -169,6 +158,18 @@ module SY::Magnitude
     end
   end
 
+  # Same magnitudes <em>and</em> same (#eql) quantities.
+  # 
+  def eql other
+    raise NotImplementedError
+  end
+
+  # Percent operator (remainder after division)
+  # 
+  def %
+    raise NotImplementedError
+  end
+
   # Type coercion for magnitudes.
   # 
   def coerce m2
@@ -192,8 +193,7 @@ module SY::Magnitude
           "method collision with another library?"
       end
     when SY::Magnitude then
-      return amount / m2.amount if quantity == m2.quantity
-      amount / m2.( quantity ).amount # reframe before division
+      quantity.measure( of: m2.quantity ).w.( amount ) / m2.amount
     else
       raise TypeError, "Unexpected type for Magnitude#in method! (#{m2.class})"
     end

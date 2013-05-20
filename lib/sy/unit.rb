@@ -80,17 +80,8 @@ module SY::Unit
   class << self
     # Constructor of units of a given quantity.
     # 
-    def of *args
-      ꜧ = args.extract_options!
-      qnt = case args.size
-            when 0 then
-              ꜧ.must_have( :quantity, syn!: :of )
-              ꜧ.delete :quantity
-            when 1 then args.shift
-            else
-              raise AErr, "Too many ordered arguments!"
-            end
-      return qnt.unit *( ꜧ.empty? ? args : args << ꜧ )
+    def of quantity, **nn
+      quantity.unit **nn
     end
     
     # Standard unit constructor. In absence of other named arguments, standard
@@ -213,7 +204,7 @@ module SY::Unit
   # Reframing: Unit is converted to a magnitude before reframing.
   # 
   def reframe other_quantity
-    to_magnitude.reframe( other_quantity )
+    to_magnnitude.reframe( other_quantity )
   end
 
   # Unit as string.
