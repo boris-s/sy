@@ -59,6 +59,10 @@ module SY::Unit
           w = ::SY::ExpressibleInUnits::COLLISION_WARNING
           ::SY::ExpressibleInUnits.included_in.each do |ɱ|
             im = ɱ.instance_methods
+            # puts ɱ, "class: #{ɱ.class}"
+            # puts im.size
+            # puts down
+            # puts im.include? down
             warn w  % [down, ɱ] if im.include? down
             abbrev = new_instance.abbreviation
             warn w % [abbrev, ɱ] if im.include? abbrev
@@ -186,7 +190,7 @@ module SY::Unit
     # it estableshes a relationship between this and that quantity. It means that
     # the unit amount automatically becomes ... one ... and such relationship can
     # only be established for standard quantity
-    super( **nn )
+    super nn
   end
 
   # Addition: Unit is converted to a magnitude before the operation.
