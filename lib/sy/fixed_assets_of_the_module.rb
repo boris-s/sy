@@ -273,5 +273,12 @@ module SY
     SY::Magnitude.of qnt, args
   end
 
-  module_function :Dimension, :Quantity, :Unit, :Magnitude
+  # Convenitence constructor of amounts (SY::Amount if the standard
+  # dimensionless quantity of SY).
+  # 
+  def Amount number
+    SY::Amount.relative.magnitude( number )
+  end
+
+  module_function :Dimension, :Quantity, :Unit, :Magnitude, :Amount
 end

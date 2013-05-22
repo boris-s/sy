@@ -1,5 +1,5 @@
-#encoding: utf-8
 #! /usr/bin/ruby
+# -*- coding: utf-8 -*-
 
 # **************************************************************************
 # THIS IS SPEC-STYLE TEST FILE FOR SY PHYSICAL UNITS LIBRARY
@@ -311,8 +311,8 @@ describe SY::Quantity, SY::Magnitude do
       end.must_include :M
       SY::Unit.instance_names.must_include :mole
       # Avogadro's number is defined directly in SY
-      1.mol.quantity.object_id.must_equal SY::Nᴀ.( SY::MoleAmount ).quantity.object_id
-      SY::Nᴀ.( SY::MoleAmount ).must_equal 1.mol
+      1.mol.quantity.object_id.must_equal SY::Nᴀ.unit.( SY::MoleAmount ).quantity.object_id
+      SY::Nᴀ.unit.( SY::MoleAmount ).must_equal 1.mol
       0.7.mol.l⁻¹.amount.must_equal 0.7
       1.M.must_equal 1.mol.l⁻¹.( SY::Molarity )
       # (if #reframe conversion method is not used, different quantities

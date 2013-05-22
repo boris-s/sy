@@ -4,6 +4,8 @@
 # of a metrological quantity.
 # 
 module SY::Unit
+  PROTECTED_NAMES = [ "kilogram" ]
+
   def self.pre_included target
     class << target
       # Overriding this method from NameMagic mixin ensures, that all Unit
@@ -42,13 +44,26 @@ module SY::Unit
       name_set_closure do |name, new_instance, old_name|
         ɴ = name.to_s
         up, down = ɴ.upcase, ɴ.downcase
+        # Check case (only all-upper or all-lower is acceptable).
         unless ɴ == up || ɴ = down
           raise NameError, "Unit must be either all-upper or all-lower case!"
         end
+        # Reject the names starting with a full prefix.
         conflicter = SY::PREFIX_TABLE.full_prefixes
           .find { |prefix| down.starts_with? prefix unless prefix.empty? }
         raise NameError, "Name #{ɴ} starts with #{conflicter}- prefix" unless
-          down == 'kilogram' if conflicter
+          SY::Unit::PROTECTED_NAMES.include? down if conflicter
+        # Warn about the conflicts in modules where the SY::ExpressibleInUnits
+        # mixin is included.
+        if new_instance.warns? then
+          w = ::SY::ExpressibleInUnits::COLLISION_WARNING
+          ::SY::ExpressibleInUnits.included_in.each do |ɱ|
+            im = ɱ.instance_methods
+            warn w  % [down, ɱ] if im.include? down
+            abbrev = new_instance.abbreviation
+            warn w % [abbrev, ɱ] if im.include? abbrev
+          end
+        end
         up.to_sym
       end
 
@@ -123,7 +138,13 @@ module SY::Unit
   # Unlike ordinary magnitudes, units can have names and abbreviations.
   # 
   attr_reader :abbreviation
-  alias :short :abbreviation
+  alias short abbreviation
+
+  # Whether the unit warns when the module in which unit method mixin is
+  # included contains blatant name collisions with this unit name/abbreviation.
+  # 
+  attr_accessor :warns
+  alias warns? warns
   
   # Unit abbreviation setter.
   # 
@@ -144,16 +165,20 @@ module SY::Unit
     ɴ = super
     return ɴ ? ɴ.to_s.downcase.to_sym : nil
   end
+  alias ɴ name
 
   # Constructor of units provides support for one additional named argument:
   # :abbreviation, alias :short. (This is in addition to :name, alias :ɴ named
   # argument provided by NameMagic.) As a general rule, only named units unit
   # should be given abbreviations. In choosing unit names and abbreviations,
   # ambiguity with regard to standard prefixes and abbreviations thereof should
-  # also be avoided.
+  # also be avoided. Another argument, :warns, Boolean, <em>true</em> by
+  # default, determines whether the method warns about name collisions with
+  # other methods defined where the SY::ExpressibleInUnits mixin is included.
   # 
-  def initialize( short: nil, **nn )
+  def initialize( short: nil, warns: true, **nn )
     @abbreviation = short.to_sym if short
+    @warns = warns # does this unit care about blatant name collisions?
       
     # FIXME: Here, we would have to watch out for :amount being set
     # if it is a number, amount is in standard units

@@ -62,19 +62,14 @@ module SY
   # Let SY::Amount be a standard dimensionless quantity:
   Amount = Quantity.standard of: Dimension.zero
 
-  # Convenience constructor of amounts:
-  def self.Amount number
-    SY::Amount.relative.magnitude number
-  end
-
-  # AVOGADRO_CONSTANT (Nᴀ) is a certain well-known amount of things:
-  Nᴀ = AVOGADRO_CONSTANT = SY.Amount 6.02214e23
-
   # Let SY::UNIT be a standard unit of SY::Amount. Note that the upcase name
   # of the constant "UNIT" implies, via YSupport's NameMagic mixin, that the
   # name of the object becomes :unit and that it is possible to use syntax
   # such as 42.unit to create magnitudes of SY::Amount.
   UNIT = Unit.standard of: Amount
+
+  # AVOGADRO_CONSTANT (Nᴀ) is a certain well-known amount of things:
+  Nᴀ = AVOGADRO_CONSTANT = 6.02214e23
 
   # Let SY::MoleAmount be another dimensionless quantity:
   MoleAmount = Quantity.dimensionless # TODO: coerces: Amount
