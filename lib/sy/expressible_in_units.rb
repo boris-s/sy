@@ -11,14 +11,32 @@ module SY::ExpressibleInUnits
   # 
   module DetectRedefine
     def method_added ß
-      known_u = ::SY::ExpressibleInUnits.known_units
-      names, abbrevs = known_u.map( &:name ), known_u.map( &:short )
-      ꜧ = Hash[ names.zip( known_u ) ].merge Hash[ abbrevs.zip( known_u ) ]
-      # Check against problematic collisions.
-      unless instance_methods.include?( ß ) &&
-          ! ::SY::ExpressibleInUnits.method_family.include?( instance_method ß )
-        warn ::SY::ExpressibleInUnits::REDEFINE_WARNING % [ ß, self ] 
-      end if ꜧ[ß].warns? if names.include?( ß ) || abbrevs.include?( ß )
+      # warn "#{self}: method added: :#{ß}"
+      uu = ::SY::ExpressibleInUnits.known_units
+      nn = uu.map &:name
+      aa = uu.map &:abbreviation
+      ꜧ = Hash[ nn.zip( uu ) ].merge Hash[ aa.zip( uu ) ]
+      w = ::SY::ExpressibleInUnits::REDEFINE_WARNING % [ ß, self ]
+      if nn.include? ß then
+        if instance_methods.include? ß then
+          im = instance_method ß
+          warn w unless ::SY::ExpressibleInUnits.method_family.include? im if
+            ꜧ[ß].warns? unless instance_variable_get( :@no_collision ) == ß
+          instance_variable_set( :@no_collision, nil ) # FIXME: This is too clumsy
+        else
+          warn w if ꜧ[ß].warns?
+        end
+      end
+      if aa.include? ß then
+        if instance_methods.include? ß then
+          im = instance_method ß
+          warn w unless ::SY::ExpressibleInUnits.method_family.include? im if
+            ꜧ[ß].warns? unless instance_variable_get( :@no_collision ) == ß
+          instance_variable_set( :@no_collision, nil ) # FIXME: This is too clumsy
+        else
+          warn w if ꜧ[ß].warns?
+        end
+      end
     end
   end
 
@@ -100,8 +118,12 @@ module SY::ExpressibleInUnits
         puts "Method missing: '#{ß}'" if SY::DEBUG
         prefixes, units, exps = parse_unit_symbol ß
         # Define the unit method on self.class:
+        # I'D HAVE TO PERFORM THE COLLISION CHECK HERE
+        # IF NO COLLISION, INFORM THE SUBSEQUENT METHOD DEFINED CALL ON
+        # SELF.CLASS
+        self.class.instance_variable_set "@no_collision", ß # FIXME: This is too clumsy
         self.class.module_eval write_unit_method( ß, prefixes, units, exps )
-        SY::ExpressibleInUnits.method_family << method( ß ) # register it
+        SY::ExpressibleInUnits.method_family << self.class.instance_method( ß )
       end
     rescue NameError => err
       puts "NameError raised: #{err}" if SY::DEBUG

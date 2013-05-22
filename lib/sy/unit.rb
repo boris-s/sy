@@ -14,29 +14,29 @@ module SY::Unit
       def namespace
         SY::Unit
       end
+    end
+  end # def self.pre_included
 
-      # Tweaking instance accessor from NameMagic to make it accept unit
-      # abbreviations and unit names regardless of capitalization
-      # 
-      def instance arg
-        begin
-          super # let's first try the original method
-        rescue NameError               # if we fail...
-          begin # second in order, let's try whether it's an abbreviation
-            super instances.find { |inst|
-              inst.abbreviation.to_s == arg.to_s if inst.abbreviation
-            }
-          rescue NameError, TypeError
-            begin # finally, let's try upcase if we have all-downcase arg
-              super arg.to_s.upcase
-            rescue NameError # if not, tough luck
-              raise NameError, "Unknown unit symbol: #{which}"
-            end
-          end
+  # Tweaking instance accessor from NameMagic to make it accept unit
+  # abbreviations and unit names regardless of capitalization
+  # 
+  def self.instance arg
+    begin
+      super # let's first try the original method
+    rescue NameError               # if we fail...
+      begin # second in order, let's try whether it's an abbreviation
+        super instances.find { |inst|
+          inst.abbreviation.to_s == arg.to_s if inst.abbreviation
+        }
+      rescue NameError, TypeError
+        begin # finally, let's try upcase if we have all-downcase arg
+          super arg.to_s.upcase
+        rescue NameError # if not, tough luck
+          raise NameError, "Unknown unit symbol: #{which}"
         end
       end
-    end # class << target
-  end # def self.pre_included
+    end
+  end # def self.instance
 
   def self.included target
     target.class_exec do

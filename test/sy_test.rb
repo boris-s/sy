@@ -170,11 +170,14 @@ describe SY::Quantity, SY::Magnitude do
       1.inch.( SY::Length ).must_equal 2.54.cm
       @inch_length.magnitude( 1 ).to_s.must_equal "1.”"
       1.inch.in( :mm ).must_be_within_epsilon 25.4
+      assert_equal SY::Unit.instance( :SECOND ), SY::Unit.instance( :second )
     end
   end
 
   describe "expected behavior" do
     it "should" do
+      assert_equal SY::Unit.instance( :SECOND ), SY::Unit.instance( :second )
+
       # Length quantity and typical units
       SY::METRE.must_be_kind_of SY::Unit
       SY::METRE.absolute?.must_equal true
@@ -289,7 +292,7 @@ describe SY::Quantity, SY::Magnitude do
       1.s⁻¹.must_equal 1.s ** -1
       q1 = ( 1.s⁻¹ ).quantity
       q1.composition.to_hash.must_equal( { SY::Time => -1 } )
-      
+
       q2 = ( 1 / 1.s ).quantity
       q2.composition.to_hash.must_equal( { SY::Time => -1 } )
       
@@ -345,16 +348,20 @@ describe SY::Quantity, SY::Magnitude do
       1e-23.J.K⁻¹.must_equal 1.0e-20.mJ.K⁻¹
       
       
+
       # pascal
       ( 1.N / 1.m ** 2 ).( SY::Pressure ).must_be_within_epsilon 1.Pa, 1e-9
       
       # watt
       ( 1.V * 1.A ).( SY::Power ).must_be_within_epsilon 1.W, 1e-9
       
+
       # pretty representation
-      ( 1.m / 3.s ).to_s.must_equal( "0.333.m.s⁻¹" )
+      assert_equal SY::Unit.instance( :SECOND ), SY::Unit.instance( :second )
+      ( 1.m / 3.s ).to_s.must_equal( "0.333.m.s⁻¹" ) # FIXME: Discovered a problem here
+      assert_equal SY::Unit.instance( :SECOND ), SY::Unit.instance( :second )
       ( 1.m / 7.01e7.s ).to_s.must_equal( "1.43e-08.m.s⁻¹" )
-      
+
       assert_equal 1.m, 1.s * 1.m.s⁻¹
       assert_equal 1.µM.s⁻¹, 1.µM / 1.s
       assert_equal 1.m.s⁻¹, 1.m.s( -1 )
@@ -365,7 +372,7 @@ describe SY::Quantity, SY::Magnitude do
       assert_equal SY::Amount( 1 ), 1.µM / ( 1.µM + 0.µM )
       assert_equal 1.µM, 1.µM * 1.µM / ( 1.µM + 0.µM )
       assert_in_epsilon 1.µM, 1.µmol / 1.dm( 3 ).( SY::LitreVolume )
-      
+
       assert_equal SY::Molarity.relative, 1.mol.l⁻¹.quantity
       
       assert_equal 1 / SY::Time, 1 / SY::Time
