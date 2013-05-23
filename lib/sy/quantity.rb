@@ -239,7 +239,7 @@ class SY::Quantity
   def magnitude amount
     puts "Constructing #{self}#magnitude with amount #{amount}." if SY::DEBUG
     Magnitude().new( of: self, amount: amount )
-      .tap { puts "#{self}#magnitude constructed!" }
+      .tap { puts "#{self}#magnitude constructed!" if SY::DEBUG }
   end
 
   # Constructs a new unit of this quantity.
@@ -414,7 +414,7 @@ class SY::Quantity
                     
                     singleton_class.class_exec do
                       define_method :standard do |**nn|      # Customized #standard.
-                        puts "parametrized #{qnt}@Unit#standard called"
+                        puts "parametrized #{qnt}@Unit#standard called" if SY::DEBUG
                         @standard ||= new **nn.update( of: qnt )
                       end
                       

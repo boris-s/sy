@@ -24,17 +24,17 @@ module SY::Unit
     puts "SY::Unit module #instance method activated" if SY::DEBUG
     begin
       super # let's first try the original method
-        .tap { puts "original #instance method provided by NameMagic succeeded" }
+        .tap { puts "original #instance method provided by NameMagic succeeded" if SY::DEBUG }
     rescue NameError               # if we fail...
-      puts "original #instance method provided by NameMagic returned NameError"
+      puts "original #instance method provided by NameMagic returned NameError" if SY::DEBUG
       begin # second in order, let's try whether it's an abbreviation
-        puts "trying whether the argument is an abbreviation"
+        puts "trying whether the argument is an abbreviation" if SY::DEBUG
         rslt = instances.find { |unit_inst|
           if unit_inst.abbreviation then
             if unit_inst.abbreviation.to_s == arg.to_s then
               puts "For supplied argument #{arg} (#{arg.class}), it seems that " +
                 "unit #{unit_inst} of quantity #{unit_inst.quantity} has abbreviation " +
-                "#{unit_inst.abbreviation} matching it."
+                "#{unit_inst.abbreviation} matching it." if SY::DEBUG
               true
             else
               false
@@ -45,7 +45,7 @@ module SY::Unit
         fail NameError if rslt.nil? # if nothing found, super need not be called
         super rslt
       rescue NameError, TypeError
-        puts "failed, we'll now try to upcase the argument in case of all-downcase argument"
+        puts "failed, we'll now try to upcase the argument in case of all-downcase argument" if SY::DEBUG
         begin # finally, let's try upcase if we have all-downcase arg
           super arg.to_s.upcase
         rescue NameError # if not, tough luck
