@@ -357,9 +357,7 @@ describe SY::Quantity, SY::Magnitude do
       
 
       # pretty representation
-      assert_equal SY::Unit.instance( :SECOND ), SY::Unit.instance( :second )
       ( 1.m / 3.s ).to_s.must_equal( "0.333.m.s⁻¹" ) # FIXME: Discovered a problem here, uncomment the line below
-      # assert_equal SY::Unit.instance( :SECOND ), SY::Unit.instance( :second )
       ( 1.m / 7.01e7.s ).to_s.must_equal( "1.43e-08.m.s⁻¹" )
 
       assert_equal 1.m, 1.s * 1.m.s⁻¹
@@ -391,6 +389,7 @@ describe SY::Quantity, SY::Magnitude do
       assert_equal 1.l.( SY::Volume ), 1.xoxo.( SY::Volume )
       assert_equal SY::TRIPLE_POINT_OF_WATER, 0.°C.( SY::Temperature )
       assert_equal 273.15, 0.°C.in( :K )
+      assert_equal SY::Unit.instance( :SECOND ), SY::Unit.instance( :second )
       # assert_equal SY::TRIPLE_POINT_OF_WATER, 0.°C # so far unfinished coercion behavior
     end
   end
