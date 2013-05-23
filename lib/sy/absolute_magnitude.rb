@@ -17,20 +17,27 @@ module SY::AbsoluteMagnitude
   # and :amount named argument, where amount must be nonnegative.
   # 
   def initialize( of: nil, amount: nil )
+    puts "Constructing AbsoluteMagnitude of #{of}, amount: #{amount}" if SY::DEBUG
     fail ArgumentError, "Quantity (:of) argument missing!" if of.nil?
     @quantity = of
     @amount = case amount
-              when Numeric then amount
-              when nil then 1
+              when Numeric then
+                puts "This amount is a Numeric, using it directly" if SY::DEBUG
+                amount
+              when nil then
+                puts "This amount is 'nil', using 1 instead" if SY::DEBUG
+                1
               else
                 begin
+                  puts "Amount #{amount} will be reframed to #{@quantity}" if SY::DEBUG
                   amount.( @quantity ).amount
                 rescue NameError, NoMethodError
+                  puts "fail, amount #{amount} will be used directly" if SY::DEBUG
                   amount
                 end
               end
-    fail SY::MagnitudeError, "Unsigned magnitudes may not have negative " +
-      "amount!" if @amount < 0
+    fail SY::MagnitudeError, "Attempt to construct an unsigned magnitude " +
+      "(SY::AbsoluteMagnitude) with a negative amount." if @amount < 0
   end
 
   # For absolute magnitudes, #+ method always returns a result framed in

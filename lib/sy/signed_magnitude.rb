@@ -6,15 +6,22 @@ module SY::SignedMagnitude
   # :amount argument. Amount is allowed to be negative.
   # 
   def initialize( of: nil, amount: nil )
+    puts "Constructing AbsoluteMagnitude of #{of}, amount: #{amount}" if SY::DEBUG
     fail ArgumentError, "Quantity (:of) argument missing!" if of.nil?
     @quantity = of
     @amount = case amount
-              when Numeric then amount
-              when nil then 1
+              when Numeric then
+                puts "This amount is a Numeric, using it directly" if SY::DEBUG
+                amount
+              when nil then
+                puts "This amount is 'nil', using 1 instead" if SY::DEBUG
+                1
               else
                 begin
+                  puts "Amount #{amount} will be reframed to #{@quantity}" if SY::DEBUG
                   amount.( @quantity ).amount
                 rescue NameError, NoMethodError
+                  puts "fail, amount #{amount} will be used directly" if SY::DEBUG
                   amount
                 end
               end

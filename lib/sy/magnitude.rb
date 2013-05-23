@@ -251,7 +251,8 @@ module SY::Magnitude
 
   # 
   def to_s( unit=quantity.units.first || quantity.standard_unit,
-            number_format=default_amount_format )
+            number_format=default_amount_format ) # FIXME: TUTO JE TO KUREVSTVO TU SA TA JEDNOTKA KONSTRUUJE
+    puts "#to_s called on a magnitude of quantity #{quantity}" if SY::DEBUG
     # step 1: produce pairs [number, unit_presentation],
     #         where unit_presentation is an array of triples
     #         [prefix, unit, exponent], which together give the
@@ -419,6 +420,7 @@ module SY::Magnitude
   # Inspect string of the magnitude
   # 
   def inspect
+    puts "inspect called on a magnitude of quantity #{quantity}" if SY::DEBUG
     "#<#{çς}: #{self} >"
   end
 

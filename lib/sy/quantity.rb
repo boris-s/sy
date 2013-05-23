@@ -237,7 +237,9 @@ class SY::Quantity
   # Constructs a new absolute magnitude of this quantity.
   # 
   def magnitude amount
-    Magnitude().new of: self, amount: amount
+    puts "Constructing #{self}#magnitude with amount #{amount}." if SY::DEBUG
+    Magnitude().new( of: self, amount: amount )
+      .tap { puts "#{self}#magnitude constructed!" }
   end
 
   # Constructs a new unit of this quantity.
@@ -364,8 +366,9 @@ class SY::Quantity
   # Main parametrized (ie. quantity-specific) module for magnitudes.
   # 
   def MagnitudeModule
+    puts "#{self}#MagnitudeModule called" if SY::DEBUG
     @MagnitudeModule ||= if absolute? then
-                           Module.new { include ::SY::Magnitude }
+                           Module.new { include SY::Magnitude }
                          else
                            absolute.MagnitudeModule
                          end
@@ -374,8 +377,10 @@ class SY::Quantity
   # Parametrized magnitude class.
   # 
   def Magnitude
+    puts "#{self}#Magnitude called" if SY::DEBUG
     @Magnitude or
-      ( mmod = MagnitudeModule()
+      ( puts "Constructing #{self}@Magnitude parametrized class" if SY::DEBUG
+        mmod = MagnitudeModule()
         mixin = relative? ? SY::SignedMagnitude : SY::AbsoluteMagnitude
         qnt_ɴ_λ = -> { name ? "#{name}@%s" : "#<Quantity:#{object_id}@%s>" }
 
@@ -398,24 +403,27 @@ class SY::Quantity
   # Parametrized unit class.
   # 
   def Unit
-    @Unit ||= if relative? then absolute.Unit else
-                qnt = self
-                ɴλ = -> { name ? "#{name}@%s" : "#<Quantity:#{object_id}@%s>" }
-
-                Class.new Magnitude() do # Unit class.
-                  include SY::Unit
-
-                  singleton_class.class_exec do
-                    define_method :standard do |**nn|      # Customized #standard.
-                      @standard ||= new **nn.update( of: qnt )
-                    end
+    puts "#{self}#Unit called" if SY::DEBUG
+    @Unit ||= ( puts "Constructing #{self}@Unit parametrized class" if SY::DEBUG
+                if relative? then absolute.Unit else
+                  qnt = self
+                  ɴλ = -> { name ? "#{name}@%s" : "#<Quantity:#{object_id}@%s>" }
                   
-                    define_method :to_s do       # Customized #to_s. (Same consideration
-                      ɴλ.call % "Unit"           # as for @Magnitude applies.)
+                  Class.new Magnitude() do # Unit class.
+                    include SY::Unit
+                    
+                    singleton_class.class_exec do
+                      define_method :standard do |**nn|      # Customized #standard.
+                        puts "parametrized #{qnt}@Unit#standard called"
+                        @standard ||= new **nn.update( of: qnt )
+                      end
+                      
+                      define_method :to_s do       # Customized #to_s. (Same consideration
+                        ɴλ.call % "Unit"           # as for @Magnitude applies.)
+                      end
                     end
                   end
-                end
-              end
+                end )
   end
 
   private
