@@ -72,7 +72,7 @@ module SY
   Nᴀ = AVOGADRO_CONSTANT = 6.02214e23
 
   # Let SY::MoleAmount be another dimensionless quantity:
-  MoleAmount = Quantity.dimensionless # TODO: coerces: Amount
+  MoleAmount = Quantity.dimensionless coerces: Amount
 
   # And let SY::MOLE be its standard unit, related to SY::Amount via Nᴀ:
   MOLE = Unit.standard of: MoleAmount, short: "mol", amount: Nᴀ.unit
@@ -133,7 +133,7 @@ module SY
   # Celsius temperature is a little bit peculiar in that it has offset of
   # 273.15.K with respect to Kelvin temperature, and I am not sure whether
   # at this moment SY is handling this right. But nevertheless:
-  CelsiusTemperature = Quantity.of :Θ # coerces_to: Temperature
+  CelsiusTemperature = Quantity.of :Θ, coerces_to: Temperature
 
   CELSIUS_MEASURE = SY::Measure.simple_offset( TRIPLE_POINT_OF_WATER.in( :K ) )
 
@@ -188,7 +188,7 @@ module SY
   Volume = Length ** 3
 
   # SY::LitreVolume is another quantity of the same dimension as SY::Volume:
-  LitreVolume = Quantity.of Volume.dimension # TODO: coerces_to: Volume
+  LitreVolume = Quantity.of Volume.dimension, coerces_to: Volume
 
   # SY::LITRE is the standard unit of SY::LitreVolume:
   LITRE = Unit.standard of: LitreVolume, short: "l", amount: 1.dm³
@@ -267,8 +267,10 @@ module SY
   # make SY::VOLT its standard unit:
   VOLT = Unit.standard of: ElectricPotential, short: "V"
 
-  # FIXME: This should raise a friendly error:
+  # TODO: This should raise a friendly error:
   # MOLAR = Unit.standard of: Molarity, short: "M", amount: 1.mol.l⁻¹
+  # (normal way of definition is MOLAR = Unit.standard of: Molarity, short: "M"
+  # and it has already been defined to boot)
 
   # SY::Molality...
   Molality = MoleAmount / Mass

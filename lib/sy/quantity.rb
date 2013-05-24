@@ -56,7 +56,14 @@ class SY::Quantity
   # Standard constructor of a metrological quantity. A quantity may have
   # a name and a dimension.
   # 
-  def initialize( relative: nil, composition: nil, of: nil, measure: nil, amount: nil, **nn )
+  def initialize( relative: nil,
+                  composition: nil,
+                  of: nil,
+                  measure: nil,
+                  amount: nil,
+                  coerces: [],
+                  coerces_to: [],
+                  **nn )
     puts "Quantity init relative: #{relative}, composition: #{composition}, measure: #{measure}, #{nn}" if SY::DEBUG
     @units = [] # array of units as favored by this quantity
     @relative = relative
@@ -77,6 +84,8 @@ class SY::Quantity
         fail ArgumentError, ":amount and :measure shouldn't be both supplied" unless amount.nil?
         SY::Measure.simple_scale( measure )
       end
+    coerces( *Array( coerces ) )
+    Array( coerces_to ).each { |qnt| qnt.coerces self }
     puts "Composition of the initialized instance is #{composition}." if SY::DEBUG
   end
 
@@ -87,6 +96,24 @@ class SY::Quantity
   def simple?
     cᴍ = composition
     cᴍ.empty? || cᴍ.singular? && cᴍ.first[0] == self
+  end
+
+  # Quantities explicitly coerced by this quantity.
+  # 
+  def coerces *other_quantities
+    if other_quantities.empty? then @coerces ||= [] else
+      other_quantities.each { |qnt| coerces << qnt }
+    end
+  end
+
+  # Is the quantity supplied as the argument coerced by this quantity?
+  # 
+  def coerces? other
+    other == self || coerces.include?( other ) ||
+      colleague.coerces.include?( other.colleague ) ||
+      if simple? then false else
+        composition.coerces? other.composition
+      end
   end
 
   # Protected quantity is not allowed to be decomposed in the process of quantity
@@ -339,7 +366,7 @@ class SY::Quantity
   # Inspect string.
   # 
   def inspect
-    "#<Quantity: #{to_s} >"
+    "#<Quantity:#{to_s}>"
   end
 
   def coerce other

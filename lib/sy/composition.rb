@@ -112,6 +112,33 @@ class SY::Composition < Hash
     singular? && first[0].dimension.base?
   end
 
+  # Whether this composition coerces another compotision.
+  # 
+  def coerces? other
+    # TODO: Think about caching. One way, ie. no way back, once something
+    # coerces something else, so only false results would have to be re-checked,
+    # and that only at most once each time after coerces / coerced_by method is
+    # tampered.
+    if singular? then
+      other.singular? && self.first[0].coerces?( other.first[0] )
+    else
+      # simplify the compositions a bit
+      rslt = [].tap do |ary|
+        find { |qnt, e|
+          other.find { |qnt2, e2|
+            ( ( e > 0 && e2 > 0 || e < 0 && e2 < 0 ) && qnt.coerces?( qnt2 ) )
+              .tap { |rslt| [] << qnt << qnt2 << ( e > 0 ? -1 : 1 ) if rslt }
+          }
+        }
+      end
+      # and ask recursively
+      if rslt.empty? then return false else
+        q, q2, e = rslt
+        ( self + q.composition * e ).coerces? ( other + q2.composition * e )
+      end
+    end
+  end
+
   # Returns a new instance with same hash.
   # 
   def +@

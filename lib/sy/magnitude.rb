@@ -1,45 +1,49 @@
 # -*- coding: utf-8 -*-
-# This module stores assets pertaining to a magnitude – be it absolute magnitude
-# (physical number of unit objects), or relative magnitude (magnitude differnce).
+# This module defines common assets of a magnitude – be it absolute (number of
+# unit objects), or relative (magnitude difference).
 # 
 module SY::Magnitude
   class << self
-    # Constructs absolute magnitudes of a given quantity.
+    # Constructs an absolute magnitude of a given quantity.
     # 
-    def absolute *args
-      ꜧ = args.extract_options!
-      qnt = ꜧ[:quantity] || ꜧ[:of] || args.shift
-      return qnt.absolute.magnitude ꜧ[:amount]
+    def absolute( of: nil, amount: nil )
+      of.absolute.magnitude( amount )
     end
 
-    # Constructs relative magnitudes of a given quantity.
+    # Constructs a relative magnitude of a given quantity.
     # 
-    def difference *args
-      ꜧ = args.extract_options!
-      qnt = ꜧ[:quantity] || ꜧ[:of] || args.shift
-      return qnt.relative.magnitude ꜧ[:amount]
+    def difference( of: nil, amount: nil )
+      of.relative.magnitude( amount )
     end
 
-    # Constructs magnitudes of a given quantity.
+    # Constructs a magnitude of a given quantity.
     # 
-    def of qnt, args={}
-      return qnt.magnitude args[:amount]
+    def of( quantity, amount: nil )
+      quantity.magnitude( amount )
     end
 
-    # Returns zero magnitude of a given quantity.
+    # Zero magnitude of a given quantity.
     # 
-    def zero
-      return absolute 0
+    def zero( of: nil )
+      absolute of: of, amount: 0
     end
   end
+
+  # Magnitudes respond to unit methods.
+  # 
+  include SY::ExpressibleInUnits
 
   # Magnitudes are comparable.
   # 
   include Comparable
 
-  # Magnitudes respond to unit methods.
+  # Three-way comparison operator of magnitudes.
   # 
-  include SY::ExpressibleInUnits
+  def <=> m2
+    return amount <=> m2.amount if quantity == m2.quantity
+    return self <=> m2.( quantity ) if quantity.coerces? m2.quantity
+    apply_through_coerce :<=>, m2
+  end
 
   attr_reader :quantity, :amount
   alias in_standard_unit amount
@@ -63,13 +67,13 @@ module SY::Magnitude
   # Computes absolute value and reframes into the absolute quantity.
   # 
   def absolute
-    quantity.absolute.magnitude amount.abs
+    quantity.absolute.magnitude( amount.abs )
   end
 
   # Reframes into the relative quantity.
   # 
   def relative
-    quantity.relative.magnitude amount
+    quantity.relative.magnitude( amount )
   end
 
   # Reframes the magnitude into its relative quantity.
@@ -96,27 +100,20 @@ module SY::Magnitude
     magnitude amount.round( *args )
   end
 
-  # Compatible magnitudes compare by their amounts.
-  # 
-  def <=> m2
-    return amount <=> m2.amount if quantity == m2.quantity
-    raise SY::QuantityError, "Mismatch: #{quantity} <=> #{m2.quantity}!"
-  end
-
   # Addition.
   # 
   def + m2
     return magnitude amount + m2.amount if quantity == m2.quantity
-    # return self if m2 == SY::ZERO
-    raise SY::QuantityError, "Mismatch: #{quantity} + #{other.quantity}!"
+    return self + m2.( quantity ) if quantity.coerces? m2.quantity
+    apply_through_coerce :+, m2
   end
 
   # Subtraction.
   # 
   def - m2
     return magnitude amount - m2.amount if quantity == m2.quantity
-    # return self if m2 == SY::ZERO
-    raise SY::QuantityError, "Mismatch: #{quantity} - #{m2.quantity}!"
+    return self - m2.( quantity ) if quantity.coerces? m2.quantity
+    apply_through_coerce :-, m2
   end
 
   # Multiplication.
@@ -173,10 +170,12 @@ module SY::Magnitude
   # Type coercion for magnitudes.
   # 
   def coerce m2
-    case m2
-    when Numeric then return SY::Amount.relative.magnitude( m2 ), self
+    if m2.is_a? Numeric then
+      return SY::Amount.relative.magnitude( m2 ), self
+    elsif quantity.coerces? m2.quantity then
+      return m2.( quantity ), self
     else
-      raise TErr, "#{self} cannot be coerced into a #{m2.class}!"
+      raise TypeError, "#{self} cannot be coerced into a #{m2.class}!"
     end
   end
 
@@ -513,5 +512,23 @@ module SY::Magnitude
 
   def default_amount_formatting_precision
     3
+  end
+
+  # Applies an operator on self with otherwise incompatible second operand.
+  # 
+  def apply_through_coerce operator, operand2
+    begin
+      compat_obj_1, compat_obj_2 = operand2.coerce( self )
+    rescue SY::DimensionError
+      msg = "Mismatch: #{dimension} #{operator} #{operand2.dimension}!"
+      fail SY::DimensionError, msg
+    rescue SY::QuantityError
+      msg = "Mismatch: #{quantity} #{operator} #{operand2.quantity}!"
+      fail SY::QuantityError, msg
+    rescue NoMethodError
+      fail TypeError, "#{operand2.class} can't be coerced into #{quantity}!"
+    else
+      compat_obj_1.send( operator, compat_obj_2 )
+    end
   end
 end
