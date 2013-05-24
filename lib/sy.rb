@@ -143,6 +143,7 @@ module SY
 
   module CelsiusMagnitude
     def + m2
+      puts "CelsiusMagnitude#+ method with #{m2}"   # FIXME: This message doesn't show.
       return magnitude amount + m2.amount if
         m2.quantity == SY::Temperature ||
         m2.quantity.colleague == SY::Temperature
@@ -152,6 +153,7 @@ module SY
     end
 
     def - m2
+      puts "CelsiusMagnitude#- method with #{m2}"   # FIXME: This message doesn't show.
       return magnitude amount - m2.amount if
         m2.quantity == SY::Temperature ||
         m2.quantity.colleague == SY::Temperature
@@ -174,8 +176,13 @@ module SY
   # FIXME: Make sure that highly unusual SI prefixes may not be used
 
   class << CelsiusTemperature.send( :Magnitude )
-    prepend SY::CelsiusMagnitude
+    include SY::CelsiusMagnitude
   end
+
+  class << CelsiusTemperature.relative.send( :Magnitude )
+    include SY::CelsiusMagnitude
+  end
+
 
   # alias :°C :celsius                 # with U+00B0 DEGREE SIGN
   # alias :˚C :celsius                 # with U+02DA RING ABOVE
