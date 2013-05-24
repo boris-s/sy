@@ -29,6 +29,8 @@ module SY::SignedMagnitude
 
   # Addition.
   # 
+  # TODO: Figure out which module comes on the top in Quantity@Magnitude, whether Magnitude
+  # or SignedMagnitude, and therefore, whether it is necessary to adjust this method.
   def + m2
     return magnitude( amount + m2.amount ) if quantity == m2.quantity
     return quantity.absolute.magnitude( amount + m2.amount ) if
@@ -38,7 +40,8 @@ module SY::SignedMagnitude
   end
 
   # Subtraction.
-  # 
+  #
+  # TODO: ditto
   def - m2
     return magnitude( amount - m2.amount ) if m2.quantity == quantity.relative
     return quantity.relative.magnitude( amount - m2.amount ) if

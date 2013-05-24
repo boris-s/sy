@@ -392,6 +392,40 @@ describe SY::Quantity, SY::Magnitude do
       assert_equal 273.15, 0.°C.in( :K )
       assert_equal SY::Unit.instance( :SECOND ), SY::Unit.instance( :second )
       assert_equal SY::TRIPLE_POINT_OF_WATER, 0.°C # coercion behavior
+      assert 2.°C.eql?( 1.°C + 1.K )
+      assert ( 1.°C - 1.°C ).eql?( 0.K )
+      assert_equal :raised, begin
+                              1.°C + 1.°C
+                              :nothing_raised
+                            rescue QuantityError
+                              :raised
+                            end
+      assert_equal :raised, begin
+                              1.K + 1.°C
+                              :nothing_raised
+                            rescue QuantityError
+                              :raised
+                            end
+      assert_equal :raised, begin
+                              1.K - 1.°C
+                              :nothing_raised
+                            rescue QuantityError
+                              :raised
+                            end
+      assert 1.mm.K⁻¹.eql?( 1.mm.°C⁻¹ )
+      assert 1.mm.K.eql?( 1.mm.°C )
+      assert_equal :raised, begin
+                              1.mm / 1.°C
+                              :nothing_raised
+                            rescue QuantityError
+                              :raised
+                            end
+      assert_equal :raised, begin
+                              1.mm * 1.°C
+                              :nothing_raised
+                            rescue QuantityError
+                              :raised
+                            end
     end
   end
 end

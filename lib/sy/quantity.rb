@@ -261,7 +261,7 @@ class SY::Quantity
     Unit().standard
   end
 
-  # Constructs a new absolute magnitude of this quantity.
+  # Constructs a absolute magnitude of this quantity.
   # 
   def magnitude amount
     puts "Constructing #{self}#magnitude with amount #{amount}." if SY::DEBUG

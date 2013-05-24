@@ -141,16 +141,40 @@ module SY
   CELSIUS = Unit.standard( of: CelsiusTemperature,
                            short: '°C', measure: CELSIUS_MEASURE )
 
-  class << CelsiusTemperature
-    # FIXME: Patch CelsiusTemperature to make it work with SY::Temperature
-    # 1.°C + 1.K #=> 2.°C
-    # 1.°C - 1.°C #=> 0.K (unambiguous)
-    # 1.°C + 1.°C #=> QuantityError (ambiguous)
-    # 1.K +- 1.°C #=> QuantityError (ambiguous)
-    # 1.°C +- 1.K #=> 2.°C
-    # 1.mm.°C⁻¹ #=> 1.mm.K⁻¹ etc.
-    # 1.mm.°C #=> 1.mm.K etc.
-    # 1.mm */ 1.°C #=> QuantityError (ambiguous)
+  module CelsiusMagnitude
+    def + m2
+      return magnitude amount + m2.amount if
+        m2.quantity == SY::Temperature ||
+        m2.quantity.colleague == SY::Temperature
+      raise QuantityError, "Addition of Celsius temepratures is ambiguous!" if
+        m2.quantity == SY::CelsiusTemperature
+      super
+    end
+
+    def - m2
+      return magnitude amount - m2.amount if
+        m2.quantity == SY::Temperature ||
+        m2.quantity.colleague == SY::Temperature
+      return super.( SY::Temperature ) if m2.quantity == SY::CelsiusTemperature
+      super
+    end
+
+    # FIXME: #% method etc
+  end
+
+  # Making sure that for Celsius temperature, #°C returns absolute magnitude.
+  # 
+  class Numeric
+    def °C
+      SY::CelsiusTemperature.absolute.magnitude self
+    end
+  end
+  # FIXME: Make this more systematic.
+  # FIXME: Make sure that SI prefixes may not be used with Celsius
+  # FIXME: Make sure that highly unusual SI prefixes may not be used
+
+  class << CelsiusTemperature.send( :Magnitude )
+    prepend SY::CelsiusMagnitude
   end
 
   # alias :°C :celsius                 # with U+00B0 DEGREE SIGN

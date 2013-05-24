@@ -43,6 +43,8 @@ module SY::AbsoluteMagnitude
   # For absolute magnitudes, #+ method always returns a result framed in
   # corresponding relative quantity.
   # 
+  # TODO: Figure out which module comes on the top in Quantity@Magnitude, whether Magnitude
+  # or SignedMagnitude, and therefore, whether it is necessary to adjust this method.
   def + m2
     return magnitude amount + m2.amount if m2.quantity == quantity.relative
     return quantity.relative.magnitude( amount + m2.amount ) if
@@ -67,6 +69,8 @@ module SY::AbsoluteMagnitude
   # For absolute magnitudes, #- method always returns a result framed in
   # corresponding relative quantity.
   # 
+  # TODO: Figure out which module comes on the top in Quantity@Magnitude, whether Magnitude
+  # or SignedMagnitude, and therefore, whether it is necessary to adjust this method.
   def - m2
     return magnitude amount - m2.amount if m2.quantity == quantity.relative
     return quantity.relative.magnitude( amount - m2.amount ) if

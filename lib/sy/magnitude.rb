@@ -157,14 +157,16 @@ module SY::Magnitude
 
   # Same magnitudes <em>and</em> same (#eql) quantities.
   # 
-  def eql other
-    raise NotImplementedError
+  def eql? other
+    quantity == other.quantity && amount == other.amount
   end
 
   # Percent operator (remainder after division)
   # 
-  def %
-    raise NotImplementedError
+  def % m2
+    return magnitude amount % m2.amount if quantity == m2.quantity
+    return self % m2.( quantity ) if quantity.coerces? m2.quantity
+    apply_through_coerce :%, m2
   end
 
   # Type coercion for magnitudes.
