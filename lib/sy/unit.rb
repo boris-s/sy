@@ -6,86 +6,65 @@
 module SY::Unit
   PROTECTED_NAMES = [ "kilogram" ]
 
-  def self.pre_included target
-    class << target
-      # Overriding this method from NameMagic mixin ensures, that all Unit
-      # subclasses use common namespace (Unit), rather than each their own.
-      # 
-      def namespace
-        SY::Unit
+  class << self
+    # Make Unit#instance ignore capitalization and accept abbreviations.
+    # 
+    def instance arg
+      puts "SY::Unit module #instance method activated" if SY::DEBUG
+      begin # let's first try the original method
+        super.tap { puts "Original NameMagic#instance succeeded." if SY::DEBUG }
+      rescue NameError # if we fail...
+        puts "Original NameMagic#instance failed with NameError." if SY::DEBUG
+        begin # ... let's try whether it's an abbreviation
+          puts "Trying whether the argument is an abbreviation." if SY::DEBUG
+          rslt = instances.find { |u| u.short.to_s == arg.to_s if u.short }
+          fail NameError if rslt.nil? # if nothing found, super need not be called
+          super rslt
+        rescue NameError, TypeError
+          puts "Trying to upcase the argument." if SY::DEBUG
+          begin # Let's to try upcase if we have all-downcase arg
+            super arg.to_s.upcase
+          rescue NameError # if not, tough luck
+            raise NameError, "Unknown unit symbol: #{arg}"
+          end
+        end
       end
     end
-  end # def self.pre_included
 
-  # Tweaking instance accessor from NameMagic to make it accept unit
-  # abbreviations and unit names regardless of capitalization
-  # 
-  def self.instance arg
-    puts "SY::Unit module #instance method activated" if SY::DEBUG
-    begin
-      super # let's first try the original method
-        .tap { puts "original #instance method provided by NameMagic succeeded" if SY::DEBUG }
-    rescue NameError               # if we fail...
-      puts "original #instance method provided by NameMagic returned NameError" if SY::DEBUG
-      begin # second in order, let's try whether it's an abbreviation
-        puts "trying whether the argument is an abbreviation" if SY::DEBUG
-        rslt = instances.find { |unit_inst|
-          if unit_inst.abbreviation then
-            if unit_inst.abbreviation.to_s == arg.to_s then
-              puts "For supplied argument #{arg} (#{arg.class}), it seems that " +
-                "unit #{unit_inst} of quantity #{unit_inst.quantity} has abbreviation " +
-                "#{unit_inst.abbreviation} matching it." if SY::DEBUG
-              true
-            else
-              false
+    def included target
+      target.class_exec do
+        # Let's set up the naming hook for NameMagic:
+        name_set_closure do |name, new_instance, old_name|
+          puts "Name set closure activated." if SY::DEBUG
+          ɴ = name.to_s
+          up, down = ɴ.upcase, ɴ.downcase
+          # Check case (only all-upper or all-lower is acceptable).
+          unless ɴ == up || ɴ = down
+            raise NameError, "Unit must be either all-upper or all-lower case!"
+          end
+          # Reject the names starting with a full prefix.
+          conflicter = SY::PREFIX_TABLE.full_prefixes
+            .find { |prefix| down.starts_with? prefix unless prefix.empty? }
+          raise NameError, "Name #{ɴ} starts with #{conflicter}- prefix" unless
+            SY::Unit::PROTECTED_NAMES.include? down if conflicter
+          # Warn about the conflicts in modules where the SY::ExpressibleInUnits
+          # mixin is included.
+          if new_instance.warns? then
+            w = ::SY::ExpressibleInUnits::COLLISION_WARNING
+            ::SY::ExpressibleInUnits.included_in.each do |ɱ|
+              im = ɱ.instance_methods
+              # puts ɱ, "class: #{ɱ.class}"
+              # puts im.size
+              # puts down
+              # puts im.include? down
+              warn w  % [down, ɱ] if im.include? down
+              abbrev = new_instance.abbreviation
+              warn w % [abbrev, ɱ] if im.include? abbrev
             end
           end
-          # inst.abbreviation.to_s == arg.to_s if inst.abbreviation
-        }
-        fail NameError if rslt.nil? # if nothing found, super need not be called
-        super rslt
-      rescue NameError, TypeError
-        puts "failed, we'll now try to upcase the argument in case of all-downcase argument" if SY::DEBUG
-        begin # finally, let's try upcase if we have all-downcase arg
-          super arg.to_s.upcase
-        rescue NameError # if not, tough luck
-          raise NameError, "Unknown unit symbol: #{which}"
+          puts "Result of name_set_closure is #{up}" if SY::DEBUG
+          up.to_sym
         end
-      end
-    end
-  end # def self.instance
-
-  def self.included target
-    target.class_exec do
-      # Let's set up the naming hook for NameMagic:
-      name_set_closure do |name, new_instance, old_name|
-        ɴ = name.to_s
-        up, down = ɴ.upcase, ɴ.downcase
-        # Check case (only all-upper or all-lower is acceptable).
-        unless ɴ == up || ɴ = down
-          raise NameError, "Unit must be either all-upper or all-lower case!"
-        end
-        # Reject the names starting with a full prefix.
-        conflicter = SY::PREFIX_TABLE.full_prefixes
-          .find { |prefix| down.starts_with? prefix unless prefix.empty? }
-        raise NameError, "Name #{ɴ} starts with #{conflicter}- prefix" unless
-          SY::Unit::PROTECTED_NAMES.include? down if conflicter
-        # Warn about the conflicts in modules where the SY::ExpressibleInUnits
-        # mixin is included.
-        if new_instance.warns? then
-          w = ::SY::ExpressibleInUnits::COLLISION_WARNING
-          ::SY::ExpressibleInUnits.included_in.each do |ɱ|
-            im = ɱ.instance_methods
-            # puts ɱ, "class: #{ɱ.class}"
-            # puts im.size
-            # puts down
-            # puts im.include? down
-            warn w  % [down, ɱ] if im.include? down
-            abbrev = new_instance.abbreviation
-            warn w % [abbrev, ɱ] if im.include? abbrev
-          end
-        end
-        up.to_sym
       end
 
       # name_get_closure { |name| name.to_s.downcase.to_sym }
@@ -108,10 +87,10 @@ module SY::Unit
           end
         end
       end
-    end # module_exec
-  end # def self.included
+    end # def included
+  end # class << self
 
-  include NameMagic
+  include NameMagic # it respects prefiously defined self.included
 
   class << self
     # Constructor of units of a given quantity.
@@ -144,7 +123,7 @@ module SY::Unit
     # Full list of known unit names and unit abbreviations.
     # 
     def known_symbols
-      instance_names + abbreviations.keys
+      instance_names.map( &:downcase ) + abbreviations.keys
     end
 
     # Parses an SPS, curring it with known unit names and abbreviations,
@@ -153,6 +132,7 @@ module SY::Unit
     def parse_sps_using_all_prefixes sps
       puts "Unit about to sps parse (#{sps})" if SY::DEBUG
       SY::PREFIX_TABLE.parse_sps( sps, known_symbols )
+        .tap { puts "parsed" if SY::DEBUG }
     end
   end # class << self
 
@@ -178,15 +158,6 @@ module SY::Unit
   def short= unit_abbreviation
     @abbreviation = unit_abbreviation.to_sym
   end
-    
-  # Unit name. While named units are typically introduced as constants in
-  # all-upper case, their names are then presented in all-lower case.
-  # 
-  def name
-    ɴ = super
-    return ɴ ? ɴ.to_s.downcase.to_sym : nil
-  end
-  alias ɴ name
 
   # Constructor of units provides support for one additional named argument:
   # :abbreviation, alias :short. (This is in addition to :name, alias :ɴ named

@@ -241,7 +241,7 @@ describe SY::Quantity, SY::Magnitude do
       1.Mt.must_equal 1000.kiloton
       1.mm.quantity.name.must_equal :Length±
       SY::Length.standard_unit.must_equal SY::METRE
-      SY::Length.standard_unit.name.must_equal :metre
+      SY::Length.standard_unit.name.must_equal :METRE
       SY::Length.standard_unit.must_equal SY::METRE
       SY.Quantity( :Length ).object_id.must_equal SY::Length.object_id
       SY::Length.relative.object_id.must_equal SY.Quantity( :Length± ).object_id
@@ -250,7 +250,7 @@ describe SY::Quantity, SY::Magnitude do
       SY.Quantity( :Length± ).colleague.object_id.must_equal SY::Length.object_id
       SY.Quantity( :Length± ).send( :Unit ).object_id
         .must_equal SY::Length.send( :Unit ).object_id
-      1.mm.quantity.standard_unit.name.must_equal :metre
+      1.mm.quantity.standard_unit.name.must_equal :METRE
       1.mm.to_s.must_equal "0.001.m"
       1.mm.inspect.must_equal "#<±Magnitude: 0.001.m >"
       1.µs.inspect.must_equal "#<±Magnitude: 1e-06.s >"
@@ -258,12 +258,12 @@ describe SY::Quantity, SY::Magnitude do
       SY::Area.dimension.must_equal SY.Dimension( :L² )
       SY::Area.composition.must_equal SY::Composition[ SY::Length => 2 ]
       
-      SY::AMPERE.name.must_equal :ampere
+      SY::AMPERE.name.must_equal :AMPERE
       SY::AMPERE.abbreviation.must_equal :A
       SY::AMPERE.dimension.must_equal 1.A.dimension
       SY.Magnitude( of: SY::ElectricCurrent, amount: 1 ).must_equal 1.A.absolute
       1.A.quantity.must_equal SY::ElectricCurrent.relative
-      1.A.quantity.standard_unit.name.must_equal :ampere
+      1.A.quantity.standard_unit.name.must_equal :AMPERE
       1.A.to_s( SY::AMPERE ).must_equal "1.A"
       1.A.to_s.must_equal "1.A"
       1.A.amount.must_equal 1
@@ -313,7 +313,7 @@ describe SY::Quantity, SY::Magnitude do
         rescue
         end
       end.must_include :M
-      SY::Unit.instance_names.must_include :mole
+      SY::Unit.instance_names.must_include :MOLE
       # Avogadro's number is defined directly in SY
       1.mol.quantity.object_id.must_equal SY::Nᴀ.unit.( SY::MoleAmount ).quantity.object_id
       SY::Nᴀ.unit.( SY::MoleAmount ).must_equal 1.mol

@@ -68,19 +68,24 @@ module SY::ExpressibleInUnits
       @included_in ||= []
     end
 
+    # Unit namespace.
+    # 
+    def unit_namespace
+      begin
+        SY::Unit
+      rescue NameError # no SY::Unit defined yet
+      end
+    end
+
     # Currently defined unit instances, if any.
     # 
     def known_units
-      unit_namespace = begin
-                         SY::Unit
-                       rescue NameError
-                         return [] # no SY::Unit yet
-                       end
       begin
         unit_namespace.instances
       rescue NoMethodError 
         [] # no #instances method defined yet
       end
+        .tap { |r| puts "Known units are #{r}" if SY::DEBUG }
     end
 
     # All methods defined by this mixin.
@@ -92,7 +97,12 @@ module SY::ExpressibleInUnits
     # Find unit based on name / abbreviation.
     # 
     def find_unit ς
-      known_units.find { |u| u.name.to_s == ς || u.short.to_s == ς }
+      puts "searching for unit #{ς}" if SY::DEBUG
+      known_units.find do |u|
+        u.name.to_s.downcase == ς.downcase &&
+          ( ς == ς.downcase || ς == ς.upcase ) ||
+          u.short.to_s == ς
+      end
     end
 
     # Return prefix method or empty string, if prefix method not necessary.
@@ -121,6 +131,7 @@ module SY::ExpressibleInUnits
         # I'D HAVE TO PERFORM THE COLLISION CHECK HERE
         # IF NO COLLISION, INFORM THE SUBSEQUENT METHOD DEFINED CALL ON
         # SELF.CLASS
+        puts "parsed" if SY::DEBUG
         self.class.instance_variable_set "@no_collision", ß # FIXME: This is too clumsy
         self.class.module_eval write_unit_method( ß, prefixes, units, exps )
         SY::ExpressibleInUnits.method_family << self.class.instance_method( ß )
@@ -155,6 +166,7 @@ module SY::ExpressibleInUnits
   # figures out which SY units it represents, along with prefixes and exponents. 
   # 
   def parse_unit_symbol ß
+    puts "About to parse #{ß} using all prefixes" if SY::DEBUG
     SY::Unit.parse_sps_using_all_prefixes( ß ) # rely on SY::Unit
   end
 
@@ -163,10 +175,12 @@ module SY::ExpressibleInUnits
   # Arrays must be of equal length. (Note: 'ß' is 'symbol', 'ς' is 'string')
   # 
   def write_unit_method ß, prefixes, units, exponents
+    puts "writing unit method #{ß}" if SY::DEBUG
     # Prepare prefix / unit / exponent triples for making factor strings:
     triples = [ prefixes, units, exponents ].transpose
     # A procedure for triple processing before use:
     process_triple = lambda do |pfx, unit_ς, exp|
+      puts "Processing triple #{pfx}, #{unit_ς}, #{exp}." if SY::DEBUG
       [ ::SY::ExpressibleInUnits.find_unit( unit_ς ).name.to_s.upcase, 
         ::SY::ExpressibleInUnits.prefix_method_string( pfx ),
         ::SY::ExpressibleInUnits.exponentiation_string( exp ) ]

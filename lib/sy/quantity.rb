@@ -436,8 +436,8 @@ class SY::Quantity
                   qnt = self
                   ɴλ = -> { name ? "#{name}@%s" : "#<Quantity:#{object_id}@%s>" }
                   
-                  Class.new Magnitude() do # Unit class.
-                    include SY::Unit
+                  Class.new Magnitude() do puts "Creating @Unit class!" if SY::DEBUG
+                    include SY::Unit; puts "Included SY::Unit" if SY::DEBUG
                     
                     singleton_class.class_exec do
                       define_method :standard do |**nn|      # Customized #standard.
@@ -449,8 +449,12 @@ class SY::Quantity
                         ɴλ.call % "Unit"           # as for @Magnitude applies.)
                       end
                     end
-                  end
-                end )
+                  end.namespace! SY::Unit
+                end ).tap do |u|
+      puts "@Unit constructed, its namespace is #{u.namespace}" if SY::DEBUG
+      puts "its instances are #{u.namespace.instances}" if SY::DEBUG
+      puts "its instance names are #{u.namespace.instance_names}" if SY::DEBUG
+    end
   end
 
   private

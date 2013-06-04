@@ -66,7 +66,9 @@ module SY
   # of the constant "UNIT" implies, via YSupport's NameMagic mixin, that the
   # name of the object becomes :unit and that it is possible to use syntax
   # such as 42.unit to create magnitudes of SY::Amount.
+  puts "About to construct UNIT." if SY::DEBUG
   UNIT = Unit.standard of: Amount
+  puts "UNIT constructed. SY::Unit instances are #{SY::Unit.instance_names}" if SY::DEBUG
 
   # AVOGADRO_CONSTANT (Nᴀ) is a certain well-known amount of things:
   Nᴀ = AVOGADRO_CONSTANT = 6.02214e23
@@ -75,7 +77,10 @@ module SY
   MoleAmount = Quantity.dimensionless coerces: Amount
 
   # And let SY::MOLE be its standard unit, related to SY::Amount via Nᴀ:
+  puts "About to construct MOLE." if SY::DEBUG
   MOLE = Unit.standard of: MoleAmount, short: "mol", amount: Nᴀ.unit
+  puts SY::Unit.__instances__ if SY::DEBUG
+  puts "MOLE constructed. SY::Unit instances are #{SY::Unit.instance_names}" if SY::DEBUG
 
   # === Basic dimension L (length)
 
