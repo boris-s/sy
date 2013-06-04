@@ -10,18 +10,14 @@ module SY::Unit
     # Make Unit#instance ignore capitalization and accept abbreviations.
     # 
     def instance arg
-      puts "SY::Unit module #instance method activated" if SY::DEBUG
-      begin # let's first try the original method
-        super.tap { puts "Original NameMagic#instance succeeded." if SY::DEBUG }
+      begin
+        super # let's first try the original method
       rescue NameError # if we fail...
-        puts "Original NameMagic#instance failed with NameError." if SY::DEBUG
-        begin # ... let's try whether it's an abbreviation
-          puts "Trying whether the argument is an abbreviation." if SY::DEBUG
-          rslt = instances.find { |u| u.short.to_s == arg.to_s if u.short }
-          fail NameError if rslt.nil? # if nothing found, super need not be called
-          super rslt
+        begin # ... let's try the abbreviation
+          super instances.find { |unit_inst|
+            unit_inst.short.to_s == arg.to_s if unit_inst.short
+          }.tap { |rslt| fail NameError if rslt.nil? } # fail if nothing found
         rescue NameError, TypeError
-          puts "Trying to upcase the argument." if SY::DEBUG
           begin # Let's to try upcase if we have all-downcase arg
             super arg.to_s.upcase
           rescue NameError # if not, tough luck
@@ -35,20 +31,21 @@ module SY::Unit
       target.class_exec do
         # Let's set up the naming hook for NameMagic:
         name_set_closure do |name, new_instance, old_name|
-          puts "Name set closure activated." if SY::DEBUG
           ɴ = name.to_s
           up, down = ɴ.upcase, ɴ.downcase
+
           # Check case (only all-upper or all-lower is acceptable).
-          unless ɴ == up || ɴ = down
-            raise NameError, "Unit must be either all-upper or all-lower case!"
-          end
+          msg = "Unit must be either all-upper or all-lower case!"
+          fail NameError, msg unless ɴ == up || ɴ = down
+
           # Reject the names starting with a full prefix.
           conflicter = SY::PREFIX_TABLE.full_prefixes
             .find { |prefix| down.starts_with? prefix unless prefix.empty? }
-          raise NameError, "Name #{ɴ} starts with #{conflicter}- prefix" unless
+          fail NameError, "Name #{ɴ} starts with #{conflicter}- prefix!" unless
             SY::Unit::PROTECTED_NAMES.include? down if conflicter
-          # Warn about the conflicts in modules where the SY::ExpressibleInUnits
-          # mixin is included.
+
+          # Warn about method name conflicts in the target module(s), where
+          # SY::ExpressibleInUnits mixin is included.
           if new_instance.warns? then
             w = ::SY::ExpressibleInUnits::COLLISION_WARNING
             ::SY::ExpressibleInUnits.included_in.each do |ɱ|
@@ -57,12 +54,11 @@ module SY::Unit
               # puts im.size
               # puts down
               # puts im.include? down
-              warn w  % [down, ɱ] if im.include? down
+              warn w % [down, ɱ] if im.include? down
               abbrev = new_instance.abbreviation
               warn w % [abbrev, ɱ] if im.include? abbrev
             end
           end
-          puts "Result of name_set_closure is #{up}" if SY::DEBUG
           up.to_sym
         end
       end
@@ -130,9 +126,7 @@ module SY::Unit
     # and all known full and short prefixes.
     # 
     def parse_sps_using_all_prefixes sps
-      puts "Unit about to sps parse (#{sps})" if SY::DEBUG
       SY::PREFIX_TABLE.parse_sps( sps, known_symbols )
-        .tap { puts "parsed" if SY::DEBUG }
     end
   end # class << self
 
