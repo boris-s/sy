@@ -449,7 +449,9 @@ class SY::Quantity
                         ɴλ.call % "Unit"           # as for @Magnitude applies.)
                       end
                     end
-                  end.namespace! SY::Unit
+                  end.tap do |unit_parametrized_subclass|
+                    unit_parametrized_subclass.namespace = SY::Unit
+                  end
                 end ).tap do |u|
       puts "@Unit constructed, its namespace is #{u.namespace}" if SY::DEBUG
       puts "its instances are #{u.namespace.instances}" if SY::DEBUG
