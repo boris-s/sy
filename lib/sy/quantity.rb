@@ -411,13 +411,14 @@ class SY::Quantity
         mixin = relative? ? SY::SignedMagnitude : SY::AbsoluteMagnitude
         qnt_ɴ_λ = -> { name ? "#{name}@%s" : "#<Quantity:#{object_id}@%s>" }
 
+        qnt = self
         @Magnitude = Class.new do
           include mmod
           include mixin
 
           singleton_class.class_exec do
             define_method :zero do       # Costructor of zero magnitudes
-              new amount: 0
+              new amount: 0, of: qnt
             end
 
             define_method :to_s do       # Customized #to_s. It must be a proc,
