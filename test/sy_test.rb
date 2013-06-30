@@ -285,7 +285,7 @@ describe SY::Quantity, SY::Magnitude do
       1.µM.quantity.absolute.name.must_equal :Molarity
       7.µM.must_be_within_epsilon 5.µM + 2.µM, 1e-6
       +1.s.must_equal 1.s
-      # -1.s.must_equal -1 * 1.s # must raise
+      -1.s.must_equal -1 * 1.s # must raisen
       assert_equal -(-(1.s)), +(1.s)
       1.s⁻¹.quantity.must_equal ( 1.s ** -1 ).quantity
       1.s⁻¹.quantity.must_equal ( 1 / 1.s ).quantity
@@ -304,9 +304,9 @@ describe SY::Quantity, SY::Magnitude do
       ( 1.s⁻¹ ).quantity.object_id.must_equal ( 1 / 1.s ).quantity.object_id
       ( 1 / 1.s ).must_equal 1.s⁻¹
       1.s⁻¹.( SY::Frequency ).must_equal 1.Hz
-      # 7.°C.must_equal( 8.°C - 1.K )
-      # (-15).°C.must_equal 258.15.K
-      # 7000.µM.must_be_within_epsilon( 7.mM, 1e-9 )
+      7.°C.must_equal( 8.°C - 1.K )
+      (-15).°C.must_equal 258.15.K
+      7000.µM.must_be_within_epsilon( 7.mM, 1e-9 )
       ::SY::Unit.instances.map do |i|
         begin
           i.abbreviation

@@ -7,7 +7,7 @@ module SY::Unit
   PROTECTED_NAMES = [ "kilogram" ]
 
   class << self
-    # Make Unit#instance ignore capitalization and accept abbreviations.
+    # Make Unit#instance ignore capitalization, accept abbreviations.
     # 
     def instance arg
       begin
@@ -28,58 +28,49 @@ module SY::Unit
     end
 
     def included target
-      target.class_exec do
-        # Let's set up the naming hook for NameMagic:
-        name_set_closure do |name, new_instance, old_name|
-          ɴ = name.to_s
-          up, down = ɴ.upcase, ɴ.downcase
+      target.namespace = self
 
-          # Check case (only all-upper or all-lower is acceptable).
-          msg = "Unit must be either all-upper or all-lower case!"
-          fail NameError, msg unless ɴ == up || ɴ = down
-
-          # Reject the names starting with a full prefix.
-          conflicter = SY::PREFIX_TABLE.full_prefixes
-            .find { |prefix| down.starts_with? prefix unless prefix.empty? }
-          fail NameError, "Name #{ɴ} starts with #{conflicter}- prefix!" unless
-            SY::Unit::PROTECTED_NAMES.include? down if conflicter
-
-          # Warn about method name conflicts in the target module(s), where
-          # SY::ExpressibleInUnits mixin is included.
-          if new_instance.warns? then
-            w = ::SY::ExpressibleInUnits::COLLISION_WARNING
-            ::SY::ExpressibleInUnits.included_in.each do |ɱ|
-              im = ɱ.instance_methods
-              # puts ɱ, "class: #{ɱ.class}"
-              # puts im.size
-              # puts down
-              # puts im.include? down
-              warn w % [down, ɱ] if im.include? down
-              abbrev = new_instance.abbreviation
-              warn w % [abbrev, ɱ] if im.include? abbrev
-            end
-          end
-          up.to_sym
+      name_set_closure do |name, new_instance, old_name|
+        ɴ = name.to_s
+        up, down = ɴ.upcase, ɴ.downcase
+        msg = "Unit must be either all-upper or all-lower case (#{ɴ} given)!"
+        fail NameError, msg unless ɴ == up || ɴ = down
+        # Reject the names starting with a full prefix.
+        pref = SY::PREFIX_TABLE.full_prefixes.find do |pref|
+          down.starts_with? pref unless pref.empty?
         end
+        fail NameError, "Name #{ɴ} starts with #{pref}- prefix!" unless
+          SY::Unit::PROTECTED_NAMES.include? down if pref
+        # Warn about the method name conflicts in the #include target module
+        if new_instance.warns? then
+          w = SY::ExpressibleInUnits::COLLISION_WARNING
+          SY::ExpressibleInUnits.included_in.each do |modul|
+            im = modul.instance_methods
+            # puts ɱ, "class: #{ɱ.class}"
+            # puts im.size
+            # puts down
+            # puts im.include? down
+            warn w % [down, modul] if im.include? down
+            abbrev = new_instance.abbreviation
+            warn w % [abbrev, modul] if im.include? abbrev
+          end
+        end
+        up.to_sym.tap { |sym| puts "name_set_closure #{sym}" if SY::DEBUG }
       end
 
-      # name_get_closure { |name| name.to_s.downcase.to_sym }
-
-      # Using eval, we'll now define all the prefix methods on the target, such
-      # as #mili, #micro, #kilo, #mega, etc. These are defined only for units, to which
-      # they represent multiplication by the factor of the prefix (side effect
-      # of such multiplication is conversion to a normal magnitude). However,
-      # the Unit class offers the opportunity for these prefix methods to cause
-      # <em>reframing</em> into a quantity specified by #quantity_by_prefix
-      # instance method. (This instance method normally returns the unit's own
-      # quantity unchanged, but can and should be overriden for those unit,
-      # which have area-specific prefix use.)
+      # We'll now define all the prefix methods on the target (#mili, #mega...),
+      # representing multiplication by the aprropriate factor (side effect being
+      # returning a non-unit magnitude). However, Unit offers the opportunity to
+      # _reframe_ into another quantity, specified by #quantity_by_prefix method.
+      # (This method normally returns the unit's own quantity, but can and should
+      # be overriden for prefixes indicating special domain (eg. +cm+)...
       # 
-      SY::PREFIX_TABLE.full_prefixes.each do |prefix|
-        unless prefix.empty?
-          define_method prefix do
-            SY::Quantity.instance( quantity_by_prefix( prefix ) )
-              .magnitude( self * SY::PREFIX_TABLE.to_factor( prefix ) )
+      SY::PREFIX_TABLE.full_prefixes.each do |pref|
+        unless pref.empty?
+          define_method pref do
+            SY::Quantity
+              .instance( quantity_by_prefix( pref ) )
+              .magnitude( self * SY::PREFIX_TABLE.to_factor( pref ) )
           end
         end
       end

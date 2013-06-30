@@ -354,6 +354,8 @@ module SY::Magnitude
 
     # number, unit_presentation = choice
 
+    # return "#{amount} of #{quantity}"
+
     begin
       
       un = unit.short || unit.name
