@@ -475,11 +475,11 @@ class SY::Quantity
     # enough of preliminaries
     if not rel then
       inst = ɴ ? constr_ɴ.( "#{ɴ}#{ʀsuffix}", true ) : constr_anon.( true )
-      inst.aT { relative? }
+      inst.aT &:relative?
     elsif ɴ.to_s.ends_with?( ʀsuffix ) && ɴ.size > ʀsuffix.size
       inst = constr_ɴ.( ɴ.to_s[0..ɴ.size-ʀsuffix.size-1], false )
-      inst.aT { absolute? }
-    else inst = constr_anon.( false ).aT { absolute? } end
+      inst.aT &:absolute?
+    else inst = constr_anon.( false ).aT &:absolute? end
     inst.instance_variable_set :@colleague, self
     return inst
   end
