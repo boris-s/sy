@@ -421,6 +421,10 @@ class SY::Quantity
               new amount: 0, of: qnt
             end
 
+            define_method :one do        # Constructor of unitary magnitudes
+              new amount: 1, of: qnt
+            end
+
             define_method :to_s do       # Customized #to_s. It must be a proc,
               qnt_ɴ_λ.call % "Magnitude" # since the quantity owning @Magnitude
             end                          # might not be named yet as of now.

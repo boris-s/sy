@@ -1,4 +1,5 @@
-# -*- coding: utf-8 -*-
+# encoding: utf-8
+
 # This module defines common assets of a magnitude – be it absolute (number of
 # unit objects), or relative (magnitude difference).
 # 
@@ -26,6 +27,12 @@ module SY::Magnitude
     # 
     def zero( of: nil )
       absolute of: of, amount: 0
+    end
+
+    # Magnitude 1 of a given quantity.
+    # 
+    def one( of: nil )
+      absolute of: of, amount: 1
     end
   end
 
