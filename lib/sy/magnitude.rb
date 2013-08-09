@@ -146,6 +146,8 @@ module SY::Magnitude
       magnitude amount / m2
     # when SY::ZERO then
     #   raise ZeroDivisionError, "Attempt to divide #{self} by #{SY::ZERO}."
+    when Matrix then
+      amount / m2 * quantity.magnitude( 1 )
     else
       ( quantity / m2.quantity ).magnitude( amount / m2.amount )
     end
@@ -183,6 +185,8 @@ module SY::Magnitude
   def coerce m2
     if m2.is_a? Numeric then
       return SY::Amount.relative.magnitude( m2 ), self
+    elsif m2.is_a? Matrix then
+      return m2 * SY::UNIT, self
     elsif quantity.coerces? m2.quantity then
       return m2.( quantity ), self
     else

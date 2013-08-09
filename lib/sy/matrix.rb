@@ -49,17 +49,35 @@ class Matrix
     when SY::Magnitude # newly added - multiplication by a magnitude
       # I am not happy with this explicit switch on SY::Magnitude type here.
       # Perhaps coerce should handle this?
-      rows = Array.new row_size do |i|
-        Array.new column_size do |j|
-          self[i, j] * arg
-        end
-      end
-      return self.class[ *rows ]
+      return map { |e| e * arg }
     else
       compat_1, compat_2 = arg.coerce self
       return compat_1 * compat_2
     end
   end
+
+  #
+  # Matrix division (multiplication by the inverse).
+  #   Matrix[[7,6], [3,9]] / Matrix[[2,9], [3,1]]
+  #     => -7  1
+  #        -3 -6
+  #
+  def /(other)
+    case other
+    when Numeric
+      rows = @rows.collect {|row|
+        row.collect {|e| e / other }
+      }
+      return new_matrix rows, column_count
+    when Matrix
+      return self * other.inverse
+    when SY::Magnitude # newly added - multiplication by a magnitude
+      return self * ( 1 / other )
+    else
+      return apply_through_coercion(other, __method__)
+    end
+  end
+
 
   # Creates a matrix of prescribed dimensions filled with wildcard zeros.
   # 
