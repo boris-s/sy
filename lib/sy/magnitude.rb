@@ -131,6 +131,8 @@ module SY::Magnitude
       magnitude amount * m2
     # when SY::ZERO then
     #   return magnitude 0
+    when Matrix then
+      m2.map { |e| self * e }
     else
       ( quantity * m2.quantity ).magnitude( amount * m2.amount )
     end

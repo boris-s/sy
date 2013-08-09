@@ -22,6 +22,7 @@ require_relative 'sy/magnitude'
 require_relative 'sy/absolute_magnitude'
 require_relative 'sy/signed_magnitude'
 require_relative 'sy/unit'
+require_relative 'sy/matrix'
 
 # The most prominent feature of SY is, that it extends the Numeric class
 # with methods corresponding to units and their abbreviations.

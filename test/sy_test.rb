@@ -1,5 +1,5 @@
 #! /usr/bin/ruby
-# -*- coding: utf-8 -*-
+# encoding: utf-8
 
 # **************************************************************************
 # THIS IS SPEC-STYLE TEST FILE FOR SY PHYSICAL UNITS LIBRARY
@@ -7,7 +7,6 @@
 
 # The following will load Ruby spec-style library
 require 'mathn'
-require 'minitest/spec'
 require 'minitest/autorun'
 
 # The following will load SY library
@@ -386,6 +385,8 @@ describe SY::Quantity, SY::Magnitude do
       assert_equal Matrix[[2.m, 3.m], [4.m, 5.m]],
       Matrix[[1.m, 2.m], [3.m, 4.m]] + Matrix[[1.m, 1.m], [1.m, 1.m]]
       assert_equal Matrix[[5.µM]], Matrix[[1.µM]] + Matrix[[2.µM.s⁻¹]] * Matrix[[2.s]]
+      assert_equal Matrix[[1.s]], Matrix[[1]] * 1.s
+      assert_equal Matrix[[1.s]], 1.s * Matrix[[1]]
       XOXO = SY::Unit.of SY::Volume, amount: 1.l
       assert_equal 1.l.( SY::Volume ), 1.xoxo.( SY::Volume )
       assert_equal SY::TRIPLE_POINT_OF_WATER, 0.°C.( SY::Temperature )
