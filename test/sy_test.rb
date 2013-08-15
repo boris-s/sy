@@ -48,7 +48,7 @@ describe SY::Dimension do
     assert_equal [0, 1], [:L, :M].map { |ß| SY.Dimension( :M ).send ß }
     assert_equal [1, 0], [:L, :M].map { |ß| SY.Dimension( :L )[ß] }
 
-    # #to_a, #to_hash, #zero?, 
+    # #to_a, #to_hash, #zero?
     ll = SY::BASE_DIMENSIONS.letters
     SY.Dimension( :M ).to_a.must_equal ll.map { |l| l == :M ? 1 : 0 }
     SY.Dimension( :M ).to_hash.must_equal Hash[ ll.zip SY.Dimension( :M ).to_a ]
@@ -346,18 +346,15 @@ describe SY::Quantity, SY::Magnitude do
       # joule
       ( 1.N * 1.m ).( SY::Energy ).must_equal 1.J
       1e-23.J.K⁻¹.must_equal 1.0e-20.mJ.K⁻¹
-      
-      
 
       # pascal
       ( 1.N / 1.m ** 2 ).( SY::Pressure ).must_be_within_epsilon 1.Pa, 1e-9
       
       # watt
       ( 1.V * 1.A ).( SY::Power ).must_be_within_epsilon 1.W, 1e-9
-      
 
       # pretty representation
-      ( 1.m / 3.s ).to_s.must_equal( "0.333.m.s⁻¹" ) # FIXME: Discovered a problem here, uncomment the line below
+      ( 1.m / 3.s ).to_s.must_equal( "0.333.m.s⁻¹" )
       ( 1.m / 7.01e7.s ).to_s.must_equal( "1.43e-08.m.s⁻¹" )
 
       assert_equal 1.m, 1.s * 1.m.s⁻¹
@@ -372,6 +369,7 @@ describe SY::Quantity, SY::Magnitude do
       assert_in_epsilon 1.µM, 1.µmol / 1.dm( 3 ).( SY::LitreVolume )
 
       assert_equal SY::Molarity.relative, 1.mol.l⁻¹.quantity
+      assert_equal SY::MoleAmount.relative, 1.M.l.quantity
       
       assert_equal 1 / SY::Time, 1 / SY::Time
       assert_equal 1 / SY::Time.relative, 1 / SY::Time

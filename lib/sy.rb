@@ -69,7 +69,8 @@ module SY
   # such as 42.unit to create magnitudes of SY::Amount.
   puts "About to construct UNIT." if SY::DEBUG
   UNIT = Unit.standard of: Amount
-  puts "UNIT constructed. SY::Unit instances are #{SY::Unit.instance_names}" if SY::DEBUG
+  puts "UNIT constructed. SY::Unit instances are " +
+    "#{SY::Unit.instance_names}" if SY::DEBUG
 
   # AVOGADRO_CONSTANT (Nᴀ) is a certain well-known amount of things:
   Nᴀ = AVOGADRO_CONSTANT = 6.02214e23
@@ -81,7 +82,8 @@ module SY
   puts "About to construct MOLE." if SY::DEBUG
   MOLE = Unit.standard of: MoleAmount, short: "mol", amount: Nᴀ.unit
   puts SY::Unit.__instances__ if SY::DEBUG
-  puts "MOLE constructed. SY::Unit instances are #{SY::Unit.instance_names}" if SY::DEBUG
+  puts "MOLE constructed. SY::Unit instances are" +
+    "#{SY::Unit.instance_names}" if SY::DEBUG
 
   # === Basic dimension L (length)
 
@@ -152,7 +154,7 @@ module SY
       puts "CelsiusMagnitude#+ method with #{m2}"   # FIXME: This message doesn't show.
       return magnitude amount + m2.amount if
         m2.quantity == SY::Temperature ||
-        m2.quantity.colleague == SY::Temperature
+          m2.quantity.colleague == SY::Temperature
       raise QuantityError, "Addition of Celsius temepratures is ambiguous!" if
         m2.quantity == SY::CelsiusTemperature
       super
@@ -162,7 +164,7 @@ module SY
       puts "CelsiusMagnitude#- method with #{m2}"   # FIXME: This message doesn't show.
       return magnitude amount - m2.amount if
         m2.quantity == SY::Temperature ||
-        m2.quantity.colleague == SY::Temperature
+          m2.quantity.colleague == SY::Temperature
       return super.( SY::Temperature ) if m2.quantity == SY::CelsiusTemperature
       super
     end
@@ -177,6 +179,7 @@ module SY
       SY::CelsiusTemperature.absolute.magnitude self
     end
   end
+
   # FIXME: Make this more systematic.
   # FIXME: Make sure that SI prefixes may not be used with Celsius
   # FIXME: Make sure that highly unusual SI prefixes may not be used
@@ -188,7 +191,6 @@ module SY
   class << CelsiusTemperature.relative.send( :Magnitude )
     include SY::CelsiusMagnitude
   end
-
 
   # alias :°C :celsius                 # with U+00B0 DEGREE SIGN
   # alias :˚C :celsius                 # with U+02DA RING ABOVE

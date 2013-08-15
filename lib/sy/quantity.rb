@@ -87,6 +87,8 @@ class SY::Quantity
     coerces( *Array( coerces ) )
     Array( coerces_to ).each { |qnt| qnt.coerces self }
     puts "Composition of the initialized instance is #{composition}." if SY::DEBUG
+    puts "Initialized instance is #{relative? ? :relative : :absolute}" if SY::DEBUG
+    puts "Initialized instance object_id is #{object_id}" if SY::DEBUG
   end
 
   # Simple quantity is one with simple composition. If nontrivial composition
@@ -264,6 +266,8 @@ class SY::Quantity
   # Constructs a absolute magnitude of this quantity.
   # 
   def magnitude amount
+    puts "self.object_id is #{object_id}" if SY::DEBUG
+    puts "composition is #{composition}" if SY::DEBUG
     puts "Constructing #{self}#magnitude with amount #{amount}." if SY::DEBUG
     Magnitude().new( of: self, amount: amount )
       .tap { puts "#{self}#magnitude constructed!" if SY::DEBUG }

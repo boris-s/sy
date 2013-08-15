@@ -1,4 +1,5 @@
-# -*- coding: utf-8 -*-
+# encoding: utf-8
+
 # Composition of quantities.
 # 
 class SY::Composition < Hash
@@ -7,11 +8,13 @@ class SY::Composition < Hash
   SR = SIMPLIFICATION_RULES = []
 
   # SY::Amount and SY::Amount.relative are disposable:
+  # 
   SR << -> ꜧ {
     ꜧ.reject! { |qnt, _| qnt == SY::Amount || qnt == SY::Amount.relative }
   }
 
   # Relative quantities of the composition are absolutized:
+  # 
   SR << -> ꜧ {
     ꜧ.select { |qnt, _| qnt.relative? }.each { |qnt, exp|
       ꜧ.delete qnt
@@ -20,12 +23,13 @@ class SY::Composition < Hash
   }
 
   # Any quantities with exponent zero can be deleted:
+  # 
   SR << -> ꜧ {
     ꜧ.reject! { |_, exp| exp == 0 }
   }
 
-  # TODO: This undocumented simplification rule simplifies MoleAmount and
-  # LitreVolume into Molarity.
+  # FIXME: This quick fix simplification rule simplifies MoleAmount and
+  # LitreVolume into Molarity. This solution is insufficiently systematic.
   # 
   SR << -> ꜧ {
     begin
@@ -55,6 +59,25 @@ class SY::Composition < Hash
     ꜧ.update q1 => e1 if e1 && e1 != 0
     ꜧ.update q2 => e2 if e2 && e2 != 0
     return ꜧ
+  }
+
+  # FIXME: This quick fix simplification rule simplifies LitreVolume times
+  # Molarity into MoleAmount. This solution is insufficiently systematic.
+  # 
+  SR << -> ꜧ {
+    begin
+      q1, q2, q3 = SY::MoleAmount, SY::LitreVolume, SY::Molarity
+    rescue NameError; return ꜧ end
+    e2 = ꜧ.delete q2
+    e3 = ꜧ.delete q3
+    if e2 && e3 && e2 > 0 && e3 > 0 then
+      e2 -= 1
+      e3 -= 1
+      e1 = ꜧ.delete q1
+      ꜧ.update q1 => ( e1 ? e1 + 1 : 1 )
+    end
+    ꜧ.update q2 => e2 if e2 && e2 != 0
+    ꜧ.update q3 => e3 if e3 && e3 != 0
   }
 
   class << self
