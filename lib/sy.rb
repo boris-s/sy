@@ -124,6 +124,14 @@ module SY
   MINUTE = Unit.of Time, short: "min", amount: 60 * SECOND
   # And SY::HOUR another:
   HOUR = Unit.of Time, short: "h", amount: 60 * MINUTE
+  # SY::DAY is defined in accordance with SI as 86_400.second
+  DAY = Unit.of Time, amount: 24 * HOUR
+  # SY::WEEK means exactly seven days
+  WEEK = Unit.of Time, amount: 7 * DAY
+  # Average lunar month.
+  SYNODIC_MONTH = 29.530589 * DAY
+  # Julian year.
+  YEAR = JULIAN_YEAR = 365.25 * DAY
 
   # === Basic dimension Q
 
@@ -273,6 +281,9 @@ module SY
 
   # Common constant
   SPEED_OF_LIGHT = 299_792_458 * METRE / SECOND
+
+  # Supplementary unit of length.
+  LIGHTYEAR = Unit.of Length, short: "ly", amount: 9_460_730_472_580_800 * METRE
 
   # Similar for SY::Acceleration:
   Acceleration = ( Speed / Time ).standard!
