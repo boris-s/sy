@@ -271,6 +271,9 @@ module SY
   # of its dimension.
   Speed = ( Length / Time ).standard!
 
+  # Common constant
+  SPEED_OF_LIGHT = 299_792_458 * METRE / SECOND
+
   # Similar for SY::Acceleration:
   Acceleration = ( Speed / Time ).standard!
 
