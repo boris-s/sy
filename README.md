@@ -1,6 +1,7 @@
-# SY - The physical units library.
+# SY - a physical units library
 
-`SY` is a domain model of physical units. It can be used in two modes:
+`SY` is a domain model of physical units (magnitudes, quantities, dimensions...).
+It can be used in two modes:
 
   * When loaded by `require 'sy'`, Numeric class is extended with methods
     corresponding to units and their abbreviations.
@@ -8,7 +9,7 @@
     while physical magnitudes can still be contructed explicitly from the
     appropriate physical quantities.
 
-At this place, good manners require me to mention the other good library of
+At this place, good manners require me to mention another good library of
 physical units in Ruby, [phys-units](https://github.com/masa16/phys-units).
 
 ## Usage
