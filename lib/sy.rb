@@ -51,7 +51,11 @@ require_relative 'sy/matrix'
 # be used. In this particular case, SY methods still can be invoked using
 # abbreviations (5.s, 5.h, 5.min)
 # 
-Numeric.class_exec { include ::SY::ExpressibleInUnits }
+module SY
+  AUTOINCLUDE = true unless defined? ::SY::AUTOINCLUDE
+end
+
+Numeric.class_exec { include ::SY::ExpressibleInUnits } if SY::AUTOINCLUDE
 
 # === Instead of introduction
 # 
