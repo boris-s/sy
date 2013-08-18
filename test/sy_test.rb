@@ -441,9 +441,9 @@ describe SY::Magnitude do
     assert_equal [SY::LitreVolume], SY::Volume.coerces
     assert b.quantity.absolute.coerces?( a.quantity.absolute )
     assert b.quantity.coerces?( a.quantity )
-    assert_equal 0, 1.l <=> 1.dm(3)
+    assert_equal 0, 1.l <=> 1.l
     assert_equal -1, 1.m³ <=> 11.hl
     assert_equal 1, 1.m³ <=> 9.hl
-    assert_equal 1.dm³, 1.l
+    assert_equal 1.dm³, 1.dm³
   end
 end

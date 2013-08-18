@@ -294,6 +294,9 @@ module SY
   # make SY::WATT its standard unit:
   WATT = Unit.standard of: Power, short: "W"
 
+  # Watthour (Wh) is a common unit of energy.
+  WATTHOUR = Unit.of Energy, short: "Wh", amount: WATT * HOUR
+
   # SY::Pressure...
   Pressure = ( Force / Area ).standard!
 
@@ -328,4 +331,8 @@ module SY
 
   # Having defined Joules and Kelvins, we can spell out the Boltzmann constant:
   Kʙ = BOLTZMANN_CONSTANT = 1.380648813e-23 * JOULE / KELVIN
+
+  ELEMENTARY_CHARGE = 1.60217656535e-19 * COULOMB
+
+  ELECTRONVOLT = Unit.of Energy, short: "eV", amount: ELEMENTARY_CHARGE * VOLT
 end
