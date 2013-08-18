@@ -1,7 +1,8 @@
-# SY - a physical units library
+# SY - a physical units gem
 
 `SY` is a domain model of physical units (magnitudes, quantities, dimensions...).
-It can be used in two modes:
+In `SY`, I (would like to) emphasize the domain model correctness and ease of use
+over the ease of implementation. `SY` can be used in two modes:
 
   * When loaded by `require 'sy'`, Numeric class is extended with methods
     corresponding to units and their abbreviations.
@@ -9,19 +10,19 @@ It can be used in two modes:
     while physical magnitudes can still be contructed explicitly from the
     appropriate physical quantities.
 
-At this place, good manners require me to mention another good library of
-physical units in Ruby, [phys-units](https://github.com/masa16/phys-units).
+Good manners require me to also mention another good library of physical units in
+Ruby, [phys-units](https://github.com/masa16/phys-units).
 
 ## Usage
 
 Upon `require 'sy'`, we can say `5.metre`, or `Rational( 5, 2 ).metre`, and the
-computer will understand, that these numbers represent magnitudes of the
-physical quantity `SY::Length` expressed in the unit `SY::METRE`. Equally,
-we can use abbreviations (such as `5.m`, `2.5.m`), prefixes (such as `5.km`,
-`5.kilometre`, `5.km`), exponents (such as `5.m²` for 5 square metres), and
-chaining (such as `5.m.s⁻¹` to denote speed of 5 metres per second). Please
-read also the code file [https:://github.com/boris-s/lib/sy.rb] for the DSL
-statements defining default quantities and their units.
+computer will understand, that these numbers represent magnitudes of the physical
+quantity `SY::Length` expressed in the unit `SY::METRE`. Equally, we can use
+abbreviations (such as `5.m`, `2.5.m`), prefixes (such as `5.km`, `5.kilometre`,
+`5.km`), exponents (such as `5.m²` for 5 square metres), and chaining (such as
+`5.m.s⁻¹` to denote speed of 5 metres per second). Please read also the code file
+[https:://github.com/boris-s/lib/sy.rb] for the DSL statements defining default
+quantities and their units.
 
 ## Unicode exponents
 

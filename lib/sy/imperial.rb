@@ -10,7 +10,8 @@ module SY
   # short: 'in' would be ambiguous
   FOOT = Unit.of Length, short: 'ft', amount: 12 * INCH
   YARD = Unit.of Length, short: 'yd', amount: 3 * FOOT
-  # forget CHAIN and FURLONG
+  # forget CHAIN
+  FURLONG = Unit.of Length, short: 'fur', amount: 220 * YARD
   MILE = Unit.of Length, short: 'mi', amount: 5_280 * FOOT
   FATHOM = Unit.of Length, short: 'ftm', amount: 1.853184 * METRE
   NAUTICAL_MILE = Unit.of Length, amount: 1000 * FATHOM
@@ -29,5 +30,9 @@ module SY
   POUND = Unit.of Mass, short: 'lb', amount: 453.59237 * GRAM
   OUNCE = Unit.of Mass, short: 'oz', amount: ( 1.0 / 16 ) * POUND
   STONE = Unit.of Mass, amount: 14 * POUND
+  FIRKIN = Unit.of Mass, short: 'fir', amount: 90 * POUND
   IMPERIAL_TON = Unit.of Mass, amount: 2240 * POUND
+
+  # === Time
+  FORTNIGHT = Unit.of Time, short: 'ftn', amount: 1_209_600 * SECOND
 end
