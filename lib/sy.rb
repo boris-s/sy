@@ -157,6 +157,8 @@ module SY
   # at this moment SY is handling this right. But nevertheless:
   CelsiusTemperature = Quantity.of :Θ, coerces_to: Temperature
 
+  # CELSIUS_MEASURE is an object of SY::Measure class, that captures the
+  # conversion between centigrades and Kelvins.
   CELSIUS_MEASURE = SY::Measure.simple_offset( TRIPLE_POINT_OF_WATER.to_f )
 
   # Degree celsius is SY::CELSIUS
@@ -283,7 +285,7 @@ module SY
   SPEED_OF_LIGHT = 299_792_458 * METRE / SECOND
 
   # Supplementary unit of length.
-  LIGHTYEAR = Unit.of Length, short: "ly", amount: 9_460_730_472_580_800 * METRE
+  LIGHTYEAR = Unit.of Length, short: "ly", amount: SPEED_OF_LIGHT * JULIAN_YEAR
 
   # Similar for SY::Acceleration:
   Acceleration = ( Speed / Time ).standard!
