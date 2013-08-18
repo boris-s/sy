@@ -1,5 +1,5 @@
 module SY
-  VERSION = "2.0.23"
+  VERSION = "2.0.24"
   DEBUG = false # debug mode switch - sometimes there are lines like
   # puts "something" if SY::DEBUG
 end
