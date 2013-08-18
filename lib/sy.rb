@@ -84,7 +84,7 @@ module SY
 
   # And let SY::MOLE be its standard unit, related to SY::Amount via Nᴀ:
   puts "About to construct MOLE." if SY::DEBUG
-  MOLE = Unit.standard of: MoleAmount, short: "mol", amount: Nᴀ.unit
+  MOLE = Unit.standard of: MoleAmount, short: "mol", amount: Nᴀ * UNIT
   puts SY::Unit.__instances__ if SY::DEBUG
   puts "MOLE constructed. SY::Unit instances are" +
     "#{SY::Unit.instance_names}" if SY::DEBUG
@@ -105,11 +105,13 @@ module SY
   # Let SY::KILOGRAM be its standard unit:
   KILOGRAM = Unit.standard of: Mass, short: "kg"
   # Let SY::GRAM be another unit of SY::Mass, equal to 0.001.kg:
-  GRAM = Unit.of Mass, amount: 0.001.kg, short: "g"
+  GRAM = Unit.of Mass, amount: 0.001 * KILOGRAM, short: "g"
   # Let SY::TON be another...
-  TON = Unit.of Mass, amount: 1000.kg, short: "t"
+  TON = Unit.of Mass, amount: 1000 * KILOGRAM, short: "t"
   # And SY::DALTON another...
-  DALTON = Unit.of Mass, short: "Da", amount: 1.66053892173e-27.kg
+  DALTON = Unit.of Mass,
+                   short: "Da",
+                   amount: 1.66053892173e-27 * KILOGRAM
 
   # === Basic dimension T
 
@@ -119,9 +121,9 @@ module SY
   # Let SY::SECOND be its standard unit:
   SECOND = Unit.standard of: Time, short: "s"
   # Let SY::MINUTE be another unit:
-  MINUTE = Unit.of Time, short: "min", amount: 60.s
+  MINUTE = Unit.of Time, short: "min", amount: 60 * SECOND
   # And SY::HOUR another:
-  HOUR = Unit.of Time, short: "h", amount: 60.min
+  HOUR = Unit.of Time, short: "h", amount: 60 * MINUTE
 
   # === Basic dimension Q
 
@@ -140,14 +142,14 @@ module SY
   KELVIN = Unit.standard of: Temperature, short: "K"
 
   # Now let us define a useful constant:
-  TP_H₂O = TRIPLE_POINT_OF_WATER = 273.15.K
+  TP_H₂O = TRIPLE_POINT_OF_WATER = 273.15 * KELVIN
 
   # Celsius temperature is a little bit peculiar in that it has offset of
   # 273.15.K with respect to Kelvin temperature, and I am not sure whether
   # at this moment SY is handling this right. But nevertheless:
   CelsiusTemperature = Quantity.of :Θ, coerces_to: Temperature
 
-  CELSIUS_MEASURE = SY::Measure.simple_offset( TRIPLE_POINT_OF_WATER.in( :K ) )
+  CELSIUS_MEASURE = SY::Measure.simple_offset( TRIPLE_POINT_OF_WATER.to_f )
 
   # Degree celsius is SY::CELSIUS
   CELSIUS = Unit.standard( of: CelsiusTemperature,
@@ -210,8 +212,8 @@ module SY
   
   # HUMAN_BODY_TEMPERATURE = 37.°C.( KELVIN )
   # STANDARD_TEMPERATURE = 25.°C.( KELVIN )
-  HUMAN_BODY_TEMPERATURE = TP_H₂O + 37.K
-  STANDARD_LABORATORY_TEMPERATURE = TP_H₂O + 25.K
+  HUMAN_BODY_TEMPERATURE = TP_H₂O + 37 * KELVIN
+  STANDARD_LABORATORY_TEMPERATURE = TP_H₂O + 25 * KELVIN
 
   # === Dimensionless quantities
 
@@ -234,7 +236,7 @@ module SY
   LitreVolume = Quantity.of Volume.dimension, coerces_to: Volume
 
   # SY::LITRE is the standard unit of SY::LitreVolume:
-  LITRE = Unit.standard of: LitreVolume, short: "l", amount: 1.dm³
+  LITRE = Unit.standard of: LitreVolume, short: "l", amount: 0.001 * METRE ** 3
 
   # At this point, there are certain things to note. Since standard units of
   # SY::Area and SY::Volume have not been specified, they are assumed to be
@@ -284,7 +286,7 @@ module SY
   # make SY::JOULE its standard unit:
   JOULE = Unit.standard of: Energy, short: "J"
   # SY::CALORIE means thermochemical calorie:
-  CALORIE = Unit.of Energy, short: "cal", amount: 4.184.J
+  CALORIE = Unit.of Energy, short: "cal", amount: 4.184 * JOULE
 
   # SY::Power...
   Power = ( Energy / Time ).standard!
@@ -325,5 +327,5 @@ module SY
   Molecularity = Amount / LitreVolume
 
   # Having defined Joules and Kelvins, we can spell out the Boltzmann constant:
-  Kʙ = BOLTZMANN_CONSTANT = 1.380648813e-23.J.K⁻¹
+  Kʙ = BOLTZMANN_CONSTANT = 1.380648813e-23 * JOULE / KELVIN
 end

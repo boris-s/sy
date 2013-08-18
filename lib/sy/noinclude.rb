@@ -7,4 +7,4 @@ module SY
   AUTOINCLUDE = false
 end
 
-require 'sy'
+require_relative '../sy'
