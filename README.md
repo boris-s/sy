@@ -21,7 +21,7 @@ quantity `SY::Length` expressed in the unit `SY::METRE`. Equally, we can use
 abbreviations (such as `5.m`, `2.5.m`), prefixes (such as `5.km`, `5.kilometre`,
 `5.km`), exponents (such as `5.m²` for 5 square metres), and chaining (such as
 `5.m.s⁻¹` to denote speed of 5 metres per second). Please read also the [sy code
-file](sy/lib/sy.rb) for the DSL statements defining
+file](lib/sy.rb) for the DSL statements defining
 default quantities and their units.
 
 ## Unicode exponents
