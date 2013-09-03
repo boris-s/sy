@@ -17,8 +17,8 @@ require 'minitest/autorun'
 describe "case of require 'sy/noinclude'" do
   before do
     # The following will load SY library
-    require 'sy/noinclude'
-    # require './../lib/sy/noinclude'
+    # require 'sy/noinclude'
+    require './../lib/sy/noinclude'
   end
 
   it "should show at least some signs of life" do
@@ -32,10 +32,10 @@ end
 describe "require 'sy/noinclude'; require 'sy/imperial'" do
   before do
     # The following will load SY library
-    require 'sy/noinclude'
-    require 'sy/imperial'
-    # require './../lib/sy/noinclude'
-    # require './../lib/sy/imperial'
+    # require 'sy/noinclude'
+    # require 'sy/imperial'
+    require './../lib/sy/noinclude'
+    require './../lib/sy/imperial'
   end
 
   it "should show signs of life" do
