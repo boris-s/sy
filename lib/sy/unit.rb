@@ -30,7 +30,7 @@ module SY::Unit
     def included target
       target.namespace = self
 
-      name_set_closure do |name, new_instance, old_name|
+      name_set_hook do |name, new_instance, old_name|
         ɴ = name.to_s
         up, down = ɴ.upcase, ɴ.downcase
         msg = "Unit must be either all-upper or all-lower case (#{ɴ} given)!"
@@ -55,7 +55,7 @@ module SY::Unit
             warn w % [abbrev, modul] if im.include? abbrev
           end
         end
-        up.to_sym.tap { |sym| puts "name_set_closure #{sym}" if SY::DEBUG }
+        up.to_sym.tap { |sym| puts "name_set_hook #{sym}" if SY::DEBUG }
       end
 
       # We'll now define all the prefix methods on the target (#mili, #mega...),

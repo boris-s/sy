@@ -5,7 +5,7 @@
 class SY::Quantity
   include NameMagic
 
-  # name_set_closure do |name, new_instance, old_name|
+  # name_set_hook do |name, new_instance, old_name|
   #   new_instance.protect!; name
   # end
 
