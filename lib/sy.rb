@@ -55,7 +55,7 @@ module SY
   AUTOINCLUDE = true unless defined? ::SY::AUTOINCLUDE
 end
 
-Numeric.class_exec { include ::SY::ExpressibleInUnits } if SY::AUTOINCLUDE
+# Numeric.class_exec { include ::SY::ExpressibleInUnits } if SY::AUTOINCLUDE
 
 # === Instead of introduction
 # 
