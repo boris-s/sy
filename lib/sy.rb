@@ -12,7 +12,7 @@ require 'active_support/core_ext/array/extract_options'
 require 'active_support/core_ext/string/starts_ends_with'
 
 require_relative 'sy/version'
-# require_relative 'sy/expressible_in_units'
+require_relative 'sy/expressible_in_units'
 # require_relative 'sy/fixed_assets_of_the_module'
 # require_relative 'sy/measure'
 # require_relative 'sy/dimension'
@@ -350,5 +350,5 @@ module SY
 
   # ELEMENTARY_CHARGE = 1.60217656535e-19 * COULOMB
 
-  ELECTRONVOLT = Unit.of Energy, short: "eV", amount: ELEMENTARY_CHARGE * VOLT
+  # ELECTRONVOLT = Unit.of Energy, short: "eV", amount: ELEMENTARY_CHARGE * VOLT
 end
