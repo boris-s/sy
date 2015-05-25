@@ -13,7 +13,7 @@ require 'active_support/core_ext/string/starts_ends_with'
 
 require_relative 'sy/version'
 require_relative 'sy/expressible_in_units'
-# require_relative 'sy/fixed_assets_of_the_module'
+require_relative 'sy/fixed_assets_of_the_module'
 # require_relative 'sy/measure'
 # require_relative 'sy/dimension'
 # require_relative 'sy/quantity'
