@@ -10,10 +10,10 @@ module SY
   BASE_DIMENSIONS = {                # Basic physical dimensions.
     L: :LENGTH,
     M: :MASS,
-    Q: :ELECTRIC_CHARGE,
+    T: :TIME,
+    Q: :ELECTRIC_CHARGE,        # instead of electric current
     Θ: :TEMPERATURE,
-    T: :TIME
-  }
+  }               # amount of substance and luminous intensity omitted
 
   class << BASE_DIMENSIONS
     # Letters of the base dimensions.

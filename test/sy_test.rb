@@ -10,8 +10,8 @@ require 'mathn'
 require 'minitest/autorun'
 
 # The following will load SY library
-# require 'sy'
-require './../lib/sy'
+require 'sy'
+# require './../lib/sy'
 
 # **************************************************************************
 # THE SPECIFICATIONS START HERE
