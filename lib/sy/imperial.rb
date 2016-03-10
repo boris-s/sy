@@ -35,4 +35,7 @@ module SY
 
   # === Time
   FORTNIGHT = Unit.of Time, short: 'ftn', amount: 1_209_600 * SECOND
+
+  # === Speed
+  MPH = Unit.of Speed, amount: MILE / HOUR
 end
