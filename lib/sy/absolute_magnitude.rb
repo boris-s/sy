@@ -3,7 +3,7 @@
 # Qualities specific to absolute magnitudes (mixin).
 #
 # Absolute magnitude may not be negative  – physical amounts cannot have
-# negative number of unit objects. (<em>Difference</me> between magnitudes
+# negative number of unit objects. (<em>Difference</em> between magnitudes
 # (relative magnitude) can be positive as well as negative.
 #
 # While ordinary #+ and #- methods of absolute magnitudes return relative
