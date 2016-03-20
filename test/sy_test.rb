@@ -10,30 +10,47 @@ require 'mathn'
 require 'minitest/autorun'
 
 # The following will load SY library
-require 'sy'
-# require './../lib/sy'
+# require 'sy'
+require './../lib/sy'
 
 # **************************************************************************
 # THE SPECIFICATIONS START HERE
 # **************************************************************************
 
-describe SY do
-  it "should have basic assets" do
-    # Basic physical dimensions:
+# UNIT TESTS
+describe "sy.rb" do
+  it "should have certain code features" do
+    ( defined? SY::AUTOINCLUDE ).must_equal "constant"
+    Numeric.ancestors.must_include ExpressibleInUnits
+  end
+end
+
+describe "fixed_assets.rb" do
+  it "should define basic physical dimensions" do
     SY::BASE_DIMENSIONS.to_a.sort
       .must_equal [ [:L, :LENGTH], [:M, :MASS], [:T, :TIME],
                     [:Q, :ELECTRIC_CHARGE], [:Θ, :TEMPERATURE] ].sort
-    
-    # Standard unit prefixes:
-    SY::PREFIX_TABLE.map{|row| row[:full] }.sort
+  end
+
+  it "should have a table of standard unit prefixes" do
+    SY::PREFIX_TABLE.map { |row| row[:full] }.sort
       .must_equal [ "exa", "peta", "tera", "giga", "mega", "kilo",
                     "mili", "micro", "nano", "pico", "femto", "atto",
                     "hecto", "deka","deci", "centi", "" ].sort
   end
 end
 
-describe SY::Dimension do
-  it "should" do
+describe "expressible_in_units.rb" do
+  it "should have certain code features" do
+    ExpressibleInUnits::RecursionError.ancestors.must_include StandardError
+  end
+
+  # TODO: Fill in the remaining tests.
+end
+
+describe "sy/dimension.rb" do
+  it "old tests" do
+    skip
     # Dimension#new should return same instance when asked twice.
     assert_equal *[ :L, :L ].map { |d| SY::Dimension.new( d ).object_id }
 
@@ -64,8 +81,9 @@ describe SY::Dimension do
   end
 end
 
-describe SY::Measure do
-  it "should" do
+describe "measure.rb" do
+  it "old tests" do
+    skip
     i = SY::Measure.identity
     a, b = SY::Measure.new( ratio: 2 ), SY::Measure.new( ratio: 3 )
     assert_equal 1, i.ratio
@@ -78,8 +96,9 @@ describe SY::Measure do
   end
 end
 
-describe SY::Composition do
+describe "composition.rb" do
   it "should" do
+    skip
     assert_equal SY::Amount, SY.Dimension( :∅ ).standard_quantity
     a = SY::Composition[ SY::Amount => 1 ]
     l = SY::Composition[ SY::Length => 1 ]
@@ -101,23 +120,24 @@ describe SY::Composition do
   end
 end
 
-describe SY::Quantity, SY::Magnitude do
+describe "OLD TESTS quantity.rb, magnitude.rb" do
   before do
-    @q1 = SY::Quantity.new of: '∅'
-    @q2 = SY::Quantity.dimensionless
-    @amount_in_dozens = begin
-                          SY.Quantity( "AmountInDozens" )
-                        rescue
-                          SY::Quantity.dimensionless amount: 12, ɴ: "AmountInDozens"
-                        end
-    @inch_length = begin
-                     SY.Quantity( "InchLength" )
-                   rescue NameError
-                     SY::Quantity.of SY::Length.dimension, ɴ: "InchLength"
-                   end
+    # @q1 = SY::Quantity.new of: '∅'
+    # @q2 = SY::Quantity.dimensionless
+    # @amount_in_dozens = begin
+    #                       SY.Quantity( "AmountInDozens" )
+    #                     rescue
+    #                       SY::Quantity.dimensionless amount: 12, ɴ: "AmountInDozens"
+    #                     end
+    # @inch_length = begin
+    #                  SY.Quantity( "InchLength" )
+    #                rescue NameError
+    #                  SY::Quantity.of SY::Length.dimension, ɴ: "InchLength"
+    #                end
   end
 
-  it "should" do
+  it "OLD TESTS" do
+    skip
     refute_equal @q1, @q2
     assert @q1.absolute? && @q2.absolute?
     assert @q1 == @q1.absolute
@@ -140,16 +160,17 @@ describe SY::Quantity, SY::Magnitude do
     SY::Length.composition.must_equal SY::Composition.singular( :Length )
   end
 
-  describe "Magnitude, Unit" do
+  describe "OLD TESTS Magnitude, Unit" do
     before do
-      @m1 = 1.metre
-      @inch = SY::Unit.standard( of: @inch_length, amount: 2.54.cm,
-                                 ɴ: 'inch', short: '”' )
-      @i1 = @inch_length.magnitude 1
-      @il_measure = @inch_length.measure( of: SY::Length )
+      # @m1 = 1.metre
+      # @inch = SY::Unit.standard( of: @inch_length, amount: 2.54.cm,
+      #                            ɴ: 'inch', short: '”' )
+      # @i1 = @inch_length.magnitude 1
+      # @il_measure = @inch_length.measure( of: SY::Length )
     end
     
-    it "should" do
+    it "OLD TESTS" do
+      skip
       @m1.quantity.must_equal SY::Length.relative
       @inch_length.colleague.name.must_equal :InchLength±
       @m1.to_s.must_equal "1.m"
@@ -173,8 +194,8 @@ describe SY::Quantity, SY::Magnitude do
     end
   end
 
-  describe "expected behavior" do
-    it "should" do
+  describe "OLD TESTS expected behavior" do
+    it "OLD TESTS should" do
       assert_equal SY::Unit.instance( :SECOND ), SY::Unit.instance( :second )
 
       # Length quantity and typical units
@@ -184,7 +205,6 @@ describe SY::Quantity, SY::Magnitude do
       # FIXME
       # assert 1.metre.absolute != 1.metre.relative
       1.metre.relative.relative?.must_equal true
-      
       
       SY::METRE.relative.must_equal 1.metre
       1.m.must_equal 1.metre
@@ -429,8 +449,11 @@ describe SY::Quantity, SY::Magnitude do
   end
 end
 
-describe SY::Magnitude do
-  it "should have working #<=> method" do
+describe "magnitude.rb" do
+  it "OLD TESTS -- should have working #<=> method" do
+    skip
+    # First of all, these tests don't look like unit tests at all.
+    # They look more like acceptance tests.
     assert_equal 0, 1.m <=> 100.cm
     assert_equal 1, 1.m <=> 99.cm
     assert_equal -1, 1.m <=> 101.cm
@@ -447,3 +470,15 @@ describe SY::Magnitude do
     assert_equal 1.dm³, 1.dm³
   end
 end
+
+# ACCEPTANCE TESTS
+describe "sy gem" do
+  it "should give method name collision warning" do
+    # warn if prospective unit method name already defined
+  end
+
+  it "should give redefine warning" do
+    # 
+  end
+end
+
