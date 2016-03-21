@@ -16,7 +16,7 @@ module SY
 
   class << BASE_DIMENSIONS
     # Letters of base dimensions.
-    # 
+    # TODO: Consider deleting this method.
     def letters
       keys
     end

@@ -3,58 +3,126 @@
 # Metrological dimension
 # 
 class SY::Dimension < Hash
-  # Let's set up the registry of standard quantities.
-  #
-  @standard_quantities ||= Hash.new { |h, missing_key|
-    if missing_key.is_a? Dimension then
-      # Missing key is a dimension. Make a new quantity for it.
-      h[missing_key] = SY::Quantity.of missing_key
-    else
-      # Otherwise, let SY.Dimension constructor judge:
-      h[ SY.Dimension missing_key ]
-    end
-  }
-
   class << self
-    selector :standard_quantities
+    # Presents class-owned instances (array).
+    # 
+    def instances
+      return @instances ||= []
+    end
 
-    # TODO: Undefine #new constructor somehow.
-
-    # The #new constructor of SY::Dimension has been changed, so that the
-    # same instance is returned, if that dimension has already been created.
-    # As input, it takes a dimension hint, which can have variable form, such
-    # as :L, :LENGTH, "LENGTH", { L: 1, T: -2 } or "L.T⁻²".
+    undef_method :new
+    
+    # With the #new constructor undefined, #[] is the main constructor for
+    # +SY::Dimension+. Accepts variable input and always returns the same
+    # object for the same dimension. The input can look like :L, :LENGTH,
+    # "LENGTH", { L: 1, T: -2 } or "L.T⁻²".
     #
-    def [] dimension_hint={}
-      fait NotImplementedMethod
-      case dimension_hint
-      when self then return dimension_hint     # already a Dimension instance
-      when Hash then hsh = dimension_hint # hint given in hash form
-      else
-        # Superscripted string (SPS) form assumed, such as "L.T⁻²"
-        hsh = SY::BASE_DIMENSIONS.parse_sps( dimension_hint )
+    def [] *ordered, **named
+      # Validate arguments and enabling variable input.
+      hint = if ordered.size == 0 then named
+             elsif ordered.size == 1 then
+               case ordered[0]
+               when self then return ordered[0] # a Dimension instance
+               else # SPS form is assumed, such as "L.T⁻²"
+                 SY::SPS.new( ordered[0] ).to_hash
+                 # SY::BASE_DIMENSIONS.parse_sps( ordered[0] )
+               end
+             else
+               fail ArgumentError, "The #[] constructor accepts " +
+                                   "at most 1 ordered argument!"
+             end
+      # Convert dimension names (if given) to dimension letters.
+      SY::BASE_DIMENSIONS.each do |letter, full_name|
+        hint.may_have letter, syn!: full_name
       end
-      # Set unmentioned base dimensions to zero exponent.
-      hsh = hsh.default! Hash[ SY::BASE_DIMENSIONS.base_symbols.map { |ß| [ß, 0] } ]
+      # Set exponents of unmentioned base dimensions to 0.
+      letters = SY::BASE_DIMENSIONS.keys
+      hint.default! letters >> letters.map { 0 }
+      # Make sure each combination of base dimensions has only one instance.
+      instance = instances.find { |i| i == hint }
+      unless instance
+        instance = super( hint )
+        instances << instance
+      end
+      return instance
+    end
 
-      keys = SY::BASE_DIMENSIONS.letters
-      hsh = keys >> keys.map { 0 }
-
-      
-      return instances.find { |i| i.to_hash == hsh } ||
-             __new__( hsh )
+    # Constructs zero dimension.
+    #
+    def zero
+      self[]
     end
   end
 
-  # attr_accessor *SY::BASE_DIMENSIONS.base_symbols
-  # # The above line is superseded by SY.Dimension convenience
-  # # constructor, and the fact that the mentioned constructor
-  # # always returns the same instance.
-
-  # Method #initialize requires a hash-type argument, such as
-  # { L: 1, T: -2 }.
-  #
-  def initialize hsh
-    SY::BASE_DIMENSIONS.
+  # Dimension arithmetic: addition.
+  # 
+  def + other
+    merge other do |_, exp1, exp2| exp1 + exp2 end
   end
+
+  # Dimension arithmetic: subtraction.
+  # 
+  def - other
+    merge other do |_, exp1, exp2| exp1 - exp2 end
+  end
+
+  # Dimension arithmetic: multiplication by a number.
+  # 
+  def * integer
+    integer.aT_is_a Integer
+    self.class[ keys >> values.map { |exp| exp * integer } ]
+  end
+
+  # Dimension arithmetic: division by a number.
+  # 
+  def / integer
+    integer.aT_is_a Integer
+    self.class[ keys >> values.map do |exp|
+                  fail TypeError, "Dimensions with rational exponents " +
+                                  "not implemented!" if exp % integer != 0
+                  exp / integer
+                end ]
+  end
+
+  # True if the dimension is zero ("dimensionless"), otherwise false.
+  # 
+  def zero?
+    values.all? { |exp| exp.zero? }
+  end
+
+  # True if the dimension is basic, otherwise false.
+  # 
+  def base?
+    values.count( 1 ) == 1 && values.count( 0 ) == size - 1
+  end
+  alias basic? base?
+
+  # Converts the dimension into its superscripted product string (SPS).
+  # 
+  def to_s
+    sps = SY::SPS.new self
+    return sps == "" ? "∅" : sps
+  end
+
+  # Produces the inspect string of the dimension.
+  # 
+  def inspect
+    "#<SY::Dimension: #{self} >"
+  end
+
+  # Returns dimension's standard quantity.
+  # 
+  def standard_quantity
+    @standard_quantity ||= SY::Quantity.of( self )
+  end
+
+  # Returns default quantity composition for this dimension.
+  # 
+  def to_composition
+    SY::Composition[ ( keys.map do |letter|
+                         self.class[ letter ].standard_quantity.absolute
+                       end >> values ).reject { |k, v| v.zero? } ]
+  end
+
+  delegate :standard_unit, to: :standard_quantity
 end # class SY::Dimension
