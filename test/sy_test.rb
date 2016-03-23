@@ -25,18 +25,42 @@ describe "sy.rb" do
   end
 end
 
-describe "fixed_assets.rb" do
-  it "should define basic physical dimensions" do
-    SY::BASE_DIMENSIONS.to_a.sort
-      .must_equal [ [:L, :LENGTH], [:M, :MASS], [:T, :TIME],
-                    [:Q, :ELECTRIC_CHARGE], [:Θ, :TEMPERATURE] ].sort
-  end
+describe "sy/sps.rb" do
+  # FIXME
+end
 
+describe "sy/dimension/sps.rb" do
+  # FIXME
+end
+
+describe "sy/unit/sps.rb" do
+  # FIXME
+end
+
+describe "sy/prefixes.rb" do
+  # FIXME: The test below is outdated, from the times when
+  # SY::PREFIX_TABLE resided in fixed_assets.rb.
+  
   it "should have a table of standard unit prefixes" do
+    # FIXME: prefixes now reside in their own file, prefixes.rb,
+    # SY::PREFIX_TABLE is now named SY::PREFIXES
+    
     SY::PREFIX_TABLE.map { |row| row[:full] }.sort
       .must_equal [ "exa", "peta", "tera", "giga", "mega", "kilo",
                     "mili", "micro", "nano", "pico", "femto", "atto",
                     "hecto", "deka","deci", "centi", "" ].sort
+  end
+end
+
+describe "fixed_assets.rb" do
+  # FIXME: fixed assets.rb no longer exists.
+  
+  it "should define basic physical dimensions" do
+    # FIXME: Base dimension can now be found under
+    # SY::Dimension::BASE.
+    SY::BASE_DIMENSIONS.to_a.sort
+      .must_equal [ [:L, :LENGTH], [:M, :MASS], [:T, :TIME],
+                    [:Q, :ELECTRIC_CHARGE], [:Θ, :TEMPERATURE] ].sort
   end
 end
 
@@ -96,7 +120,7 @@ describe "sy/dimension.rb" do
   end
 end
 
-describe "measure.rb" do
+describe "sy/measure.rb" do
   it "old tests" do
     skip
     i = SY::Measure.identity
@@ -111,7 +135,7 @@ describe "measure.rb" do
   end
 end
 
-describe "composition.rb" do
+describe "sy/composition.rb" do
   it "should" do
     skip
     assert_equal SY::Amount, SY.Dimension( :∅ ).standard_quantity
@@ -465,7 +489,7 @@ describe "OLD TESTS quantity.rb, magnitude.rb" do
   end
 end
 
-describe "magnitude.rb" do
+describe "sy/magnitude.rb" do
   it "OLD TESTS -- should have working #<=> method" do
     skip
     # First of all, these tests don't look like unit tests at all.
