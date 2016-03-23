@@ -16,8 +16,9 @@ require 'flex_coerce'
 
 require_relative 'sy/version'
 require_relative 'expressible_in_units'
-puts "hello from sy.rb"
-require_relative 'fixed_assets'
+require_relative 'sy/prefixes'
+require_relative 'sy/se'
+require_relative 'sy/sps'
 require_relative 'sy/dimension'
 require_relative 'sy/quantity'
 require_relative 'sy/magnitude'

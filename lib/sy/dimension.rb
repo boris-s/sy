@@ -1,8 +1,24 @@
 #encoding: utf-8
 
+require_relative 'dimension/sps'
+
 # Metrological dimension
 # 
 class SY::Dimension < Hash
+  # Basic physical dimensions.
+  #
+  # Current SY version intentionally omits amount of substance and
+  # luminous intensity. Also, current SY version takes electric charge
+  # for a basic dimension instead of classic electric current.
+  # 
+  BASE = {
+    L: :LENGTH,
+    M: :MASS,
+    T: :TIME,
+    Q: :ELECTRIC_CHARGE,        # instead of electric current
+    Θ: :TEMPERATURE,
+  }
+
   class << self
     # Presents class-owned instances (array).
     # 
@@ -24,7 +40,7 @@ class SY::Dimension < Hash
                case ordered[0]
                when self then return ordered[0] # a Dimension instance
                else # SPS form is assumed, such as "L.T⁻²"
-                 SY::SPS.new( ordered[0] ).to_hash
+                 SY::Dimension::Sps.new( ordered[0] ).to_hash
                  # SY::BASE_DIMENSIONS.parse_sps( ordered[0] )
                end
              else

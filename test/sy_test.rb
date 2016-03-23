@@ -491,6 +491,11 @@ end
 describe SY::Dimension do
   before do
     ldim = SY::Dimension[ :LENGTH ]
+    # FIXME: Currently the missing "to_hash" method in
+    # SY::Sps is the problem of this base class not actually
+    # being customized to handle Sps-es representing Dimension.
+    # I think that a custom subclass would be good, but I don't
+    # know where: In dimension.rb? or in a subdirectory?
     tdim = SY::Dimension[ :TIME ]
   end
 

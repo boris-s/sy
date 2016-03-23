@@ -137,27 +137,6 @@ module SY
         end )[ clue ]
     end
   end
-
-  # Unicode superscript exponents.
-  # 
-  SUPERSCRIPT = Hash.new { |ꜧ, key|
-    if key.is_a? String then
-      key.size <= 1 ? nil : key.each_char.map{|c| ꜧ[c] }.join
-    else
-      ꜧ[key.to_s]
-    end
-  }.merge! Hash[ '-/0123456789'.each_char.zip( '⁻⎖⁰¹²³⁴⁵⁶⁷⁸⁹'.each_char ) ]
-
-  # Reverse conversion of Unicode superscript exponents (from exponent
-  # strings to fixnums).
-  # 
-  SUPERSCRIPT_DOWN = Hash.new { |ꜧ, key|
-    if key.is_a? String then
-      key.size == 1 ? nil : key.each_char.map{|c| ꜧ[c] }.join
-    else
-      ꜧ[key.to_s]
-    end
-  }.merge!( SUPERSCRIPT.invert ).merge!( '¯' => '-', # other superscript chars
                                          '´' => '/' )
 
   # SPS stands for "superscripted product string", It is a string of specific
@@ -173,13 +152,6 @@ module SY
     # omit exponents equal to 1:
     clean.map{|ß, exp| "#{ß}#{exp == 1 ? "" : SUPERSCRIPT[exp]}" }.join "."
   }
-
-  # Singleton #inspect method for SPS-making closure.
-  # 
-  def SPS.inspect
-    "Superscripted product string constructor lambda." +
-      "Takes 2 arguments. Example: [:a, :b], [-1, 2] #=> a⁻¹b²."
-  end
 
   # A closure that parses superscripted product strings (SPSs). It takes 3
   # arguments: a string to be parsed, an array of acceptable symbols, and

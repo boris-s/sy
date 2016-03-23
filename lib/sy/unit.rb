@@ -1,5 +1,7 @@
 #encoding: utf-8
 
+require 'unit/sps'
+
 module SY
   # Unit of measurement.
   # 
