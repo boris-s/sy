@@ -1,10 +1,13 @@
 # coding: utf-8
 
-require_relative '../sy'
+require_relative '../sy' unless defined? SY::UNIT_TEST
 
 # Imperial units.
 # 
 module SY
+  # === Amount
+  DOZEN = Unit.of Amount, amount: 12 # * UNIT
+  
   # === Length
   INCH = Unit.of Length, amount: 25.4 * 0.001 * METRE
   # short: 'in' would be ambiguous
@@ -35,7 +38,6 @@ module SY
 
   # === Time
   FORTNIGHT = Unit.of Time, short: 'ftn', amount: 1_209_600 * SECOND
-
   # === Speed
   MPH = Unit.of Speed, amount: MILE / HOUR
 end

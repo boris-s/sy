@@ -11,4 +11,11 @@ require_relative '../test_loader'
 # Make an empty module named SY for testing purposes.
 # 
 module SY
+  def self.const_missing sym
+    if sym.to_s == sym.to_s.upcase then # Assume it is a unit name.
+      1
+    else # Assume it is a magnitude name
+      sym.to_s
+    end
+  end
 end

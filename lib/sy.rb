@@ -1,30 +1,32 @@
 # encoding: utf-8
 
-# require 'y_support/null_object'
-# require 'y_support/name_magic'
-require 'y_support/core_ext/hash'
-require 'y_support/core_ext/array'
-require 'y_support/core_ext/class'
-# require 'y_support/typing'
-# require 'y_support/unicode'
-# require 'y_support/abstract_algebra'
+unless defined? SY::UNIT_TEST
+  # require 'y_support/null_object'
+  # require 'y_support/name_magic'
+  require 'y_support/core_ext/hash'
+  require 'y_support/core_ext/array'
+  require 'y_support/core_ext/class'
+  # require 'y_support/typing'
+  # require 'y_support/unicode'
+  # require 'y_support/abstract_algebra'
 
-require 'active_support/core_ext/module/delegation'
-# require 'active_support/core_ext/array/extract_options'
-# require 'active_support/core_ext/string/starts_ends_with'
+  require 'active_support/core_ext/module/delegation'
+  # require 'active_support/core_ext/array/extract_options'
+  # require 'active_support/core_ext/string/starts_ends_with'
 
-# require 'flex_coerce'
+  # require 'flex_coerce'
 
-require_relative 'sy/version'
-# require_relative 'expressible_in_units'
-# require_relative 'sy/prefixes'
-# require_relative 'sy/se'
-# require_relative 'sy/sps'
-# require_relative 'sy/dimension'
-# require_relative 'sy/quantity'
-# require_relative 'sy/magnitude'
-# require_relative 'sy/unit'
-# require_relative 'sy/matrix'
+  require_relative 'sy/version'
+  # require_relative 'expressible_in_units'
+  # require_relative 'sy/prefixes'
+  # require_relative 'sy/se'
+  # require_relative 'sy/sps'
+  # require_relative 'sy/dimension'
+  # require_relative 'sy/quantity'
+  # require_relative 'sy/magnitude'
+  # require_relative 'sy/unit'
+  # require_relative 'sy/matrix'
+end
 
 # The most prominent feature of SY is, that it extends the Numeric class
 # with methods corresponding to units and their abbreviations.
@@ -62,6 +64,9 @@ Numeric.class_exec { include ExpressibleInUnits } if SY::AUTOINCLUDE
 # the #included hook method not to notice collisions. However, it cannot
 # be executed after, either -- because when boostrapping the unit definitions,
 # I rely on the machine already knowing what 1.m, 1.kg etc. are.
+
+# Not at all, I don't!
+
 # This means that there have to be additional checks whenever a new unit is
 # introduced. Check for collision should, thirdly, be performed whenever a
 # new method is defined via #method_missing hook, but I feel this is too late
@@ -92,11 +97,12 @@ module SY
   # MoleAmount is a dimensionless distinct from plain Amount:
   MoleAmount = Quantity.dimensionless coerces: Amount
 
-  # # SY::MOLE is its standard unit, related to SY::Amount through Nᴀ:
-  # puts "About to construct MOLE." if SY::DEBUG
-  # MOLE = Unit.standard of: MoleAmount, short: "mol", amount: Nᴀ * UNIT
+  # SY::MOLE is its standard unit, related to SY::Amount through Nᴀ:
+  puts "About to define MOLE." if SY::DEBUG
+  MOLE = Unit.standard of: MoleAmount, short: "mol", amount: Nᴀ * UNIT
   # puts SY::Unit.__instances__ if SY::DEBUG
-  # puts "MOLE constructed. SY::Unit instances are #{SY::Unit.instances.names( false )}" if SY::DEBUG
+  puts "MOLE constructed. SY::Unit instances are " +
+       "#{SY::Unit.instances.names( false )}" if SY::DEBUG
 
   # # === Basic dimension L (length)
 
