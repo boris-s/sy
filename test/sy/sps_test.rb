@@ -2,16 +2,22 @@
 # encoding: utf-8
 
 # **************************************************************************
-# Unit tests for file sy/se.rb.
+# Unit tests for file sy/sps.rb.
 #
-# File se.rb defines class Se (superscripted exponent), which is used in
-# construction of Sps (superscripted product string), such as "kg.m.s⁻²".
-# Se is a subclass of String, which represents strings such as "⁰", "¹",
-# "²", "⁴²", "⁻⁴²". Specification of its main features is below.
+# File sps.rb defines class SY::Sps (superscripted product string), which
+# represents strings such as "a².b⁻²", "foobar.foobaz²", "kg.m", "kg.m.s⁻²",
+# "LENGTH.TIME⁻¹" etc. This class is a mother class of SY::Dimension::Sps
+# used to express metrological dimensions, as well as other classes used to
+# represent metrological quantities and units. Specification of its features
+# follows.
 # **************************************************************************
 
 require_relative 'test_loader'
+# Require the external libraries needed by the tested component.
+require 'y_support/core_ext/class'
+# Require the files needed by the tested component.
 require_relative '../../lib/sy/se.rb'
+# Require the tested component itself.
 require_relative '../../lib/sy/sps.rb'
 
 describe "sy/sps.rb - superscripted product string" do

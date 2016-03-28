@@ -2,12 +2,12 @@
 # encoding: utf-8
 
 # **************************************************************************
-# Unit tests for file sy/se.rb.
+# Unit tests for file sy/prefixes.rb.
 #
-# File se.rb defines class Se (superscripted exponent), which is used in
-# construction of Sps (superscripted product string), such as "kg.m.s⁻²".
-# Se is a subclass of String, which represents strings such as "⁰", "¹",
-# "²", "⁴²", "⁻⁴²". Specification of its main features is below.
+# File prefixes.rb contains a table of standard prefixes SY::PREFIXES, an
+# array of triples (hash-type) containing full prefix ("kilo", "mili",
+# "mega"...), abbreviation (k, m, M...) and factor the prefix denotes (1e3,
+# 1e-3, 1e6...). The tests for the table follow.
 # **************************************************************************
 
 require_relative 'test_loader'
@@ -20,5 +20,13 @@ describe "sy/prefixes.rb" do
       .must_equal [ "exa", "peta", "tera", "giga", "mega", "kilo",
                     "mili", "micro", "nano", "pico", "femto", "atto",
                     "hecto", "deka","deci", "centi", "" ].sort
+  end
+
+  it "should have hash-type triples with :full, :short, :factor keys" do
+    SY::PREFIXES.each do |row|
+      row.keys.must_include :full
+      row.keys.must_include :short
+      row.keys.must_include :factor
+    end
   end
 end

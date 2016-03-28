@@ -1,8 +1,8 @@
 #encoding: utf-8
 
-require 'y_support/core_ext/array'
-require 'y_support/core_ext/hash'
-require 'active_support/core_ext/module/delegation'
+# require 'y_support/core_ext/array'
+# require 'y_support/core_ext/hash'
+# require 'active_support/core_ext/module/delegation'
 
 # Metrological dimension
 # 

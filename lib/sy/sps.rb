@@ -1,6 +1,6 @@
 #encoding: utf-8
 
-require 'y_support/core_ext/class'
+# require 'y_support/core_ext/class'
 
 # This class represents a product (multiplication) of some symbols (such as
 # "meter", "joule", "second") with some prefixes (such as "kilo", "mega",

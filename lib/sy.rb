@@ -74,21 +74,23 @@ Numeric.class_exec { include ExpressibleInUnits } if SY::AUTOINCLUDE
 # of the most common quantities and units right in the SY module code.
 #
 module SY
-  # # Let SY::Amount be a standard dimensionless quantity.
-  # Amount = Quantity.standard of: Dimension.zero
+  # Let SY::Amount be a standard dimensionless quantity.
+  Amount = Quantity.standard of: Dimension.zero
 
-  # # Let SY::UNIT be a standard unit of SY::Amount. Note that the upcase name
-  # # of the constant "UNIT" implies, via YSupport's NameMagic mixin, that the
-  # # name of the object becomes :unit and that it is possible to use syntax
-  # # such as 42.unit to create magnitudes of SY::Amount.
-  # UNIT = Unit.standard of: Amount
-  # puts "UNIT constructed. SY::Unit instances are #{SY::Unit.instances.names( false )}" if SY::DEBUG
+  # Let SY::UNIT be a standard unit of SY::Amount. Note that naming the
+  # constant "UNIT" automagically (using y_support/name_magic) sets its name
+  # property to :unit. This further automagically enables construction of
+  # various magnitudes of SY::Amount by simply writing expressions such as
+  # 1.unit, 7.unit, 42.unit etc.
+  UNIT = Unit.standard of: Amount
+  puts "UNIT constructed. SY::Unit instances are" +
+       "#{SY::Unit.instances.names( false )}" if SY::DEBUG
 
-  # # AVOGADRO_CONSTANT (Nᴀ) is a certain well-known amount of things:
-  # Nᴀ = AVOGADRO_CONSTANT = 6.02214e23
+  # AVOGADRO_CONSTANT (Nᴀ) is a certain well-known amount of things:
+  Nᴀ = AVOGADRO_CONSTANT = 6.02214e23
 
-  # # MoleAmount is a dimensionless distinct from plain Amount:
-  # MoleAmount = Quantity.dimensionless coerces: Amount
+  # MoleAmount is a dimensionless distinct from plain Amount:
+  MoleAmount = Quantity.dimensionless coerces: Amount
 
   # # SY::MOLE is its standard unit, related to SY::Amount through Nᴀ:
   # puts "About to construct MOLE." if SY::DEBUG

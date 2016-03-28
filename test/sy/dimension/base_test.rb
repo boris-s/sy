@@ -9,6 +9,7 @@
 # **************************************************************************
 
 require_relative 'test_loader'
+# Require the tested component itself.
 require_relative '../../../lib/sy/dimension/base'
 
 describe "sy/dimension/base.rb" do

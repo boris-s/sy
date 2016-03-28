@@ -2,17 +2,22 @@
 # encoding: utf-8
 
 # **************************************************************************
-# Unit tests for file sy/se.rb.
+# Unit tests for file sy/dimension.rb.
 #
-# File se.rb defines class Se (superscripted exponent), which is used in
-# construction of Sps (superscripted product string), such as "kg.m.s⁻²".
-# Se is a subclass of String, which represents strings such as "⁰", "¹",
+# File dimension.rb defines class SY::Dimension, representing physical dimensions, such as LENGTH.TIME⁻¹, or MASS.LENGTH⁻³. Each metrological quantity has its dimension. For example, dimension LENGTH.TIME⁻¹ is best known from quantity "SY::Speed", and dimension "MASS.LENGTH⁻³" from quantity "SY::Density"
 # "²", "⁴²", "⁻⁴²". Specification of its main features is below.
 # **************************************************************************
 
 require_relative 'test_loader'
+# Require the external libraries needed by the tested component.
+require 'y_support/core_ext/array'
+require 'y_support/core_ext/hash'
+require 'active_support/core_ext/module/delegation'
+require 'y_support/core_ext/class'
+# Require sy files needed by the tested component.
 require_relative '../../lib/sy/se'
 require_relative '../../lib/sy/sps'
+# Require the tested component itself.
 require_relative '../../lib/sy/dimension'
 
 describe "sy/dimension.rb" do

@@ -1,7 +1,7 @@
 #encoding: utf-8
 
-require 'y_support/core_ext/class'
-require 'active_support/core_ext/module/delegation'
+# require 'y_support/core_ext/class'
+# require 'active_support/core_ext/module/delegation'
 
 # Superscripted product string of a metrological dimension, such as
 # "L.θ⁻¹" or "MASS.LENGTH⁻²".

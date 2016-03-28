@@ -11,7 +11,7 @@
 # **************************************************************************
 
 require_relative 'test_loader'
-module SY; end
+# Require the tested component itself.
 require_relative '../../lib/sy/se.rb'
 
 describe "sy/se.rb - superscript exponent" do
