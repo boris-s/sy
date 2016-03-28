@@ -222,12 +222,12 @@ module ExpressibleInUnits
   def anti_recursion_exec( token: nil, var: :@anti_recursion_exec )
     token_registry = self.class.instance_variable_get( var ) ||
       self.class.instance_variable_set( var, [] )
-     fail RecursionError if registry.include? token
+     fail RecursionError if token_registry.include? token
     begin
       token_registry << token   # grab the token
       yield                     # execute the block
     ensure
-      registry.delete( token )  # release the token
+      token_registry.delete( token )  # release the token
     end
   end
 

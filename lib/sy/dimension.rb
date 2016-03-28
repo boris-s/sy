@@ -1,23 +1,14 @@
 #encoding: utf-8
 
-require_relative 'dimension/sps'
+require 'y_support/core_ext/array'
+require 'y_support/core_ext/hash'
+require 'active_support/core_ext/module/delegation'
 
 # Metrological dimension
 # 
 class SY::Dimension < Hash
-  # Basic physical dimensions.
-  #
-  # Current SY version intentionally omits amount of substance and
-  # luminous intensity. Also, current SY version takes electric charge
-  # for a basic dimension instead of classic electric current.
-  # 
-  BASE = {
-    L: :LENGTH,
-    M: :MASS,
-    T: :TIME,
-    Q: :ELECTRIC_CHARGE,        # instead of electric current
-    Θ: :TEMPERATURE,
-  }
+  require_relative 'dimension/base'
+  require_relative 'dimension/sps'
 
   class << self
     # Presents class-owned instances (array).
@@ -28,36 +19,31 @@ class SY::Dimension < Hash
 
     undef_method :new
     
-    # With the #new constructor undefined, #[] is the main constructor for
-    # +SY::Dimension+. Accepts variable input and always returns the same
-    # object for the same dimension. The input can look like :L, :LENGTH,
-    # "LENGTH", { L: 1, T: -2 } or "L.T⁻²".
+    # A constructor of +SY::Dimension+. Accepts variable input and always
+    # returns the same object for the same dimension. The input can look like
+    # :L, :LENGTH, "LENGTH", { L: 1, T: -2 } or "L.T⁻²".
     #
     def [] *ordered, **named
-      # Validate arguments and enabling variable input.
-      hint = if ordered.size == 0 then named
-             elsif ordered.size == 1 then
-               case ordered[0]
-               when self then return ordered[0] # a Dimension instance
-               else # SPS form is assumed, such as "L.T⁻²"
-                 SY::Dimension::Sps.new( ordered[0] ).to_hash
-                 # SY::BASE_DIMENSIONS.parse_sps( ordered[0] )
-               end
-             else
-               fail ArgumentError, "The #[] constructor accepts " +
-                                   "at most 1 ordered argument!"
-             end
-      # Convert dimension names (if given) to dimension letters.
-      SY::BASE_DIMENSIONS.each do |letter, full_name|
-        hint.may_have letter, syn!: full_name
+      # Validate arguments and enable variable input.
+      input = if ordered.size == 0 then named
+              elsif ordered.size > 1 then
+                fail ArgumentError, "SY::Dimension[] constructor admits at " +
+                                    "most 1 ordered argument!"
+              else ordered[0] end
+      # If input is a Dimension instance, return it unchanged.
+      return input if input.is_a? self
+      # It is assumed that the input implies an Sps.
+      triples = SY::Dimension::Sps.new( input ).parse
+      # Convert the input to hash and normalize dimension symbols.
+      hash = triples.each_with_object Hash.new do |(_, ß, exponent), h|
+        h[ SY::Dimension::BASE.normalize_symbol( ß ) ] = exponent
       end
       # Set exponents of unmentioned base dimensions to 0.
-      letters = SY::BASE_DIMENSIONS.keys
-      hint.default! letters >> letters.map { 0 }
+      hash.default! BASE.values >> BASE.values.map { 0 }
       # Make sure each combination of base dimensions has only one instance.
-      instance = instances.find { |i| i == hint }
+      instance = instances.find { |i| i == hash }
       unless instance
-        instance = super( hint )
+        instance = super hash
         instances << instance
       end
       return instance

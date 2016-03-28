@@ -12,13 +12,12 @@
 # **************************************************************************
 
 require_relative 'test_loader'
-require_relative 'sy_loader'
+require_relative '../lib/expressible_in_units'
 
-# Run unit tests for sy.rb.
-# 
-describe "sy.rb" do
+describe "expressible_in_units.rb" do
   it "should have certain code features" do
-    ( defined? SY::AUTOINCLUDE ).must_equal "constant"
-    Numeric.ancestors.must_include ExpressibleInUnits
+    ExpressibleInUnits::RecursionError.ancestors.must_include StandardError
   end
+
+  # TODO: Fill in the remaining tests.
 end

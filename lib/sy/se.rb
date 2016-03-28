@@ -4,12 +4,6 @@
 # empty string "", meaning exponent 1.
 # 
 class SY::Se < String
-  # Convenience constructor.
-  # 
-  def SY.Se arg
-    SY::Se.new arg
-  end
-  
   TABLE = {
     '-' => '⁻',
     '/' => '⎖',                 # for fractions, not in use atm.
@@ -28,7 +22,7 @@ class SY::Se < String
   class << self
     def new arg
       # Validate the presence of the argument.
-      arg.aA_present
+      fail ArgumentError, "Nil argument not allowed!" if arg.nil?
       # Convert the argument into a normal string first.
       s = String arg
       # The argument must represent an integer.
@@ -42,13 +36,13 @@ class SY::Se < String
               # Non-empty strings have still chance to be a superscript integer.
               Integer s.each_char.map { |c|
                 r = TABLE.rassoc( c ) or
-                  fail ArgumentError, "#{arg} is not a valid exponent!"
+                  fail TypeError, "#{arg} is not a valid exponent!"
                 r[0]
               }.reduce( :+ )
             end
           end
       # Convert the integer into the superscript form.
-      super i.each_char.map { |c| TABLE[c] }.reduce :+
+      super i.to_s.each_char.map { |c| TABLE[c] }.reduce :+
     end
   end
   
@@ -59,4 +53,10 @@ class SY::Se < String
     return "1" if empty?
     each_char.map { |c| TABLE.rassoc( c )[0] }.reduce :+
   end
-end # class SY::Ses
+
+  # Converts the exponent string into an integer.
+  #
+  def to_int
+    Integer( to_normal_numeral )
+  end
+end # class SY::Se

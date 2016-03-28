@@ -1,6 +1,6 @@
 #encoding: utf-8
 
-class SY
+module SY
   # Table of standard prefixes.
   # 
   PREFIXES = [ { full: "exa", short: "E", factor: 1e18 },

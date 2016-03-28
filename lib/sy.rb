@@ -1,29 +1,30 @@
 # encoding: utf-8
 
-require 'y_support/null_object'
-require 'y_support/name_magic'
+# require 'y_support/null_object'
+# require 'y_support/name_magic'
 require 'y_support/core_ext/hash'
 require 'y_support/core_ext/array'
-require 'y_support/typing'
-require 'y_support/unicode'
-require 'y_support/abstract_algebra'
+require 'y_support/core_ext/class'
+# require 'y_support/typing'
+# require 'y_support/unicode'
+# require 'y_support/abstract_algebra'
 
 require 'active_support/core_ext/module/delegation'
-require 'active_support/core_ext/array/extract_options'
-require 'active_support/core_ext/string/starts_ends_with'
+# require 'active_support/core_ext/array/extract_options'
+# require 'active_support/core_ext/string/starts_ends_with'
 
-require 'flex_coerce'
+# require 'flex_coerce'
 
 require_relative 'sy/version'
-require_relative 'expressible_in_units'
-require_relative 'sy/prefixes'
-require_relative 'sy/se'
-require_relative 'sy/sps'
-require_relative 'sy/dimension'
-require_relative 'sy/quantity'
-require_relative 'sy/magnitude'
-require_relative 'sy/unit'
-require_relative 'sy/matrix'
+# require_relative 'expressible_in_units'
+# require_relative 'sy/prefixes'
+# require_relative 'sy/se'
+# require_relative 'sy/sps'
+# require_relative 'sy/dimension'
+# require_relative 'sy/quantity'
+# require_relative 'sy/magnitude'
+# require_relative 'sy/unit'
+# require_relative 'sy/matrix'
 
 # The most prominent feature of SY is, that it extends the Numeric class
 # with methods corresponding to units and their abbreviations.
