@@ -99,18 +99,18 @@ class SY::Dimension < Hash
   end
   alias basic? base?
 
-  # Converts the dimension into its superscripted product string (SPS).
-  # 
-  def to_s
-    sps = SY::SPS.new self
-    return sps == "" ? "∅" : sps
-  end
+  # # Converts the dimension into its superscripted product string (SPS).
+  # # 
+  # def to_s
+  #   sps = SY::SPS.new self
+  #   return sps == "" ? "∅" : sps
+  # end
 
-  # Produces the inspect string of the dimension.
-  # 
-  def inspect
-    "#<SY::Dimension: #{self} >"
-  end
+  # # Produces the inspect string of the dimension.
+  # # 
+  # def inspect
+  #   "#<SY::Dimension: #{self} >"
+  # end
 
   # Returns dimension's standard quantity.
   # 
@@ -118,13 +118,13 @@ class SY::Dimension < Hash
     @standard_quantity ||= SY::Quantity.of( self )
   end
 
-  # Returns default quantity composition for this dimension.
-  # 
-  def to_composition
-    SY::Composition[ ( keys.map do |letter|
-                         self.class[ letter ].standard_quantity.absolute
-                       end >> values ).reject { |k, v| v.zero? } ]
-  end
+  # # Returns default quantity composition for this dimension.
+  # # 
+  # def to_composition
+  #   SY::Composition[ ( keys.map do |letter|
+  #                        self.class[ letter ].standard_quantity.absolute
+  #                      end >> values ).reject { |k, v| v.zero? } ]
+  # end
 
   delegate :standard_unit, to: :standard_quantity
 end # class SY::Dimension

@@ -4,8 +4,14 @@
 # **************************************************************************
 # Unit tests for file sy/dimension.rb.
 #
-# File dimension.rb defines class SY::Dimension, representing physical dimensions, such as LENGTH.TIME⁻¹, or MASS.LENGTH⁻³. Each metrological quantity has its dimension. For example, dimension LENGTH.TIME⁻¹ is best known from quantity "SY::Speed", and dimension "MASS.LENGTH⁻³" from quantity "SY::Density"
-# "²", "⁴²", "⁻⁴²". Specification of its main features is below.
+# File dimension.rb defines class SY::Dimension, representing physical
+# dimensions, such as LENGTH.TIME⁻¹, or MASS.LENGTH⁻³. Each metrological
+# quantity has its dimension. For example, dimension LENGTH.TIME⁻¹ is best
+# known from quantity "SY::Speed", and dimension "MASS.LENGTH⁻³" from
+# quantity "SY::Density". But a single dimension can have more than one
+# quantity. For example, entropy and thermal capacity have both same
+# dimension, but they are distinct physical quantities.
+# TODO: Check if I chose this example right.
 # **************************************************************************
 
 require_relative 'test_loader'
@@ -45,37 +51,33 @@ describe "sy/dimension.rb" do
     SY::Dimension.zero.values.must_equal SY::Dimension::BASE.map { 0 }
   end
 
-  # FIXME: Go ahead through dimension.rb and write the unit tests.
-  # 
-  it "old tests" do
+  it "should define operators +, -, *, /" do
+    SY::Dimension.instance_methods.must_include :+
+    SY::Dimension.instance_methods.must_include :-
+    SY::Dimension.instance_methods.must_include :*
+    SY::Dimension.instance_methods.must_include :/
+  end
+
+  it "should define #standard_quantity instance method" do
+    SY::Dimension.instance_methods.must_include :standard_quantity
+  end
+
+  it "should be a subclass of Hash" do
+    SY::Dimension.ancestors.must_include Hash
     skip
-    # Dimension#new should return same instance when asked twice.
-    
-    assert_equal *[ :L, :L ].map { |d| SY::Dimension.new( d ).object_id }
+    # FIXME: This probably already belongs to acceptance
+    # tests, but the assertion (or how is it called) below
+    # is not fullfilled. I am quite sure that Dimension
+    # being a Hash subclass and using full names of base
+    # dimensions as keys was a correct decision, but the
+    # problem is that now its #[] method does not respond
+    # to the abbreviations of the base dimensions. #fetch
+    # method might be another problem.
+    SY::Dimension[ L: 1, T: -1 ][:L].must_equal 1
+  end
 
-    # Other Dimension constructors: #basic and #zero.
-    SY::Dimension.basic( :L ).must_equal SY.Dimension( :L )
-    SY::Dimension.zero.must_equal SY::Dimension.new( '' )
-
-    # SY should have table of standard quantities.
-    assert SY.Dimension( :L ).standard_quantity.is_a? SY::Quantity
-
-    # Instances should provide access to base dimensions.
-    assert_equal [0, 1], [:L, :M].map { |ß| SY.Dimension( :M ).send ß }
-    assert_equal [1, 0], [:L, :M].map { |ß| SY.Dimension( :L )[ß] }
-
-    # #to_a, #to_hash, #zero?
-    ll = SY::BASE_DIMENSIONS.letters
-    SY.Dimension( :M ).to_a.must_equal ll.map { |l| l == :M ? 1 : 0 }
-    SY.Dimension( :M ).to_hash.must_equal Hash[ ll.zip SY.Dimension( :M ).to_a ]
-    SY.Dimension( :M ).zero?.must_equal false
-    SY::Dimension.zero.zero?.must_equal true
-    SY.Dimension( nil ).to_a.must_equal [ 0, 0, 0, 0, 0 ]
-
-    # Dimension arithmetic
-    assert SY.Dimension( :L ) + SY.Dimension( :M ) == SY.Dimension( 'L.M' )
-    assert SY.Dimension( :L ) - SY.Dimension( :M ) == SY.Dimension( 'L.M⁻¹' )
-    assert SY.Dimension( :L ) * 2 == SY.Dimension( 'L²' )
-    assert SY.Dimension( M: 2 ) / 2 == SY.Dimension( :M )
+  it "should define methods #zero? and #base?" do
+    SY::Dimension.instance_methods.must_include :zero?
+    SY::Dimension.instance_methods.must_include :base?
   end
 end

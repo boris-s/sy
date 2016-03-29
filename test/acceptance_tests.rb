@@ -20,6 +20,30 @@ describe SY::Dimension do
     tdim = SY::Dimension[ :TIME ]
   end
 
+  # FIXME: Go ahead through dimension.rb and write the unit tests.
+  # 
+  it "old tests" do
+    skip
+
+    # Instances should provide access to base dimensions.
+    assert_equal [0, 1], [:L, :M].map { |ß| SY.Dimension( :M ).send ß }
+    assert_equal [1, 0], [:L, :M].map { |ß| SY.Dimension( :L )[ß] }
+
+    # #to_a, #to_hash, #zero?
+    ll = SY::BASE_DIMENSIONS.letters
+    SY.Dimension( :M ).to_a.must_equal ll.map { |l| l == :M ? 1 : 0 }
+    SY.Dimension( :M ).to_hash.must_equal Hash[ ll.zip SY.Dimension( :M ).to_a ]
+    SY.Dimension( :M ).zero?.must_equal false
+    SY::Dimension.zero.zero?.must_equal true
+    SY.Dimension( nil ).to_a.must_equal [ 0, 0, 0, 0, 0 ]
+
+    # Dimension arithmetic
+    assert SY.Dimension( :L ) + SY.Dimension( :M ) == SY.Dimension( 'L.M' )
+    assert SY.Dimension( :L ) - SY.Dimension( :M ) == SY.Dimension( 'L.M⁻¹' )
+    assert SY.Dimension( :L ) * 2 == SY.Dimension( 'L²' )
+    assert SY.Dimension( M: 2 ) / 2 == SY.Dimension( :M )
+  end
+
   it "should be a subclass of Hash" do
     SY::Dimension.ancestors.must_include Hash
   end

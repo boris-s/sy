@@ -28,15 +28,18 @@ module SY
   end
   class Unit
 #     include NameMagic
-#     def self.of *args; 1 end
+    def self.of *args; 1 end
     def self.standard *args; 1 end
   end
   class Quantity
 #     include NameMagic
     def self.standard *args; new *args end
     def self.dimensionless *args; new *args end
+    def self.of *args; new *args end
     attr_reader :args
     def initialize *args; @args = args end
+    def method_missing *args; self end
+    def coerce *args; [1, 1] end
   end
 end
 # Require the tested component itself.
@@ -59,6 +62,7 @@ describe "sy.rb" do
 
   it "should attempt to define AVOGADRO_CONSTANT" do
     ( defined? SY::AVOGADRO_CONSTANT ).must_equal "constant"
+    ( defined? SY::Nᴀ ).must_equal "constant"
   end
 
   it "should attempt to define MoleAmount" do
@@ -67,5 +71,110 @@ describe "sy.rb" do
 
   it "should attempt to define MOLE" do
     ( defined? SY::MOLE ).must_equal "constant"
+  end
+
+  it "should attempt to define Length" do
+    ( defined? SY::Length ).must_equal "constant"
+  end
+
+  it "should attempt to define Length" do
+    ( defined? SY::METRE ).must_equal "constant"
+  end
+
+  it "should attempt to define Mass" do
+    ( defined? SY::METRE ).must_equal "constant"
+  end
+
+  it "should attempt to define certain units of mass" do
+    ( defined? SY::KILOGRAM ).must_equal "constant"
+    ( defined? SY::GRAM ).must_equal "constant"
+    ( defined? SY::TON ).must_equal "constant"
+    ( defined? SY::DALTON ).must_equal "constant"
+  end
+
+  it "should attempt to define quantity Time" do
+    ( defined? SY::Time ).must_equal "constant"
+  end
+
+  it "should define certain units of time" do
+    ( defined? SY::SECOND ).must_equal "constant"
+    ( defined? SY::MINUTE ).must_equal "constant"
+    ( defined? SY::HOUR ).must_equal "constant"
+    ( defined? SY::DAY ).must_equal "constant"
+    ( defined? SY::WEEK ).must_equal "constant"
+    ( defined? SY::SYNODIC_MONTH ).must_equal "constant"
+    ( defined? SY::YEAR ).must_equal "constant"
+  end
+
+  it "should attempt to define ElectricCharge quantity" do
+    ( defined? SY::ElectricCharge ).must_equal "constant"
+  end
+
+  it "should attempt to define certain units of electric charge" do
+    ( defined? SY::COULOMB ).must_equal "constant"
+  end
+
+  it "should attempt to define Temperature quantity" do
+    ( defined? SY::Temperature ).must_equal "constant"
+  end
+
+  it "should attempt to define certain units of temperature" do
+    ( defined? SY::KELVIN ).must_equal "constant"
+  end
+
+  it "should attempt to define TRIPLE_POINT_OF_WATER constant" do
+    ( defined? SY::TRIPLE_POINT_OF_WATER ).must_equal "constant"
+    ( defined? SY::TP_H₂O ).must_equal "constant"
+  end
+
+  it "should attempt to define Celsius temperature and related assets" do
+    skip
+    flunk "Celsius temperatures not done yet!"
+  end
+
+  it "should attempt to define certain dimensionless quantities" do
+    skip
+    flunk "Extended set of dimensionless quantities not handled yet!"
+  end
+
+  it "should attempt to define quantity Area" do
+    ( defined? SY::Area ).must_equal "constant"
+  end
+
+  it "should attempt to define quantity Volume" do
+    ( defined? SY::Volume ).must_equal "constant"
+  end
+
+  it "should attempt to define quantity LitreVolume" do
+    ( defined? SY::LitreVolume ).must_equal "constant"
+  end
+
+  it "should attempt to define certain volume units" do
+    ( defined? SY::LITRE ).must_equal "constant"
+  end
+
+  it "should attempt to define quantity Molarity" do
+    ( defined? SY::Molarity ).must_equal "constant"
+  end
+
+  it "should attempt to define unit MOLAR" do
+    ( defined? SY::MOLAR ).must_equal "constant"
+  end
+
+  it "should attempt to define quantity Density" do
+    skip
+    # Density is not such a simple thing to say. Although commonly, people
+    # will expect volumetric density with dimension M.L⁻³, there are many
+    # other possible kinds of densities. I should check the terminology of
+    # this physical unit.
+    ( defined? SY::Density ).must_equal "constant"
+  end
+
+  it "should attempt to define quantity Frequency" do
+    ( defined? SY::Frequency ).must_equal "constant"
+  end
+
+  it "should attempt to define quantity Frequency" do
+    ( defined? SY::HERTZ ).must_equal "constant"
   end
 end
