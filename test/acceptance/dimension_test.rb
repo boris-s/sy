@@ -75,11 +75,13 @@ describe SY::Dimension do
       end
 
       it "should have #== method working as expected" do
+        skip
         flunk "Test not written!"
         # FIXME #== method
       end
 
       it "should not allow #merge/#merge! method ... " do
+        skip
         # FIXME: to construct abnormal dimensions,
         # neither it should be possible with other Hash-inherited methods
         flunk "Test not written! #merge method is crucial for dimension arithmetics!"
@@ -137,6 +139,7 @@ describe SY::Dimension do
 
       describe "coercion for the purposes of multiplication by an integer" do
         it "should have #coerce method allowing multiplication by an integer" do
+          skip
           flunk "Test not written!"
         end
       end
@@ -212,6 +215,18 @@ describe SY::Dimension do
       assert @Z.equal @L - @L
       assert @Z.equal @T - @T
       assert SY::Dimension[ "L³" ].equal @L * 3
+    end
+
+    describe "#standard_quantity method" do
+      it "should return always the same Quantity instance" do
+        @Z.standard_quantity.must_be_kind_of SY::Quantity
+        skip
+        @Z.standard_quantity.object_id
+          .must_equal ( @L - @L ).standard_quantity.object_id
+        @L.standard_quantity.must_be_kind_of SY::Quantity
+        @L.standard_quantity.object_id
+          .must_equal ( SY::Dimension[ L: 2 ] / 2 ).standard_quantity.object_id
+      end
     end
 
     it "should have other features" do # these were old tests

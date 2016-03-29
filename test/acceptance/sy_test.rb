@@ -10,11 +10,13 @@ require_relative 'test_loader'
 
 describe "general features" do
   it "should give method name collision warning" do
+    skip
     # warn if prospective unit method name already defined
     flunk "Test not written!"
   end
 
   it "should give redefine warning" do
+    skip
     # when trying to overshadow existing unit methods
     flunk "Test not written!"
   end

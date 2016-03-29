@@ -11,47 +11,42 @@
 # **************************************************************************
 
 require_relative 'test_loader'
-module SY; end
+# Require the tested component itself.
 require_relative '../../lib/sy/quantity.rb'
 
 describe "quantity.rb" do
-  # FIXME: These look more like acceptance tests.
-  before do
-    # @q1 = SY::Quantity.new of: '∅'
-    # @q2 = SY::Quantity.dimensionless
-    # @amount_in_dozens = begin
-    #                       SY.Quantity( "AmountInDozens" )
-    #                     rescue
-    #                       SY::Quantity.dimensionless amount: 12, ɴ: "AmountInDozens"
-    #                     end
-    # @inch_length = begin
-    #                  SY.Quantity( "InchLength" )
-    #                rescue NameError
-    #                  SY::Quantity.of SY::Length.dimension, ɴ: "InchLength"
-    #                end
+  describe "class methods" do
+    it "should have .of constructor" do
+      SY::Quantity.methods.must_include :of
+    end
+
+    it "should have .dimensionless constructor" do
+      SY::Quantity.methods.must_include :dimensionless
+    end
+
+    it "should have .standard accessor" do
+      SY::Quantity.methods.must_include :standard
+    end
   end
 
-  it "should behave as expected" do
+  # FIXME: Below are only sample tests from dimension_tests.rb
+
+  it "should define operators +, -, *, / and negation" do
     skip
-    refute_equal @q1, @q2
-    assert @q1.absolute? && @q2.absolute?
-    assert @q1 == @q1.absolute
-    assert_equal false, @q1.relative?
-    assert_equal SY::Composition.new, @q1.composition
-    @q1.set_composition SY::Composition[ SY::Amount => 1 ]
-    assert_equal SY::Composition[ SY::Amount => 1 ], @q1.composition
-    @amount_in_dozens.must_be_kind_of SY::Quantity
-    d1 = @amount_in_dozens.magnitude 1
-    a12 = SY::Amount.magnitude 12
-    mda = @amount_in_dozens.measure of: SY::Amount
-    r, w = mda.r, mda.w
-    ra = r.( a12.amount )
-    @amount_in_dozens.magnitude ra
-    ra = @amount_in_dozens.read( a12 )
-    assert_equal @amount_in_dozens.magnitude( 1 ),
-                 @amount_in_dozens.read( SY::Amount.magnitude( 12 ) )
-    assert_equal SY::Amount.magnitude( 12 ),
-                 @amount_in_dozens.write( 1, SY::Amount )
-    SY::Length.composition.must_equal SY::Composition.singular( :Length )
+    SY::Dimension.instance_methods.must_include :+
+    SY::Dimension.instance_methods.must_include :-
+    SY::Dimension.instance_methods.must_include :*
+    SY::Dimension.instance_methods.must_include :/
+    SY::Dimension.instance_methods.must_include :-@
+  end
+
+  it "should carry its own definition of #to_s method" do
+    skip
+    SY::Dimension.instance_methods( false ).must_include :to_s
+  end
+
+  it "should carry its own definition of #inspect method" do
+    skip
+    SY::Dimension.instance_methods( false ).must_include :inspect
   end
 end

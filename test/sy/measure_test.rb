@@ -6,7 +6,6 @@
 # **************************************************************************
 
 require_relative 'test_loader'
-module SY; end
 require_relative '../../lib/sy/measure.rb'
 
 describe "sy/measure.rb" do

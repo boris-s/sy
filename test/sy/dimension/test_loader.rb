@@ -10,5 +10,5 @@ require_relative '../test_loader'
 
 # Make an empty class named SY::Dimension for testing purposes.
 # 
-class SY::Dimension
+class SY::Dimension < Hash
 end

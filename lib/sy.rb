@@ -2,7 +2,7 @@
 
 unless defined? SY::UNIT_TEST
   # require 'y_support/null_object'
-  # require 'y_support/name_magic'
+  require 'y_support/name_magic'
   require 'y_support/core_ext/hash'
   require 'y_support/core_ext/array'
   require 'y_support/core_ext/class'
@@ -18,7 +18,7 @@ unless defined? SY::UNIT_TEST
 
   require_relative 'sy/version'
   require_relative 'expressible_in_units'
-  # require_relative 'sy/prefixes'
+  require_relative 'sy/prefixes'
   require_relative 'sy/se'
   require_relative 'sy/sps'
   require_relative 'sy/dimension'
@@ -59,19 +59,6 @@ module SY
   AUTOINCLUDE = true unless defined? SY::AUTOINCLUDE
 end
 
-Numeric.class_exec { include ExpressibleInUnits } if SY::AUTOINCLUDE
-# FIXME: Executing this line before the module is defined causes
-# the #included hook method not to notice collisions. However, it cannot
-# be executed after, either -- because when boostrapping the unit definitions,
-# I rely on the machine already knowing what 1.m, 1.kg etc. are.
-
-# Not at all, I don't!
-
-# This means that there have to be additional checks whenever a new unit is
-# introduced. Check for collision should, thirdly, be performed whenever a
-# new method is defined via #method_missing hook, but I feel this is too late
-# to warn the user about important collisions.
-
 # === Instead of introduction
 #
 # SY module defines certain expected constants, quantities and units. The best
@@ -79,9 +66,10 @@ Numeric.class_exec { include ExpressibleInUnits } if SY::AUTOINCLUDE
 # of the most common quantities and units right in the SY module code.
 #
 module SY
-=begin
   # Let SY::Amount be a standard dimensionless quantity.
-  Amount = Quantity.standard of: Dimension.zero
+  # Amount = Quantity.standard of: Dimension.zero
+
+=begin
 
   # Let SY::UNIT be a standard unit of SY::Amount. Note that naming the
   # constant "UNIT" automagically (using y_support/name_magic) sets its name
@@ -91,7 +79,6 @@ module SY
   UNIT = Unit.standard of: Amount
   puts "UNIT constructed. SY::Unit instances are" +
        "#{SY::Unit.instances.names( false )}" if SY::DEBUG
-
   # AVOGADRO_CONSTANT (Nᴀ) is a certain well-known amount of things:
   Nᴀ = AVOGADRO_CONSTANT = 6.02214e23
 
@@ -380,3 +367,27 @@ module SY
 
   # ELECTRONVOLT = Unit.of Energy, short: "eV", amount: ELEMENTARY_CHARGE * VOLT
 end
+
+Numeric.class_exec { include ExpressibleInUnits } if SY::AUTOINCLUDE
+# 
+# FIXME: This line feels a bit lonely at the end of the file. Having it
+# here has the advantage that all the major units are already defined
+# and .included hook of ExpressibleInUnits thus has the chance to notice
+# all major collisions. Having it here also demonstrates that
+# the unit definitions do not rely at all on ExpressibleInUnits being
+# included in Numeric.
+# 
+# But anyway, there have to be additional anti-collision check performed
+# whenever a new unit is introduced.
+# 
+# Check can also be performed upon defining a new method is defined via
+# ExpressibleInUnits#method_missing hook, but I feel this is too late to
+# warn the user about important collisions.
+#
+# Moreover, the namespaces in which ExpressibleInUnits is included should
+# themselves start watching for defining a method colliding with existing
+# units.
+#
+# From these 4 mentioned opportunities for collision checks, I should
+# think how to create a convenient collision warning mechanism.
+
