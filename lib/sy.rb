@@ -71,10 +71,7 @@ module SY
   # of the constant "UNIT" implies, via YSupport's NameMagic mixin, that the
   # name of the object becomes :unit and that it is possible to use syntax
   # such as 42.unit to create magnitudes of SY::Amount.
-  puts "About to construct UNIT." if SY::DEBUG
   UNIT = Unit.standard of: Amount
-  puts "UNIT constructed. SY::Unit instances are " +
-    "#{SY::Unit.instance_names}" if SY::DEBUG
 
   # AVOGADRO_CONSTANT (Nᴀ) is a certain well-known amount of things:
   Nᴀ = AVOGADRO_CONSTANT = 6.02214e23
@@ -83,11 +80,7 @@ module SY
   MoleAmount = Quantity.dimensionless coerces: Amount
 
   # And let SY::MOLE be its standard unit, related to SY::Amount via Nᴀ:
-  puts "About to construct MOLE." if SY::DEBUG
   MOLE = Unit.standard of: MoleAmount, short: "mol", amount: Nᴀ * UNIT
-  puts SY::Unit.__instances__ if SY::DEBUG
-  puts "MOLE constructed. SY::Unit instances are" +
-    "#{SY::Unit.instance_names}" if SY::DEBUG
 
   # === Basic dimension L (length)
 
@@ -185,7 +178,7 @@ module SY
       super
     end
 
-    # FIXME: #% method etc
+    # TODO: #% method etc
   end
 
   # Making sure that for Celsius temperature, #°C returns absolute magnitude.
@@ -196,10 +189,6 @@ module SY
     end
   end
 
-  # FIXME: Make this more systematic.
-  # FIXME: Make sure that SI prefixes may not be used with Celsius
-  # FIXME: Make sure that highly unusual SI prefixes may not be used
-
   class << CelsiusTemperature.send( :Magnitude )
     include SY::CelsiusMagnitude
   end
@@ -208,31 +197,8 @@ module SY
     include SY::CelsiusMagnitude
   end
 
-  # alias :°C :celsius                 # with U+00B0 DEGREE SIGN
-  # alias :˚C :celsius                 # with U+02DA RING ABOVE
-  # alias :℃ :celsius                  # U+2103 DEGREE CELSIUS
-
-  # FahrenheitTemperature = Quantity.of :Θ
-  # FAHRENHEIT = Unit.standard of: FahrenheitTemperature, short: '°F'
-  # # alias :°F :fahrenheit              # with U+00B0 DEGREE SIGN
-  # # alias :˚F :fahrenheit              # with U+02DA RING ABOVE
-  # # alias :℉ :fahrenheit               # U+2109 DEGREE FAHRENHEIT
-  # # FIXME: Patch FahrenheitTemperature to make it work with SY::Temperature
-
-  
-  # HUMAN_BODY_TEMPERATURE = 37.°C.( KELVIN )
-  # STANDARD_TEMPERATURE = 25.°C.( KELVIN )
   HUMAN_BODY_TEMPERATURE = TP_H₂O + 37 * KELVIN
   STANDARD_LABORATORY_TEMPERATURE = TP_H₂O + 25 * KELVIN
-
-  # === Dimensionless quantities
-
-  # For now, these are just unimplemented proposals of what users might expect
-  # from SY:
-  # 
-  # degree, alias deg, ° # angle measure
-  # arcminute, alias ʹ, ′ # angle measure
-  # arcsecond, alias ʹʹ, ′′, ″
 
   # === Quantities of composite dimensions
 
@@ -281,7 +247,7 @@ module SY
   # of its dimension.
   Speed = ( Length / Time ).standard!
 
-  # Common constant
+  # Commonly used constant.
   SPEED_OF_LIGHT = 299_792_458 * METRE / SECOND
 
   # Supplementary unit of length.
@@ -299,7 +265,7 @@ module SY
   # For SY::Energy...
   Energy = ( Force * Length ).standard!
 
-  # make SY::JOULE its standard unit:
+  # Make SY::JOULE its standard unit:
   JOULE = Unit.standard of: Energy, short: "J"
   # SY::CALORIE means thermochemical calorie:
   CALORIE = Unit.of Energy, short: "cal", amount: 4.184 * JOULE
@@ -330,11 +296,6 @@ module SY
 
   # make SY::VOLT its standard unit:
   VOLT = Unit.standard of: ElectricPotential, short: "V"
-
-  # TODO: This should raise a friendly error:
-  # MOLAR = Unit.standard of: Molarity, short: "M", amount: 1.mol.l⁻¹
-  # (normal way of definition is MOLAR = Unit.standard of: Molarity, short: "M"
-  # and it has already been defined to boot)
 
   # SY::Molality...
   Molality = MoleAmount / Mass

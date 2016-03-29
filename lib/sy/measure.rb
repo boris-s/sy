@@ -87,11 +87,8 @@ class SY::Measure
   # Inverse measure.
   # 
   def inverse
-    if ratio.nil? then
-      self.class.new( r: w, w: r ) # swap closures
-    else
-      self.class.new( ratio: 1 / ratio )
-    end
+    if ratio.nil? then self.class.new( r: w, w: r ) # swap closures
+    else self.class.new( ratio: 1 / ratio ) end
   end
 
   # Measure composition (like f * g function composition).
@@ -101,9 +98,7 @@ class SY::Measure
       r1, r2, w1, w2 = r, other.r, w, other.w
       self.class.new( r: lambda { |ref_amnt| r1.( r2.( ref_amnt ) ) },
                       w: lambda { |amnt| w2.( w1.( amnt ) ) } )
-    else
-      self.class.new( ratio: ratio * other.ratio )
-    end
+    else self.class.new( ratio: ratio * other.ratio ) end
   end
 
   # Measure composition with inverse of another measure.

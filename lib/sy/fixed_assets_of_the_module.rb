@@ -18,22 +18,16 @@ module SY
   class << BASE_DIMENSIONS
     # Letters of the base dimensions.
     #
-    def letters
-      keys
-    end
+    def letters; keys end
 
     # Base dimensions letters with prefixes. (Remark: I forgot what did I mean
     # those prefixes for. Something important, I just forgot what.)
     # 
-    def prefixed_letters
-      [] # none for now
-    end
+    def prefixed_letters; [] end
 
     # Base dimension symbols – letters and prefixed letters.
     # 
-    def base_symbols
-      @baseß ||= letters + prefixed_letters
-    end
+    def base_symbols; @baseß ||= letters + prefixed_letters end
     alias basic_symbols base_symbols
 
     # Takes an sps representing a dimension, and converts it to a hash of
@@ -45,7 +39,7 @@ module SY
     end
   end
 
-    # Table of standard prefixes and their corresponding unit multiples.
+  # Table of standard prefixes and their corresponding unit multiples.
   # 
   PREFIX_TABLE = [ { full: "exa", short: "E", factor: 1e18 },
                    { full: "peta", short: "P", factor: 1e15 },
@@ -144,9 +138,7 @@ module SY
   SUPERSCRIPT = Hash.new { |ꜧ, key|
     if key.is_a? String then
       key.size <= 1 ? nil : key.each_char.map{|c| ꜧ[c] }.join
-    else
-      ꜧ[key.to_s]
-    end
+    else ꜧ[key.to_s] end
   }.merge! Hash[ '-/0123456789'.each_char.zip( '⁻⎖⁰¹²³⁴⁵⁶⁷⁸⁹'.each_char ) ]
 
   # Reverse conversion of Unicode superscript exponents (from exponent
@@ -155,9 +147,7 @@ module SY
   SUPERSCRIPT_DOWN = Hash.new { |ꜧ, key|
     if key.is_a? String then
       key.size == 1 ? nil : key.each_char.map{|c| ꜧ[c] }.join
-    else
-      ꜧ[key.to_s]
-    end
+    else ꜧ[key.to_s] end
   }.merge!( SUPERSCRIPT.invert ).merge!( '¯' => '-', # other superscript chars
                                          '´' => '/' )
 

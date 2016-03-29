@@ -65,9 +65,7 @@ class Matrix
   def /(other)
     case other
     when Numeric
-      rows = @rows.collect {|row|
-        row.collect {|e| e / other }
-      }
+      rows = @rows.collect do |row| row.collect {|e| e / other } end
       return new_matrix rows, column_count
     when Matrix
       return self * other.inverse

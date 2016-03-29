@@ -12,15 +12,11 @@ class SY::Measure
   class << self
     # Identity measure.
     # 
-    def identity
-      simple_scale 1
-    end
+    def identity; simple_scale 1 end
 
     # Simple scaling measure. (Eg. pounds vs kilograms)
     # 
-    def simple_scale scale
-      new( ratio: scale )
-    end
+    def simple_scale scale; new( ratio: scale ) end
 
     # Simple offset measure. (Such as °C)
     # 
@@ -89,11 +85,8 @@ class SY::Measure
   # Inverse measure.
   # 
   def inverse
-    if ratio.nil? then
-      self.class.new( r: w, w: r ) # swap closures
-    else
-      self.class.new( ratio: 1 / ratio )
-    end
+    if ratio.nil? then self.class.new( r: w, w: r ) # swap closures
+    else self.class.new( ratio: 1 / ratio ) end
   end
 
   # Measure composition (like f * g function composition).

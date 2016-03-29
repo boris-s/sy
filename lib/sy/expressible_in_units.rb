@@ -23,7 +23,7 @@ module SY::ExpressibleInUnits
           im = instance_method ß
           warn w unless ::SY::ExpressibleInUnits.method_family.include? im if
             ꜧ[ß].warns? unless instance_variable_get( :@no_collision ) == ß
-          instance_variable_set( :@no_collision, nil ) # FIXME: This is too clumsy
+          instance_variable_set( :@no_collision, nil )
         else
           warn w if ꜧ[ß].warns?
         end
@@ -33,7 +33,7 @@ module SY::ExpressibleInUnits
           im = instance_method ß
           warn w unless ::SY::ExpressibleInUnits.method_family.include? im if
             ꜧ[ß].warns? unless instance_variable_get( :@no_collision ) == ß
-          instance_variable_set( :@no_collision, nil ) # FIXME: This is too clumsy
+          instance_variable_set( :@no_collision, nil )
         else
           warn w if ꜧ[ß].warns?
         end
@@ -83,10 +83,7 @@ module SY::ExpressibleInUnits
     def known_units
       begin
         unit_namespace.instances
-      rescue NoMethodError 
-        [] # no #instances method defined yet
-      end
-        .tap { |r| puts "Known units are #{r}" if SY::DEBUG }
+      rescue NoMethodError; [] end
     end
 
     # All methods defined by this mixin.
@@ -98,7 +95,6 @@ module SY::ExpressibleInUnits
     # Find unit based on name / abbreviation.
     # 
     def find_unit ς
-      puts "searching for unit #{ς}" if SY::DEBUG
       known_units.find do |u|
         u.name.to_s.downcase == ς.downcase &&
           ( ς == ς.downcase || ς == ς.upcase ) ||
@@ -109,7 +105,6 @@ module SY::ExpressibleInUnits
     # Return prefix method or empty string, if prefix method not necessary.
     # 
     def prefix_method_string prefix
-      puts "About to call PREFIX TABLE.to_full with #{prefix}" if SY::DEBUG
       full_prefix = SY::PREFIX_TABLE.to_full( prefix )
       full_prefix == '' ? '' : ".#{full_prefix}"
     end
@@ -126,19 +121,12 @@ module SY::ExpressibleInUnits
     super if ß.to_s =~ /to_.+/ # dissmiss :to_..., esp. :to_ary
     begin # prevent recurrent call of method_missing for the same symbol
       anti_recursion_exec token: ß, var: :@SY_Units_mmiss do
-        puts "Method missing: '#{ß}'" if SY::DEBUG
         prefixes, units, exps = parse_unit_symbol ß
-        # Define the unit method on self.class:
-        # I'D HAVE TO PERFORM THE COLLISION CHECK HERE
-        # IF NO COLLISION, INFORM THE SUBSEQUENT METHOD DEFINED CALL ON
-        # SELF.CLASS
-        puts "parsed" if SY::DEBUG
-        self.class.instance_variable_set "@no_collision", ß # FIXME: This is too clumsy
+        self.class.instance_variable_set "@no_collision", ß
         self.class.module_eval write_unit_method( ß, prefixes, units, exps )
         SY::ExpressibleInUnits.method_family << self.class.instance_method( ß )
       end
     rescue NameError => err
-      puts "NameError raised: #{err}" if SY::DEBUG
       super # give up
     rescue SY::ExpressibleInUnits::RecursionError
       super # give up
@@ -167,7 +155,6 @@ module SY::ExpressibleInUnits
   # figures out which SY units it represents, along with prefixes and exponents. 
   # 
   def parse_unit_symbol ß
-    puts "About to parse #{ß} using all prefixes" if SY::DEBUG
     SY::Unit.parse_sps_using_all_prefixes( ß ) # rely on SY::Unit
   end
 
@@ -176,12 +163,10 @@ module SY::ExpressibleInUnits
   # Arrays must be of equal length. (Note: 'ß' is 'symbol', 'ς' is 'string')
   # 
   def write_unit_method ß, prefixes, units, exponents
-    puts "writing unit method #{ß}" if SY::DEBUG
     # Prepare prefix / unit / exponent triples for making factor strings:
     triples = [ prefixes, units, exponents ].transpose
     # A procedure for triple processing before use:
     process_triple = lambda do |pfx, unit_ς, exp|
-      puts "Processing triple #{pfx}, #{unit_ς}, #{exp}." if SY::DEBUG
       [ ::SY::ExpressibleInUnits.find_unit( unit_ς ).name.to_s.upcase, 
         ::SY::ExpressibleInUnits.prefix_method_string( pfx ),
         ::SY::ExpressibleInUnits.exponentiation_string( exp ) ]
@@ -211,7 +196,7 @@ module SY::ExpressibleInUnits
       method_body = factors.join( " * \n    " )
     end
     # Return the finished method string:
-    return ( method_skeleton % method_body ).tap { |ς| puts ς if SY::DEBUG }
+    return ( method_skeleton % method_body )
   end
 
   # Takes a token as the first argument, a symbol of the instance variable to
@@ -230,9 +215,4 @@ module SY::ExpressibleInUnits
       registry.delete token
     end
   end
-
-  # FIXME: There should be an option to define by default, already at the
-  # beginning, certain methods for certain classes, to get in front of possible
-  # collisions. Collision was detected for example for #second with
-  # active_support/duration.rb
 end

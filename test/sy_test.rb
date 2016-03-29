@@ -10,8 +10,8 @@ require 'mathn'
 require 'minitest/autorun'
 
 # The following will load SY library
-require 'sy'
-# require './../lib/sy'
+# require 'sy'
+require './../lib/sy'
 
 # **************************************************************************
 # THE SPECIFICATIONS START HERE
@@ -312,7 +312,7 @@ describe SY::Quantity, SY::Magnitude do
         rescue
         end
       end.must_include :M
-      SY::Unit.instance_names.must_include :MOLE
+      SY::Unit.instances.names( false ).must_include :MOLE
       # Avogadro's number is defined directly in SY
       1.mol.quantity.object_id.must_equal SY::Nᴀ.unit.( SY::MoleAmount ).quantity.object_id
       SY::Nᴀ.unit.( SY::MoleAmount ).must_equal 1.mol
@@ -391,40 +391,6 @@ describe SY::Quantity, SY::Magnitude do
       assert_equal 273.15, 0.°C.in( :K )
       assert_equal SY::Unit.instance( :SECOND ), SY::Unit.instance( :second )
       assert_equal SY::TRIPLE_POINT_OF_WATER, 0.°C # coercion behavior
-      assert 2.°C.eql?( 1.°C + 1.K )
-      assert ( 1.°C - 1.°C ).eql?( 0.K )
-      assert_equal :raised, begin
-                              1.°C + 1.°C
-                              :nothing_raised
-                            rescue QuantityError
-                              :raised
-                            end
-      assert_equal :raised, begin
-                              1.K + 1.°C
-                              :nothing_raised
-                            rescue QuantityError
-                              :raised
-                            end
-      assert_equal :raised, begin
-                              1.K - 1.°C
-                              :nothing_raised
-                            rescue QuantityError
-                              :raised
-                            end
-      assert 1.mm.K⁻¹.eql?( 1.mm.°C⁻¹ )
-      assert 1.mm.K.eql?( 1.mm.°C )
-      assert_equal :raised, begin
-                              1.mm / 1.°C
-                              :nothing_raised
-                            rescue QuantityError
-                              :raised
-                            end
-      assert_equal :raised, begin
-                              1.mm * 1.°C
-                              :nothing_raised
-                            rescue QuantityError
-                              :raised
-                            end
     end
   end
 end

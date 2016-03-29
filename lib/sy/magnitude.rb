@@ -265,124 +265,16 @@ module SY::Magnitude
 
   # 
   def to_s( unit=quantity.units.first || quantity.standard_unit,
-            number_format=default_amount_format ) # FIXME: TUTO JE TO KUREVSTVO TU SA TA JEDNOTKA KONSTRUUJE
-    puts "#to_s called on a magnitude of quantity #{quantity}" if SY::DEBUG
-    # step 1: produce pairs [number, unit_presentation],
-    #         where unit_presentation is an array of triples
-    #         [prefix, unit, exponent], which together give the
-    #         correct dimension for this magnitude, and correct
-    #         factor so that number * factor == self.amount
-    # step 2: define a goodness function for them
-    # step 3: define a satisfaction criterion
-    # step 4: maximize this goodness function until the satisfaction
-    #         criterion is met
-    # step 5: interpolate the string from the chosen choice
-    
-    # so, let's start doing it
-    # how do we produce the first choice?
-    # if the standard unit for this quantity is named, we'll start with it
-    
-    # let's say that the abbreviation of this std. unit is Uu, so the first
-    # choices will be:
-    # 
-    #                        amount.Uu
-    #                        (amount * 1000).µUu
-    #                        (amount / 1000).kUu
-    #                        (amount * 1_000_000).nUu
-    #                        (amount / 1_000_000).MUu
-    #                        ...
-    #                        
-    # (let's say we'll use only short prefixes)
-    #
-    # which one do we use?
-    # That depends. For example, CelsiusTemperature is never rendered with
-    # SI prefixes, so their cost should be +Infinity
-    # 
-    # Cost of the number could be eg.:
-    #
-    #          style:                cost:
-    #          3.141                 0
-    #          31.41, 314.1          1
-    #          0.3141                2
-    #          3141.0                3
-    #          0.03141               4
-    #          31410.0               5n
-    #          0.003141              6
-    #          ...
-    #          
-    # Default cost of prefixes could be eg.
-    #
-    #          unit representation:  cost:
-    #          U                     0
-    #          dU                    +Infinity
-    #          cU                    +Infinity
-    #          mU                    1
-    #          dkU                   +Infinity
-    #          hU                    +Infinity
-    #          kU                    1
-    #          µU                    2
-    #          MU                    2
-    #          nU                    3
-    #          GU                    3
-    #          pU                    4
-    #          TU                    4
-    #          fU                    5
-    #          PU                    5
-    #          aU                    6
-    #          EU                    6
-    #
-    # Cost of exponents could be eg. their absolute value, and +1 for minus sign
-    #
-    # Same unit with two different prefixes may never be used (cost +Infinity)
-    #
-    # Afterwards, there should be cost of inconsistency. This could be implemented
-    # eg. as computing the first 10 possibilities for amount: 1 and giving them
-    # bonuses -20, -15, -11, -8, -6, -5, -4, -3, -2, -1. That would further reduce the variability of the
-    # unit representations.
-    #
-    # Commenting again upon default cost of prefixes, prefixes before second:
-    #
-    #          prefix:               cost:
-    #          s                     0
-    #          ms                    4
-    #          ns                    5
-    #          ps                    6
-    #          fs                    7
-    #          as                    9
-    #          ks                    +Infinity
-    #          Ms                    +Infinity
-    #          ...
-    #
-    # Prefixes before metre
-    #
-    #          prefix:               cost:
-    #          m                     0
-    #          mm                    2
-    #          µm                    2
-    #          nm                    3
-    #          km                    3
-    #          Mm                    +Infinity
-    #          ...
-    #          
-
-    # number, unit_presentation = choice
-
-    # return "#{amount} of #{quantity}"
-
+            number_format=default_amount_format )
     begin
-      
       un = unit.short || unit.name
-      
       if un then
         number = self.in unit
         number_ς = number_format % number
-        
         prefix = ''
         exp = 1
         # unit_presentation = prefix, unit, exp
-        
         unit_ς = SY::SPS.( [ "#{prefix}#{unit.short}" ], [ exp ] )
-        
         [ number_ς, unit_ς ].join '.'
       else
         number = amount
@@ -406,7 +298,6 @@ module SY::Magnitude
         return number_ς if unit_ς == '' || unit_ς == 'unit'
         [ number_ς, unit_ς ].join '.'
       end
-      
     rescue
       fail
       number_ς = number_format % amount
@@ -414,29 +305,9 @@ module SY::Magnitude
     end
   end
 
-  # def to_s unit=quantity.units.first, number_format='%.3g'
-  #   begin
-  #     return to_string( unit ) if unit and unit.abbreviation
-  #   rescue
-  #   end
-  #   # otherwise, use units of basic dimensions – here be the magic:
-  #   hsh = dimension.to_hash
-  #   symbols, exponents = hsh.each_with_object Hash.new do |pair, memo|
-  #     dimension_letter, exponent = pair
-  #     std_unit = SY::Dimension.basic( dimension_letter ).standard_unit
-  #     memo[ std_unit.abbreviation || std_unit.name ] = exponent
-  #   end.to_a.transpose
-  #   # assemble the superscripted product string:
-  #   sps = SY::SPS.( symbols, exponents )
-  #   # and finally, interpolate the string
-  #   "#{number_format}#{sps == '' ? '' : '.' + sps}" % amount
-  #   "#{amount}#{sps == '' ? '' : '.' + sps}"
-  # end
-  
   # Inspect string of the magnitude
   # 
   def inspect
-    puts "inspect called on a magnitude of quantity #{quantity}" if SY::DEBUG
     "#<#{çς}: #{self} >"
   end
 

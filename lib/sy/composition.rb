@@ -28,8 +28,8 @@ class SY::Composition < Hash
     ꜧ.reject! { |_, exp| exp == 0 }
   }
 
-  # FIXME: This quick fix simplification rule simplifies MoleAmount and
-  # LitreVolume into Molarity. This solution is insufficiently systematic.
+  # This simplification rule simplifies MoleAmount and LitreVolume into
+  # Molarity.
   # 
   SR << -> ꜧ {
     begin
@@ -61,8 +61,8 @@ class SY::Composition < Hash
     return ꜧ
   }
 
-  # FIXME: This quick fix simplification rule simplifies LitreVolume times
-  # Molarity into MoleAmount. This solution is insufficiently systematic.
+  # This simplification rule simplifies LitreVolume times Molarity into
+  # MoleAmount.
   # 
   SR << -> ꜧ {
     begin
@@ -130,8 +130,6 @@ class SY::Composition < Hash
   # is a base dimension.
   # 
   def atomic?
-    puts "composition is #{self}" if SY::DEBUG
-    puts "first[0].dimension is #{first[0].dimension}" if SY::DEBUG
     singular? && first[0].dimension.base?
   end
 
@@ -206,9 +204,8 @@ class SY::Composition < Hash
   # 
   def simplify
     ꜧ = self.to_hash
-    puts "simplifying #{ꜧ}" if SY::DEBUG
     SIMPLIFICATION_RULES.each { |rule| rule.( ꜧ ) }
-    self.class[ ꜧ ].tap { |_| puts "result is #{_}" if SY::DEBUG }
+    self.class[ ꜧ ]
   end
 
   # Returns the quantity appropriate to this composition.
@@ -236,15 +233,8 @@ class SY::Composition < Hash
   # of the pertinent standard quantity.)
   # 
   def infer_measure
-    puts "#infer_measure; hash is #{self}" if SY::DEBUG
     map do |qnt, exp|
-      puts "#infer_measure: doing quantity #{qnt} with exponent #{exp}!" if SY::DEBUG
-      if qnt.standardish? then
-        puts "#{qnt} standardish" if SY::DEBUG
-        SY::Measure.identity
-      else
-        puts "#{qnt} not standardish" if SY::DEBUG
-        puts "its measure is #{qnt.measure}, class #{qnt.measure.class}" if SY::DEBUG
+      if qnt.standardish? then SY::Measure.identity else
         qnt.measure( of: qnt.standard ) ** exp
       end
     end.reduce( SY::Measure.identity, :* )
@@ -265,18 +255,13 @@ class SY::Composition < Hash
   # 
   def expand
     return self if irreducible?
-    puts "#expand: #{self} not irreducible" if SY::DEBUG
     self.class[ reduce( self.class.empty ) { |cᴍ, pair|
                   qnt, exp = pair
-                  puts "#expand: qnt: #{qnt}, exp: #{exp}" if SY::DEBUG
-                  puts "cᴍ is #{cᴍ}" if SY::DEBUG
                   ( cᴍ + if qnt.irreducible? then
                          self.class.singular( qnt ) * exp
                        else
                          qnt.composition * exp
-                       end.tap { |x| puts "Adding #{x}." if SY::DEBUG }
-                    ).tap { |x| puts "Result is #{x}." if SY::DEBUG }
+                       end )
                 } ]
-      .tap{ |rslt| puts "#expand: result is #{rslt}" if SY::DEBUG }
   end
 end # class SY::Composition

@@ -39,9 +39,7 @@ class SY::Dimension
 
     # Presents class-owned instances (array).
     # 
-    def instances
-      return @instances ||= []
-    end
+    def instances; return @instances ||= [] end
 
     # Base dimension constructor. Base dimension symbol is expeced as argument.
     # 

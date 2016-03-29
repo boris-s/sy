@@ -46,16 +46,12 @@ module SY::Unit
           w = SY::ExpressibleInUnits::COLLISION_WARNING
           SY::ExpressibleInUnits.included_in.each do |modul|
             im = modul.instance_methods
-            # puts ɱ, "class: #{ɱ.class}"
-            # puts im.size
-            # puts down
-            # puts im.include? down
             warn w % [down, modul] if im.include? down
             abbrev = new_instance.abbreviation
             warn w % [abbrev, modul] if im.include? abbrev
           end
         end
-        up.to_sym.tap { |sym| puts "name_set_hook #{sym}" if SY::DEBUG }
+        up.to_sym
       end
 
       # We'll now define all the prefix methods on the target (#mili, #mega...),
@@ -94,7 +90,6 @@ module SY::Unit
     # special meaning of setting the relationship of that quantity.
     # 
     def standard( of: nil, **nn )
-      puts "Constructing a standard unit of #{of}." if SY::DEBUG
       fail ArgumentError, ":of argument missing!" if of.nil?
       qnt = SY::Quantity.instance( of )
       nn.empty? ? qnt.standard_unit : qnt.new_standard_unit( **nn )
@@ -110,7 +105,7 @@ module SY::Unit
     # Full list of known unit names and unit abbreviations.
     # 
     def known_symbols
-      instance_names.map( &:downcase ) + abbreviations.keys
+      instances.names( false ).map( &:downcase ) + abbreviations.keys
     end
 
     # Parses an SPS, curring it with known unit names and abbreviations,
@@ -156,13 +151,6 @@ module SY::Unit
   def initialize( short: nil, warns: true, **nn )
     @abbreviation = short.to_sym if short
     @warns = warns # does this unit care about blatant name collisions?
-      
-    # FIXME: Here, we would have to watch out for :amount being set
-    # if it is a number, amount is in standard units
-    # however, if it is a magnitude, especially one of another equidimensional quantity,
-    # it estableshes a relationship between this and that quantity. It means that
-    # the unit amount automatically becomes ... one ... and such relationship can
-    # only be established for standard quantity
     super nn
   end
 
@@ -269,7 +257,5 @@ module SY::Unit
 
   # String describing this class.
   # 
-  def çς
-    "Unit"
-  end
+  def çς; "Unit" end
 end # class SY::Unit

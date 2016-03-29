@@ -5,10 +5,6 @@
 class SY::Quantity
   include NameMagic
 
-  # name_set_hook do |name, new_instance, old_name|
-  #   new_instance.protect!; name
-  # end
-
   RELATIVE_QUANTITY_NAME_SUFFIX = "±"
 
   attr_reader :MagnitudeModule, :Magnitude, :Unit
@@ -38,7 +34,6 @@ class SY::Quantity
     # 
     def standard( of: nil )
       fail ArgumentError, "Dimension (:of argument) must be given!" if of.nil?
-      puts "Constructing standard quantity of #{of} dimension" if SY::DEBUG
       return SY.Dimension( of ).standard_quantity
     end
 
@@ -64,14 +59,11 @@ class SY::Quantity
                   coerces: [],
                   coerces_to: [],
                   **nn )
-    puts "Quantity init relative: #{relative}, composition: #{composition}, measure: #{measure}, #{nn}" if SY::DEBUG
     @units = [] # array of units as favored by this quantity
     @relative = relative
     if composition.nil? then
-      puts "Composition not given, dimension expected." if SY::DEBUG
       @dimension = SY.Dimension( of )
     else
-      puts "Composition received (#{composition})." if SY::DEBUG
       @composition = SY::Composition[ composition ]
       @dimension = @composition.dimension
     end
@@ -86,9 +78,6 @@ class SY::Quantity
       end
     coerces( *Array( coerces ) )
     Array( coerces_to ).each { |qnt| qnt.coerces self }
-    puts "Composition of the initialized instance is #{composition}." if SY::DEBUG
-    puts "Initialized instance is #{relative? ? :relative : :absolute}" if SY::DEBUG
-    puts "Initialized instance object_id is #{object_id}" if SY::DEBUG
   end
 
   # Simple quantity is one with simple composition. If nontrivial composition
@@ -193,21 +182,15 @@ class SY::Quantity
   # 
   def measure( of: nil )
     return @measure if of.nil? # act as simple getter if :of not specified
-    puts "#{self.inspect} asked about measure of #{of}" if SY::DEBUG
     return SY::Measure.identity if of == self or of == colleague
-    raise SY::DimensionError, "#{self} vs. #{of}!" unless same_dimension? of
+    fail SY::DimensionError, "#{self} vs. #{of}!" unless same_dimension? of
     return of.measure( of: of.standard ).inverse if standardish?
     m = begin
-          puts "composition is #{composition}, class #{composition.class}" if SY::DEBUG
-          measure ||
-            colleague.measure ||
-            composition.infer_measure
+          measure || colleague.measure || composition.infer_measure
         rescue NoMethodError
           fail SY::QuantityError, "Measure of #{of} by #{self} impossible!"
         end
     return m if of.standardish?
-    puts "#{of} not standardish, obtained measure relates to #{standard}, and " +
-      "it will have to be extended to #{of}." if SY::DEBUG
     return m * standard.measure( of: of )
   end
 
@@ -266,11 +249,7 @@ class SY::Quantity
   # Constructs a absolute magnitude of this quantity.
   # 
   def magnitude amount
-    puts "self.object_id is #{object_id}" if SY::DEBUG
-    puts "composition is #{composition}" if SY::DEBUG
-    puts "Constructing #{self}#magnitude with amount #{amount}." if SY::DEBUG
     Magnitude().new( of: self, amount: amount )
-      .tap { puts "#{self}#magnitude constructed!" if SY::DEBUG }
   end
 
   # Constructs a new unit of this quantity.
@@ -307,7 +286,6 @@ class SY::Quantity
   # Quantity multiplication.
   # 
   def * q2
-    puts "#{self.name} * #{q2.name}" if SY::DEBUG
     rel = [ self, q2 ].any? &:relative
     ( SY::Composition[ self => 1 ] + SY::Composition[ q2 => 1 ] )
       .to_quantity relative: rel
@@ -316,7 +294,6 @@ class SY::Quantity
   # Quantity division.
   # 
   def / q2
-    puts "#{self.name} / #{q2.name}" if SY::DEBUG
     rel = [ self, q2 ].any? &:relative?
     ( SY::Composition[ self => 1 ] - SY::Composition[ q2 => 1 ] )
       .to_quantity relative: rel
@@ -325,7 +302,6 @@ class SY::Quantity
   # Quantity raising to a number.
   # 
   def ** num
-    puts "#{self.name} ** #{num}" if SY::DEBUG
     SY::Composition[ self => num ].to_quantity relative: relative?
   end
 
@@ -344,8 +320,6 @@ class SY::Quantity
   # Returns the standard quantity for this quantity's dimension.
   # 
   def standard
-    puts "Dimension of this quantity is #{dimension}" if SY::DEBUG
-    puts "Its standard quantity is #{dimension.standard_quantity}" if SY::DEBUG
     dimension.standard_quantity
   end
 
@@ -397,21 +371,16 @@ class SY::Quantity
   # Main parametrized (ie. quantity-specific) module for magnitudes.
   # 
   def MagnitudeModule
-    puts "#{self}#MagnitudeModule called" if SY::DEBUG
     @MagnitudeModule ||= if absolute? then
                            Module.new { include SY::Magnitude }
-                         else
-                           absolute.MagnitudeModule
-                         end
+                         else absolute.MagnitudeModule end
   end
 
   # Parametrized magnitude class.
   # 
   def Magnitude
-    puts "#{self}#Magnitude called" if SY::DEBUG
     @Magnitude or
-      ( puts "Constructing #{self}@Magnitude parametrized class" if SY::DEBUG
-        mmod = MagnitudeModule()
+      ( mmod = MagnitudeModule()
         mixin = relative? ? SY::SignedMagnitude : SY::AbsoluteMagnitude
         qnt_ɴ_λ = -> { name ? "#{name}@%s" : "#<Quantity:#{object_id}@%s>" }
 
@@ -439,18 +408,15 @@ class SY::Quantity
   # Parametrized unit class.
   # 
   def Unit
-    puts "#{self}#Unit called" if SY::DEBUG
-    @Unit ||= ( puts "Constructing #{self}@Unit parametrized class" if SY::DEBUG
-                if relative? then absolute.Unit else
+    @Unit ||= ( if relative? then absolute.Unit else
                   qnt = self
                   ɴλ = -> { name ? "#{name}@%s" : "#<Quantity:#{object_id}@%s>" }
                   
-                  Class.new Magnitude() do puts "Creating @Unit class!" if SY::DEBUG
-                    include SY::Unit; puts "Included SY::Unit" if SY::DEBUG
+                  Class.new Magnitude() do
+                    include SY::Unit
                     
                     singleton_class.class_exec do
                       define_method :standard do |**nn|      # Customized #standard.
-                        puts "parametrized #{qnt}@Unit#standard called" if SY::DEBUG
                         @standard ||= new **nn.update( of: qnt )
                       end
                       
@@ -462,20 +428,15 @@ class SY::Quantity
                     unit_parametrized_subclass.namespace = SY::Unit
                   end
                 end ).tap do |u|
-      puts "@Unit constructed, its namespace is #{u.namespace}" if SY::DEBUG
-      puts "its instances are #{u.namespace.instances}" if SY::DEBUG
-      puts "its instance names are #{u.namespace.instance_names}" if SY::DEBUG
     end
   end
 
   private
 
   def construct_colleague
-    puts "#{self}#construct_colleague" if SY::DEBUG
     ɴ = name
     ʀsuffix = SY::Quantity::RELATIVE_QUANTITY_NAME_SUFFIX
     rel = relative?
-    puts "#{self} is #{rel ? 'relative' : 'absolute'}" if SY::DEBUG
     # Here, it is impossible to rely on Composition::QUANTITY_TABLE –
     # on the contrary, the table relies on Quantity#colleague.
     constr_ɴ = ->( ɴ, ʀ ) { ç.new composition: composition, ɴ: ɴ, relative: ʀ }
