@@ -17,12 +17,12 @@ unless defined? SY::UNIT_TEST
   # require 'flex_coerce'
 
   require_relative 'sy/version'
-  # require_relative 'expressible_in_units'
+  require_relative 'expressible_in_units'
   # require_relative 'sy/prefixes'
-  # require_relative 'sy/se'
-  # require_relative 'sy/sps'
-  # require_relative 'sy/dimension'
-  # require_relative 'sy/quantity'
+  require_relative 'sy/se'
+  require_relative 'sy/sps'
+  require_relative 'sy/dimension'
+  require_relative 'sy/quantity'
   # require_relative 'sy/magnitude'
   # require_relative 'sy/unit'
   # require_relative 'sy/matrix'
@@ -79,6 +79,7 @@ Numeric.class_exec { include ExpressibleInUnits } if SY::AUTOINCLUDE
 # of the most common quantities and units right in the SY module code.
 #
 module SY
+=begin
   # Let SY::Amount be a standard dimensionless quantity.
   Amount = Quantity.standard of: Dimension.zero
 
@@ -301,6 +302,8 @@ module SY
   HERTZ = Unit.of Frequency, short: "Hz"
   # FIXME: it would be expected that 1.s(-1) would not present itself as 1.Hz,
   # provided that we did not make :hertz standard unit of Frequency
+=end
+
 
   # # Define SY::Speed as SY::Length / SY::Time and make it a standard quantity
   # # of its dimension.

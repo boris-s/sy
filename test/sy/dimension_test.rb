@@ -71,6 +71,10 @@ describe "sy/dimension.rb" do
     SY::Dimension.instance_methods( false ).must_include :inspect
   end
 
+  it "should define #coerce method" do
+    SY::Dimension.instance_methods.must_include :coerce
+  end
+
   it "should define #standard_composition method" do
     SY::Dimension.instance_methods.must_include :standard_composition
   end

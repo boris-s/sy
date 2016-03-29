@@ -5,6 +5,7 @@ require_relative '../sy' unless defined? SY::UNIT_TEST
 # Imperial units.
 # 
 module SY
+=begin
   # === Amount
   DOZEN = Unit.of Amount, amount: 12 # * UNIT
   
@@ -40,4 +41,5 @@ module SY
   FORTNIGHT = Unit.of Time, short: 'ftn', amount: 1_209_600 * SECOND
   # === Speed
   MPH = Unit.of Speed, amount: MILE / HOUR
+=end
 end

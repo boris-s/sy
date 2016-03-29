@@ -92,6 +92,15 @@ class SY::Dimension < Hash
                 end ]
   end
 
+  # Coercion for expressions such as 2 * Dimension[ :L ].
+  # 
+  def coerce first, second
+    puts "First argument is #{first}."
+    puts "Second argument is #{second}."
+    fail NotImplementedError, "I need to check what coerce does."
+    return second, first
+  end
+
   # True if the dimension is zero ("dimensionless"), otherwise false.
   # 
   def zero?
