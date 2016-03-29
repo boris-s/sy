@@ -18,13 +18,6 @@ require_relative 'sy/dimension_test'
 # require_relative 'sy/composition_test'
 # require_relative 'sy/quantity_test'
 # require_relative 'sy/magnitude_test'
+# require_relative 'sy/unit/sps_test'
 
 # require_relative 'expressible_in_units_test.rb'
-
-describe "sy/dimension/sps.rb" do
-  # FIXME
-end
-
-describe "sy/unit/sps.rb" do
-  # FIXME
-end

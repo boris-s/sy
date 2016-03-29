@@ -14,6 +14,42 @@ require_relative 'test_loader'
 module SY; end
 require_relative '../../lib/sy/magnitude.rb'
 
+# FIXME: These all look more like acceptance tests than unit tests.
+
+describe "sy/magnitude.rb" do
+  before do
+    # @m1 = 1.metre
+    # @inch = SY::Unit.standard( of: @inch_length, amount: 2.54.cm,
+    #                            ɴ: 'inch', short: '”' )
+    # @i1 = @inch_length.magnitude 1
+    # @il_measure = @inch_length.measure( of: SY::Length )
+  end
+
+  it "should work" do
+    skip
+    @m1.quantity.must_equal SY::Length.relative
+    @inch_length.colleague.name.must_equal :InchLength±
+    @m1.to_s.must_equal "1.m"
+    @i1.amount.must_equal 1
+    assert_kind_of SY::Measure, @il_measure
+    assert_kind_of Numeric, @il_measure.ratio
+    assert_in_epsilon 0.0254, @il_measure.ratio
+    @il_measure.w.( 1 ).must_be_within_epsilon 0.0254
+    begin
+      impossible_mapping = @inch_length.measure( of: SY::Amount )
+    rescue SY::DimensionError
+      :dimension_error
+    end.must_equal :dimension_error
+    # reframing
+    1.inch.reframe( @inch_length ).amount.must_equal 1
+    1.inch.( @inch_length ).must_equal 1.inch
+    1.inch.( SY::Length ).must_equal 2.54.cm
+    @inch_length.magnitude( 1 ).to_s.must_equal "1.”"
+    1.inch.in( :mm ).must_be_within_epsilon 25.4
+    assert_equal SY::Unit.instance( :SECOND ), SY::Unit.instance( :second )
+  end
+end
+
 describe "sy/magnitude.rb" do
   it "OLD TESTS -- should have working #<=> method" do
     skip

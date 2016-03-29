@@ -56,6 +56,12 @@ class SY::Dimension < Hash
     end
   end
 
+  # Dimension arithmetic: negation.
+  #
+  def -@
+    self.class.zero - self
+  end
+
   # Dimension arithmetic: addition.
   # 
   def + other
@@ -99,18 +105,20 @@ class SY::Dimension < Hash
   end
   alias basic? base?
 
-  # # Converts the dimension into its superscripted product string (SPS).
-  # # 
-  # def to_s
-  #   sps = SY::SPS.new self
-  #   return sps == "" ? "∅" : sps
-  # end
+  # Converts the dimension into its superscripted product string (SPS).
+  # 
+  def to_s
+    super # FIXME: Remove this and check the real code below (commented out).
+    # sps = SY::SPS.new self
+    # return sps == "" ? "∅" : sps
+  end
 
-  # # Produces the inspect string of the dimension.
-  # # 
-  # def inspect
-  #   "#<SY::Dimension: #{self} >"
-  # end
+  # Produces the inspect string of the dimension.
+  # 
+  def inspect
+    super # FIXME: Remove this and check the real code below (commented out).
+    # "#<SY::Dimension: #{self} >"
+  end
 
   # Returns dimension's standard quantity.
   # 
@@ -118,13 +126,21 @@ class SY::Dimension < Hash
     @standard_quantity ||= SY::Quantity.of( self )
   end
 
-  # # Returns default quantity composition for this dimension.
-  # # 
-  # def to_composition
-  #   SY::Composition[ ( keys.map do |letter|
-  #                        self.class[ letter ].standard_quantity.absolute
-  #                      end >> values ).reject { |k, v| v.zero? } ]
-  # end
+  # Returns default quantity composition for this dimension.
+  # 
+  def standard_composition
+    # SY::Composition[ ( keys.map do |letter|
+    #                      self.class[ letter ].standard_quantity.absolute
+    #                    end >> values ).reject { |k, v| v.zero? } ]
+  end
+  alias to_composition standard_composition # TODO: Deprecated, remove.
+
+  # TODO: This to_composition method should actually have less use in
+  # SY. Quantities and their compositions should take the primary role of
+  # physical dimensions. More precisely, simplification (or expansion) of
+  # quantity compositions into other quantities or quantity compositions
+  # should abide by its own rules. Simplificaton or expansion using the
+  # mechanism of physical dimensions should be only a subset of these rules.
 
   delegate :standard_unit, to: :standard_quantity
 end # class SY::Dimension

@@ -28,8 +28,6 @@ require_relative '../../lib/sy/dimension'
 
 describe "sy/dimension.rb" do
   it "should define basic physical dimensions" do
-    # FIXME: Base dimension can now be found under
-    # SY::Dimension::BASE.
     SY::Dimension::BASE.to_a.sort
       .must_equal [ [:L, :LENGTH], [:M, :MASS], [:T, :TIME],
                     [:Q, :ELECTRIC_CHARGE], [:Θ, :TEMPERATURE] ].sort
@@ -39,23 +37,17 @@ describe "sy/dimension.rb" do
     SY::Dimension.instances.must_be_kind_of Array
   end
 
-  it "should have .[] constructor accepting variable input" do
-    SY::Dimension[ :LENGTH ].must_be_kind_of SY::Dimension
-    SY::Dimension[ "LENGTH" ].must_be_kind_of SY::Dimension
-    SY::Dimension[ L: 1, T: -1 ].must_be_kind_of SY::Dimension
-    SY::Dimension[ { L: 1, T: -1 } ].must_be_kind_of SY::Dimension
-    SY::Dimension[ "L.T⁻¹" ].must_be_kind_of SY::Dimension
+  it "should have .[] and .zero constructors" do
+    SY::Dimension.methods.must_include :[]
+    SY::Dimension.methods.must_include :zero
   end
 
-  it "should have .zero constructor for zero dimension" do
-    SY::Dimension.zero.values.must_equal SY::Dimension::BASE.map { 0 }
-  end
-
-  it "should define operators +, -, *, /" do
+  it "should define operators +, -, *, / and negation" do
     SY::Dimension.instance_methods.must_include :+
     SY::Dimension.instance_methods.must_include :-
     SY::Dimension.instance_methods.must_include :*
     SY::Dimension.instance_methods.must_include :/
+    SY::Dimension.instance_methods.must_include :-@
   end
 
   it "should define #standard_quantity instance method" do
@@ -64,20 +56,22 @@ describe "sy/dimension.rb" do
 
   it "should be a subclass of Hash" do
     SY::Dimension.ancestors.must_include Hash
-    skip
-    # FIXME: This probably already belongs to acceptance
-    # tests, but the assertion (or how is it called) below
-    # is not fullfilled. I am quite sure that Dimension
-    # being a Hash subclass and using full names of base
-    # dimensions as keys was a correct decision, but the
-    # problem is that now its #[] method does not respond
-    # to the abbreviations of the base dimensions. #fetch
-    # method might be another problem.
-    SY::Dimension[ L: 1, T: -1 ][:L].must_equal 1
   end
 
   it "should define methods #zero? and #base?" do
     SY::Dimension.instance_methods.must_include :zero?
     SY::Dimension.instance_methods.must_include :base?
+  end
+
+  it "should carry its own definition of #to_s method" do
+    SY::Dimension.instance_methods( false ).must_include :to_s
+  end
+
+  it "should carry its own definition of #inspect method" do
+    SY::Dimension.instance_methods( false ).must_include :inspect
+  end
+
+  it "should define #standard_composition method" do
+    SY::Dimension.instance_methods.must_include :standard_composition
   end
 end

@@ -12,27 +12,21 @@
 # **************************************************************************
 
 require_relative 'test_loader'
-# Require other necessary libraries.
-# require 'y_support/name_magic'
+
 # Set up the mocks of the key SY objects.
 ExpressibleInUnits = Module.new
 module SY
   UNIT_TEST = true # Flag to tell sy.rb not to require all other files.
   DEBUG = false # Using mocks of the main objects; debug messages unhelpful. 
-#   def self.const_missing ß
-#     if ß.to_s == ß.to_s.upcase then 1 # Assumed to be a unit.
-#     else ß.to_s end
-#   end
-  class Dimension
-    def self.zero; end
-  end
-  class Unit
-#     include NameMagic
+
+  class Dimension; def self.zero; end end
+
+  class Unit # SY::Unit class mock.
     def self.of *args; 1 end
     def self.standard *args; 1 end
   end
-  class Quantity
-#     include NameMagic
+
+  class Quantity # SY::Quantity class mock.
     def self.standard *args; new *args end
     def self.dimensionless *args; new *args end
     def self.of *args; new *args end
@@ -42,6 +36,7 @@ module SY
     def coerce *args; [1, 1] end
   end
 end
+
 # Require the tested component itself.
 require_relative '../lib/sy'
 
