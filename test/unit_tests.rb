@@ -8,12 +8,12 @@
 # **************************************************************************
 
 require_relative 'sy_test'
-require_relative 'sy/prefixes_test'
-require_relative 'sy/se_test'
-require_relative 'sy/sps_test'
-require_relative 'sy/dimension/base_test'
-require_relative 'sy/dimension/sps_test'
-require_relative 'sy/dimension_test'
+# require_relative 'sy/prefixes_test'
+# require_relative 'sy/se_test'
+# require_relative 'sy/sps_test'
+# require_relative 'sy/dimension/base_test'
+# require_relative 'sy/dimension/sps_test'
+# require_relative 'sy/dimension_test'
 # require_relative 'sy/measure_test'
 # require_relative 'sy/composition_test'
 # require_relative 'sy/quantity_test'
