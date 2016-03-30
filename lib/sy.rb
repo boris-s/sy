@@ -6,7 +6,8 @@ unless defined? SY::UNIT_TEST
   require 'y_support/core_ext/hash'
   require 'y_support/core_ext/array'
   require 'y_support/core_ext/class'
-  # require 'y_support/typing'
+  require 'y_support/typing'
+  require 'y_support/flex_coerce'
   # require 'y_support/unicode'
   # require 'y_support/abstract_algebra'
 

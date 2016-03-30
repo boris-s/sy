@@ -22,7 +22,7 @@ class SY::Dimension
       keys + values
     end
 
-    # Converts the symbol to its long form.
+    # Converts the supplied symbol to its long form.
     # 
     def normalize_symbol( ß )
       ß = ß.to_sym
@@ -31,6 +31,16 @@ class SY::Dimension
         fail TypeError,
              "Symbol '#{ß}' does not refer to a base dimension!" if v.nil?
       }
+    end
+
+    # Converts the supplied symbol to its short form.
+    # 
+    def short_symbol( ß )
+      ß = ß.to_sym
+      return ß if keys.include? ß
+      rslt = rassoc( ß ) or
+        fail TypeError, "Symbol '#{ß}' does not refer to a base dimension!"
+      return rslt[0]
     end
   end # class << SY::Dimension::BASE
 end # class SY::Dimension

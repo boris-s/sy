@@ -18,6 +18,8 @@ require_relative 'test_loader'
 # Require the external libraries needed by the tested component.
 require 'y_support/core_ext/array'
 require 'y_support/core_ext/hash'
+require 'y_support/typing'
+require 'y_support/flex_coerce'
 require 'active_support/core_ext/module/delegation'
 require 'y_support/core_ext/class'
 # Require sy files needed by the tested component.
@@ -61,6 +63,10 @@ describe "sy/dimension.rb" do
   it "should define methods #zero? and #base?" do
     SY::Dimension.instance_methods.must_include :zero?
     SY::Dimension.instance_methods.must_include :base?
+  end
+
+  it "should define #to_sps method" do
+    SY::Dimension.instance_methods.must_include :to_sps
   end
 
   it "should carry its own definition of #to_s method" do

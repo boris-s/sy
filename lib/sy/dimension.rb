@@ -2,6 +2,8 @@
 
 # require 'y_support/core_ext/array'
 # require 'y_support/core_ext/hash'
+# require 'y_support/typing'
+# require 'y_support/flex_coerce'
 # require 'active_support/core_ext/module/delegation'
 
 # Metrological dimension
@@ -9,6 +11,10 @@
 class SY::Dimension < Hash
   require_relative 'dimension/base'
   require_relative 'dimension/sps'
+
+  include FlexCoerce
+
+  define_coercion Integer, method: :* do |o1, o2| o2 * o1 end
 
   class << self
     # Presents class-owned instances (array).
@@ -56,6 +62,30 @@ class SY::Dimension < Hash
     end
   end
 
+  undef_method :merge!, :[]=
+
+  # Returns the exponent of the specified base dimension. Accepts variable
+  # input specifying the base dimension (:LENGTH, :L, "LENGTH", "L" etc.)
+  #
+  def [] arg
+    super BASE.normalize_symbol( arg )
+  end
+
+  # Returns the exponents of the specified base dimensions. Accepts variable
+  # input specifying base dimensions (:LENGTH, :L, "LENGTH", "L" etc.)
+  # 
+  def values_at *keys
+    super *keys.map { |sym| BASE.normalize_symbol( sym ) }
+  end
+
+  # SY::Dimension#merge method only accepts SY::Dimension instances as arguments.
+  # 
+  def merge arg, &block
+    fail TypeError, "#{self.class}#merge method requires " +
+                    "#{self.class}-type argument!" unless arg.is_a? self.class
+    self.class[ super ]
+  end
+
   # Dimension arithmetic: negation.
   #
   def -@
@@ -92,41 +122,38 @@ class SY::Dimension < Hash
                 end ]
   end
 
-  # Coercion for expressions such as 2 * Dimension[ :L ].
-  # 
-  def coerce first, second
-    puts "First argument is #{first}."
-    puts "Second argument is #{second}."
-    fail NotImplementedError, "I need to check what coerce does."
-    return second, first
-  end
-
-  # True if the dimension is zero ("dimensionless"), otherwise false.
+  # True if the dimension is zero, otherwise false.
   # 
   def zero?
     values.all? { |exp| exp.zero? }
   end
 
-  # True if the dimension is basic, otherwise false.
+  # True if the dimension is a base dimension, otherwise false.
   # 
   def base?
     values.count( 1 ) == 1 && values.count( 0 ) == size - 1
   end
   alias basic? base?
 
+  # Converts the receiver to a superscripted product string denoting the
+  # dimension.
+  # 
+  def to_sps option=true
+    return Sps.new self if option
+    return Sps.new keys.map { |k| BASE.short_symbol k } >> values
+  end
+
   # Converts the dimension into its superscripted product string (SPS).
   # 
   def to_s
-    super # FIXME: Remove this and check the real code below (commented out).
-    # sps = SY::SPS.new self
-    # return sps == "" ? "∅" : sps
+    sps = to_sps( false )
+    return sps.empty? ? "∅" : sps
   end
 
   # Produces the inspect string of the dimension.
   # 
   def inspect
-    super # FIXME: Remove this and check the real code below (commented out).
-    # "#<SY::Dimension: #{self} >"
+    "#<Dimension:#{self}>"
   end
 
   # Returns dimension's standard quantity.
@@ -141,15 +168,15 @@ class SY::Dimension < Hash
     # SY::Composition[ ( keys.map do |letter|
     #                      self.class[ letter ].standard_quantity.absolute
     #                    end >> values ).reject { |k, v| v.zero? } ]
+
+    # TODO: This to_composition method should actually have less use in
+    # SY. Quantities and their compositions should take the primary role of
+    # physical dimensions. More precisely, simplification (or expansion) of
+    # quantity compositions into other quantities or quantity compositions
+    # should abide by its own rules. Simplificaton or expansion using the
+    # mechanism of physical dimensions should be only a subset of these rules.
   end
   alias to_composition standard_composition # TODO: Deprecated, remove.
-
-  # TODO: This to_composition method should actually have less use in
-  # SY. Quantities and their compositions should take the primary role of
-  # physical dimensions. More precisely, simplification (or expansion) of
-  # quantity compositions into other quantities or quantity compositions
-  # should abide by its own rules. Simplificaton or expansion using the
-  # mechanism of physical dimensions should be only a subset of these rules.
 
   delegate :standard_unit, to: :standard_quantity
 end # class SY::Dimension

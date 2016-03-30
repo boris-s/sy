@@ -34,4 +34,10 @@ describe "sy/dimension/base.rb" do
       .must_equal :MASS
     -> { SY::Dimension::BASE.normalize_symbol "foo" }.must_raise TypeError
   end
+
+  it "should have #short_symbol method" do
+    SY::Dimension::BASE.short_symbol( "TEMPERATURE" ).must_equal :Θ
+    SY::Dimension::BASE.short_symbol( :M ).must_equal :M
+    -> { SY::Dimension::BASE.short_symbol "foo" }.must_raise TypeError
+  end
 end
