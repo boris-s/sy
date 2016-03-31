@@ -49,7 +49,6 @@ describe "sy.rb" do
   end
 
   it "should attempt to define Amount" do
-    skip
     ( defined? SY::Amount ).must_equal "constant"
   end
 

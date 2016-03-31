@@ -7,13 +7,57 @@
 
 require_relative 'test_loader'
 
+describe SY::Quantity do
+  before do
+    @T = SY::Dimension[ :TIME ]
+    @L = SY::Dimension[ :LENGTH ]
+  end
+
+  describe "constructors" do
+    it "should have .of constructor" do
+      SY::Quantity.of( @T ).must_be_kind_of SY::Quantity
+      SY::Quantity.of( @T ).dimension.must_equal @T
+    end
+
+    it "should have .dimensionless constructor" do
+      SY::Quantity.dimensionless.must_be_kind_of SY::Quantity
+      assert SY::Quantity.dimensionless.dimension.zero?
+    end
+
+    it "should also have standard .new constructor" do
+      SY::Quantity.new( dimension: @T ).must_be_kind_of SY::Quantity
+      SY::Quantity.new( of: @T ).must_be_kind_of SY::Quantity
+      SY::Quantity.new( dimension: @T ).dimension.must_equal @T
+      SY::Quantity.new( of: @T ).dimension.must_equal @T
+    end
+  end
+
+  describe ".standard accessor of standard quantity for a given dimension" do
+    it "should work" do
+      SY::Quantity.standard( of: @T ).must_be_kind_of SY::Quantity
+      SY::Quantity.standard( of: @T ).dimension.must_equal @T
+      assert SY::Quantity.standard( of: @T ).equal? @T.standard_quantity
+    end
+  end
+
+  describe "#to_s" do
+    it "..." do
+    end
+  end
+
+  describe "#inspect" do
+    it "should return specific strings" do
+      # FIXME: These tests were stolen from dimension_test.rb
+      # @Z.inspect.must_equal "#<Dimension:∅>"
+      # @L.inspect.must_equal "#<Dimension:L>"
+      # ( @L - 2 * @T ).inspect.must_equal "#<Dimension:L.T⁻²>"
+    end
+  end
+end
+
 # FIXME: These acceptance tests are legacy from SY 2.0.
 # 
 describe SY::Quantity do
-  it "should have .of constructor" do
-    SY::Quantity.of( SY::Dimension[:TIME] ).must_be_kind_of SY::Quantity
-  end
-
   it "should have .standard constructor ... " do # FIXME: How the hell is Quantity supposed to behave?
     # FIXME: Line
     # Amount = Quantity.standard of: Dimension.zero

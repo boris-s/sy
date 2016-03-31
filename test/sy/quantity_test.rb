@@ -11,6 +11,8 @@
 # **************************************************************************
 
 require_relative 'test_loader'
+# Require the external libraries needed by the tested component.
+require 'y_support/core_ext/module'
 # Require the tested component itself.
 require_relative '../../lib/sy/quantity.rb'
 
@@ -27,6 +29,10 @@ describe "quantity.rb" do
     it "should have .standard accessor" do
       SY::Quantity.methods.must_include :standard
     end
+  end
+
+  it "should have #dimension selector" do
+    SY::Quantity.instance_methods.must_include :dimension
   end
 
   # FIXME: Below are only sample tests from dimension_tests.rb

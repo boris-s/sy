@@ -5,7 +5,8 @@ unless defined? SY::UNIT_TEST
   require 'y_support/name_magic'
   require 'y_support/core_ext/hash'
   require 'y_support/core_ext/array'
-  require 'y_support/core_ext/class'
+  require 'y_support/core_ext/module'
+  # require 'y_support/core_ext/class'
   require 'y_support/typing'
   require 'y_support/flex_coerce'
   # require 'y_support/unicode'
@@ -68,9 +69,7 @@ end
 #
 module SY
   # Let SY::Amount be a standard dimensionless quantity.
-  # Amount = Quantity.standard of: Dimension.zero
-
-=begin
+  Amount = Quantity.standard of: Dimension.zero
 
   # Let SY::UNIT be a standard unit of SY::Amount. Note that naming the
   # constant "UNIT" automagically (using y_support/name_magic) sets its name
@@ -82,6 +81,8 @@ module SY
        "#{SY::Unit.instances.names( false )}" if SY::DEBUG
   # AVOGADRO_CONSTANT (Nᴀ) is a certain well-known amount of things:
   Nᴀ = AVOGADRO_CONSTANT = 6.02214e23
+
+=begin
 
   # MoleAmount is a dimensionless distinct from plain Amount:
   MoleAmount = Quantity.dimensionless coerces: Amount
