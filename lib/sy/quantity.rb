@@ -1,6 +1,7 @@
 #encoding: utf-8
 
 # require 'y_support/core_ext/module'
+# require 'y_support/unicode'
 
 # Metrological quantity is the key class of SY. A quantity has its physical
 # dimension, but beyond that, it is characterized by its physical meaning and
@@ -14,7 +15,7 @@
 # its instances.
 # 
 class SY::Quantity
-  # include NameMagic
+  ★ NameMagic
 
   class << self
     # Constructor of a new quantity of the supplied dimension. Example:

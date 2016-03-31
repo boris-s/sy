@@ -53,18 +53,15 @@ describe "sy.rb" do
   end
 
   it "should attempt to define UNIT" do
-    skip
     ( defined? SY::UNIT ).must_equal "constant"
   end
 
   it "should attempt to define AVOGADRO_CONSTANT" do
-    skip
     ( defined? SY::AVOGADRO_CONSTANT ).must_equal "constant"
     ( defined? SY::Nᴀ ).must_equal "constant"
   end
 
   it "should attempt to define MoleAmount" do
-    skip
     ( defined? SY::MoleAmount ).must_equal "constant"
   end
 

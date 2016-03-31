@@ -13,4 +13,6 @@ require_relative 'sy_loader'
 
 require_relative 'acceptance/dimension_test'
 require_relative 'acceptance/quantity_test'
+require_relative 'acceptance/magnitude_test'
+require_relative 'acceptance/unit_test'
 require_relative 'acceptance/sy_test'

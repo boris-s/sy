@@ -5,13 +5,25 @@
 class SY::Unit < SY::Magnitude
   require_relative 'unit/sps'
 
-  # # Basic unit constructor. Either as
-  # # u = Unit.basic of: quantity
-  # # or
-  # # u = Unit.basic quantity
-  # def self.basic opts
-  #   new opts.merge( number: 1 )
-  # end
+  # include NameMagic
+
+  class << self
+    # Let us remember that magnitude is a pair [ quantity, number ]. Basic unit of a given quantity is a named magnitude whose number (ie. size) equals to 1.
+    # 
+    # FIXME: Figure out how to denote Ruby code in examples.
+    # u = Unit.basic of: quantity
+    # 
+    def standard **options
+      # FIXME: No mather how I look at it, there should be only
+      # one basic unit object for every quantity. So I should
+      # prevent this constructor from constructing more than
+      # one basic unit. As for other (non-basic) units ...
+      # This reeks of BasicUnit subclass... But I'll let it
+      # slide for the time being, perhaps I had good reasons
+      # for not making basic unit unique...
+      new **options.merge( number: 1 )
+    end
+  end
 
   # PREFIX_TABLE.map{|e| e[:full] }.each{ |full_pfx|
   #   eval( "def #{full_pfx}\n" +
@@ -19,14 +31,20 @@ class SY::Unit < SY::Magnitude
   #         "end" ) unless full_pfx.empty?
   # }
 
-  # # Unlike ordinary magnitudes, units can have names and abbreviations.
-  # attr_reader :name, :abbr
-  # alias :short :abbr
-  # alias :symbol :abbr
+  # Units have names and abbreviations. Necessary assets for unit names are
+  # already provided by NameMagic module. Selectors for abbreviations are
+  # defined below.
+  #
+  # selector :abbreviation
+  # # FIXME: Consider the following aliases:
+  # # alias short abbreviation
+  # # alias symbol abbreviation
+  # # alias abbr abbreviation
 
-  # def initialize oj
+  def initialize of: fail( ArgumentError, "Parameter :of must be supplied!" ),
+                 **options
+    super
   #   super
-  #   @name = oj[:name] || oj[:ɴ]
   #   # abbreviation can be introduced by multiple keywords
   #   @abbr = oj[:short] || oj[:abbreviation] || oj[:abbr] || oj[:symbol]
   #   if @name then
@@ -44,7 +62,7 @@ class SY::Unit < SY::Magnitude
   #     # the unit abbrev is entered into the UNITS_WITHOUT_PREFIX table
   #     UNITS_WITHOUT_PREFIX[abbr] = self
   #   end
-  # end
+  end
 
   # # #abs absolute value - Magnitude with number.abs
   # def abs; Magnitude.of quantity, number: n.abs end

@@ -9,7 +9,7 @@ unless defined? SY::UNIT_TEST
   # require 'y_support/core_ext/class'
   require 'y_support/typing'
   require 'y_support/flex_coerce'
-  # require 'y_support/unicode'
+  require 'y_support/unicode'
   # require 'y_support/abstract_algebra'
 
   require 'active_support/core_ext/module/delegation'
@@ -25,8 +25,8 @@ unless defined? SY::UNIT_TEST
   require_relative 'sy/sps'
   require_relative 'sy/dimension'
   require_relative 'sy/quantity'
-  # require_relative 'sy/magnitude'
-  # require_relative 'sy/unit'
+  require_relative 'sy/magnitude'
+  require_relative 'sy/unit'
   # require_relative 'sy/matrix'
 end
 
@@ -82,10 +82,9 @@ module SY
   # AVOGADRO_CONSTANT (Nᴀ) is a certain well-known amount of things:
   Nᴀ = AVOGADRO_CONSTANT = 6.02214e23
 
-=begin
-
   # MoleAmount is a dimensionless distinct from plain Amount:
   MoleAmount = Quantity.dimensionless coerces: Amount
+=begin
 
   # SY::MOLE is its standard unit, related to SY::Amount through Nᴀ:
   puts "About to define MOLE." if SY::DEBUG

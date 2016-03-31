@@ -2,17 +2,24 @@
 # encoding: utf-8
 
 # **************************************************************************
-# Unit tests for file sy/se.rb.
+# Unit tests for file sy/magnitude.rb.
 #
-# File se.rb defines class Se (superscripted exponent), which is used in
-# construction of Sps (superscripted product string), such as "kg.m.s⁻²".
-# Se is a subclass of String, which represents strings such as "⁰", "¹",
-# "²", "⁴²", "⁻⁴²". Specification of its main features is below.
+# File se.rb defines class SY::Magnitude, representing a magnitude of a metrological quantity. A magnitude is basically a pair [ quantity, number ], which behaves as a number with respect to relevand mathematical operations, while retaining its affiliation to the quantity. Specification of the main code features follows.
 # **************************************************************************
 
 require_relative 'test_loader'
-module SY; end
-require_relative '../../lib/sy/magnitude.rb'
+# Require the external libraries needed by the tested component.
+require 'y_support/core_ext/module'
+# Require sy files needed by the tested component.
+# Require the tested component itself.
+require_relative '../../lib/sy/magnitude'
+
+describe "sy/magnitude.rb" do
+  it "must have #quantity and #number selectors" do
+    SY::Magnitude.instance_methods.must_include :quantity
+    SY::Magnitude.instance_methods.must_include :number
+  end
+end
 
 # FIXME: These all look more like acceptance tests than unit tests.
 

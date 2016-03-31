@@ -1,9 +1,10 @@
 #encoding: utf-8
 
-module SY
-  # Magnitude of a metrological quantity
-  # 
-  class Magnitude
+# Magnitude of a metrological quantity. A magnitude is basically a pair [
+# quantity, number ], which behaves as a number with respect to relevand
+# mathematical operations, while retaining its affiliation to the quantity.
+# 
+class SY::Magnitude
 #     include UnitMethodsMixin
 #     include Comparable
 
@@ -18,10 +19,20 @@ module SY
 #       else new oo.merge( named_args ) end
 #     end
     
-#     attr_reader :quantity, :number
+  selector :quantity, :number
 #     alias :n :number
 #     delegate :dimension, :basic_unit, :fav_units, to: :quantity
 
+  # Magnitude is basically a pair [ quantity, number ]. Bot of these parameters have to be supplied to the constructor. Example:
+  # 
+  # FIXME: Figure how to denote Ruby code in the examples.
+  # SY::Magnitude.new of: Length, number: 2.5
+  # 
+  def initialize of: fail( ArgumentError, "Parameter :of has to be supplied!" ),
+        number: fail( ArgumentError, "Parameter :number has to be supplied!" ),
+        **options
+    @quantity, @number = of, number
+  end
 #     # A magnitude is basically a pair [quantity, number].
 #     def initialize oj
 #       @quantity = oj[:quantity] || oj[:of]
@@ -283,5 +294,4 @@ module SY
 
 #     # #basic? inquirer
 #     def basic?; @number == 1 end
-  end # class Magnitude
-end # module SY
+end # class SY::Magnitude

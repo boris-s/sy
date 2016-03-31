@@ -22,6 +22,36 @@ describe "general features" do
   end
 end
 
+describe "standard dimensionless quantity" do
+  it "must be named Amount" do
+    SY::Dimension.zero.standard_quantity.name.must_equal :Amount
+  end
+
+  it "must have standard unit named UNIT" do
+    SY::UNIT.quantity.must_equal SY::Amount
+    SY::UNIT.number.must_equal 1
+    skip
+    # FIXME: The presence or absence of the commented out line
+    # below in the tests depends on whether I want to have
+    # standard unit unique to each quantity. At the moment,
+    # this is not so.
+    # 
+    SY::Amount.standard_unit.name.must_equal :UNIT
+  end
+end
+
+describe "mole amount quantity" do
+  before do
+    @q = SY::MoleAmount
+  end
+
+  it "must be dimensionless" do
+    assert SY::MoleAmount.dimension.zero?
+  end
+
+  # FIXME: Write the tests for :coerces parameter.
+end
+
 describe SY do
   it "should define the following quantities and units" do
     skip

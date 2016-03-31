@@ -12,6 +12,8 @@
 
 require_relative 'test_loader'
 # Require the external libraries needed by the tested component.
+require 'y_support/unicode'
+require 'y_support/name_magic'
 require 'y_support/core_ext/module'
 # Require the tested component itself.
 require_relative '../../lib/sy/quantity.rb'
