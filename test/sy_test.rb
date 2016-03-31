@@ -21,11 +21,6 @@ module SY
 
   class Dimension < Hash; def self.zero; end end
 
-  class Unit # SY::Unit class mock.
-    def self.of *args; 1 end
-    def self.standard *args; 1 end
-  end
-
   class Quantity # SY::Quantity class mock.
     def self.standard *args; new *args end
     def self.dimensionless *args; new *args end
@@ -35,11 +30,23 @@ module SY
     def method_missing *args; self end
     def coerce *args; [1, 1] end
   end
+
+  class Magnitude
+  end
+
+  class Unit < Magnitude # SY::Unit class mock.
+    def self.of *args; 1 end
+    def self.standard *args; 1 end
+  end
 end
 
 # Require the tested component itself.
 require_relative '../lib/sy'
 
+# Clean up the offensive mocks.
+module SY
+  remove_const :Magnitude
+end
 
 describe "sy.rb" do
   it "should have AUTOINCLUDE code" do
@@ -66,27 +73,22 @@ describe "sy.rb" do
   end
 
   it "should attempt to define MOLE" do
-    skip
     ( defined? SY::MOLE ).must_equal "constant"
   end
 
   it "should attempt to define Length" do
-    skip
     ( defined? SY::Length ).must_equal "constant"
   end
 
-  it "should attempt to define Length" do
-    skip
+  it "should attempt to define METRE" do
     ( defined? SY::METRE ).must_equal "constant"
   end
 
   it "should attempt to define Mass" do
-    skip
     ( defined? SY::METRE ).must_equal "constant"
   end
 
   it "should attempt to define certain units of mass" do
-    skip
     ( defined? SY::KILOGRAM ).must_equal "constant"
     ( defined? SY::GRAM ).must_equal "constant"
     ( defined? SY::TON ).must_equal "constant"
@@ -94,12 +96,10 @@ describe "sy.rb" do
   end
 
   it "should attempt to define quantity Time" do
-    skip
     ( defined? SY::Time ).must_equal "constant"
   end
 
   it "should define certain units of time" do
-    skip
     ( defined? SY::SECOND ).must_equal "constant"
     ( defined? SY::MINUTE ).must_equal "constant"
     ( defined? SY::HOUR ).must_equal "constant"

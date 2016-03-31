@@ -13,6 +13,8 @@
 require_relative 'test_loader'
 # Require the external libraries needed by the tested component.
 require 'y_support/core_ext/module'
+require 'y_support/flex_coerce'
+require 'y_support/unicode'
 # Require sy files needed by the tested component.
 require_relative '../../lib/sy/magnitude'
 require_relative '../../lib/sy/sps'
@@ -28,5 +30,21 @@ describe "sy/unit.rb" do
     it "must have .standard constructor" do
       SY::Unit.methods.must_include :standard
     end
+  end
+
+  it "should define operators +, -, *, /, % and negation" do
+    SY::Unit.instance_methods.must_include :+
+    SY::Unit.instance_methods.must_include :-
+    SY::Unit.instance_methods.must_include :*
+    SY::Unit.instance_methods.must_include :/
+    SY::Unit.instance_methods.must_include :-@
+  end
+
+  it "should define power operator **" do
+    SY::Unit.instance_methods.must_include :**
+  end
+
+  it "should define #coerce method" do
+    SY::Unit.instance_methods.must_include :coerce
   end
 end

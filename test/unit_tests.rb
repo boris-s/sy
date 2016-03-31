@@ -17,7 +17,7 @@ require_relative 'sy/dimension_test'
 # require_relative 'sy/measure_test'
 # require_relative 'sy/composition_test'
 require_relative 'sy/quantity_test'
-# require_relative 'sy/magnitude_test'
+require_relative 'sy/magnitude_test'
 # require_relative 'sy/unit/sps_test'
 require_relative 'sy/unit_test'
 

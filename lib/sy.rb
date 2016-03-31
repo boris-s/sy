@@ -84,8 +84,8 @@ module SY
 
   # MoleAmount is a dimensionless distinct from plain Amount:
   MoleAmount = Quantity.dimensionless coerces: Amount
-=begin
 
+=begin
   # SY::MOLE is its standard unit, related to SY::Amount through Nᴀ:
   puts "About to define MOLE." if SY::DEBUG
   MOLE = Unit.standard of: MoleAmount, short: "mol", amount: Nᴀ * UNIT

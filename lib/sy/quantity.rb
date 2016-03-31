@@ -18,19 +18,21 @@ class SY::Quantity
   ★ NameMagic
 
   class << self
+    alias __new__ new
+
     # Constructor of a new quantity of the supplied dimension. Example:
     # q = Quantity.of Dimension.new( "L.T⁻²" )
     # 
     # FIXME: Figure out how to denote Ruby code in the documentation.
     # 
     def of dimension, **options
-      new options.merge( dimension: dimension )
+      dimension.Quantity.new **options
     end
 
     # Constructor of a new dimensionless quantity.
     # 
     def dimensionless **options
-      new **options.merge( dimension: SY::Dimension.zero )
+      SY::Dimension.zero.Quantity.new **options
     end
 
     # #standard constructor. Example:
@@ -41,13 +43,14 @@ class SY::Quantity
     end
   end
 
-  selector :dimension
+  delegate :dimension, to: "self.class"
 
   # Quantity takes dimension as a parameter (can be supplied under :dimension
   # or :of keyword).
   # 
   def initialize **options
-    @dimension = SY::Dimension[ options[:dimension] || options[:of] ]
+    param_class!( { Magnitude: SY::Magnitude },
+                  with: { quantity: self } )
   end
 
   # # Convenience shortcut to register a name of the basic unit of
@@ -76,17 +79,30 @@ class SY::Quantity
   #   "#{name.nil? ? 'unnamed quantity' : 'quantity "%s"' % name} (#{dimension})"
   # end
 
-  # # Arithmetics
-  # # #*
-  # def * other
-  #   msg = "Quantities only multiply with Quantities, Dimensions and " +
-  #     "Numerics (which leaves them unchanged)"
-  #   case other
-  #   when Numeric then self
-  #   when Quantity then self.class.of dimension + other.dimension
-  #   when Dimension then self.class.of dimension + other
-  #   else raise ArgumentError, msg end
-  # end
+  # Arithmetics
+  # #*
+  def * other
+    # FIXME: It's not gonna be this simple. Now I hit the hard part,
+    # where quantity arithmetics has to be defined.
+    # 
+    msg = "Quantities only multiply with Quantities, Dimensions and " +
+      "Numerics (which leaves them unchanged)"
+    return case other
+    when Numeric then self
+    when SY::Quantity then self.class.of dimension + other.dimension
+    when SY::Dimension then self.class.of dimension + other
+    else raise ArgumentError, msg end
+
+    # This is how it is in the working version:
+    rel = [ self, q2 ].any? &:relative
+    ( SY::Composition[ self => 1 ] + SY::Composition[ q2 => 1 ] )
+      .to_quantity relative: rel
+
+    # Which, now that I am discarding the distinction between
+    # absolute and relative quantities, will look like
+    ( SY::Composition[ self => 1 ] + SY::Composition[ q2 => 1 ] )
+      .to_quantity
+  end
 
   # # #/
   # def / other

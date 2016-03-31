@@ -230,6 +230,13 @@ describe SY::Dimension do
       assert SY::Dimension[ "L³" ].equal? @L * 3
     end
 
+    describe "dimension-specific parametrized subclass of SY::Quantity" do
+      it "should be accessible through SY::Dimension#Quantity method" do
+        assert @T.Quantity < SY::Quantity
+        assert @T.Quantity.dimension.equal? @T
+      end
+    end
+
     describe "#standard_quantity method" do
       it "should return always the same Quantity instance" do
         @Z.standard_quantity.must_be_kind_of SY::Quantity
@@ -284,10 +291,13 @@ describe SY::Dimension do
     describe "#standard_composition method" do
       it "should return a standard composition of quantities" do
         skip
+
         # Writing this test require that SY::Composition is
         # revisited and put in working order. This in turn
         # requires that SY::Quantity is put in working order.
         # This skip is justified for now.
+
+        flunk "Test not written!"
       end
     end
   end

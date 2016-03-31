@@ -1,38 +1,30 @@
 #encoding: utf-8
 
+# require 'y_support/flex_coerce'
+# require 'y_support/unicode'
+
 # Magnitude of a metrological quantity. A magnitude is basically a pair [
 # quantity, number ], which behaves as a number with respect to relevand
 # mathematical operations, while retaining its affiliation to the quantity.
 # 
-class SY::Magnitude
-#     include UnitMethodsMixin
-#     include Comparable
+class SY::Magnitude < Struct.new :quantity, :number
+  # ★ ExpressibleInUnits
+  # ★ Comparable
+  ★ FlexCoerce
 
-#     def self.of qnt, oo
-#       oo = { n: oo } unless oo.is_a? Hash
-#       n = oo[:number] || oo[:n] or raise AE, "Magnitude number not given!"
-#       named_args = { quantity: qnt }.merge! case n
-#                                             when Numeric then { n: n }
-#                                             else { n: n.to_f } end
-#       if n < 0 then
-#         SignedMagnitude.new oo.merge( named_args ).merge!( sign: :- )
-#       else new oo.merge( named_args ) end
-#     end
+  define_coercion Numeric, method: :* do |o1, o2| o2 * o1 end
+
+  class << self
+    # This constructor expects a quantity and a named parameter +:number+.
+    # 
+    def of quantity,
+           number: fail( ArgumentError, "Number not given!" )
+      self[ quantity, number ]
+    end
+  end
     
-  selector :quantity, :number
-#     alias :n :number
 #     delegate :dimension, :basic_unit, :fav_units, to: :quantity
 
-  # Magnitude is basically a pair [ quantity, number ]. Bot of these parameters have to be supplied to the constructor. Example:
-  # 
-  # FIXME: Figure how to denote Ruby code in the examples.
-  # SY::Magnitude.new of: Length, number: 2.5
-  # 
-  def initialize of: fail( ArgumentError, "Parameter :of has to be supplied!" ),
-        number: fail( ArgumentError, "Parameter :number has to be supplied!" ),
-        **options
-    @quantity, @number = of, number
-  end
 #     # A magnitude is basically a pair [quantity, number].
 #     def initialize oj
 #       @quantity = oj[:quantity] || oj[:of]
@@ -52,52 +44,69 @@ class SY::Magnitude
 
 #     # #abs absolute value - Magnitude with number.abs
 #     def abs; self.class.of quantity, number: n.abs end
+
+  # Negation. Results in a magnitude of the same quantity with negated
+  # number.
+  #
+  def -@
+    # FIXME
+  end
       
-#     # addition
-#     def + other
-#       aE_same_quantity( other )
-#       self.class.of( quantity, n: self.n + other.n )
-#     end
+  # Addition. A magnitude can be added only to a magnitude of the same
+  # quantity.
+  # 
+  def + other
+    # aE_same_quantity( other )
+    # self.class.of( quantity, n: self.n + other.n )
+  end
 
-#     # subtraction
-#     def - other
-#       aE_same_quantity( other )
-#       self.class.of( quantity, n: self.n - other.n )
-#     end
+  # Subtraction. A magnitude can be subtracted only by a magnitude of the
+  # same quantity.
+  # 
+  def - other
+    # aE_same_quantity( other )
+    # self.class.of( quantity, n: self.n - other.n )
+  end
 
-#     # multiplication
-#     def * other
-#       case other
-#       when Magnitude
-#         self.class.of( quantity * other.quantity, n: self.n * other.n )
-#       when Numeric then [1, other]
-#         self.class.of( quantity, n: self.n * other )
-#       else
-#         raise ArgumentError, "magnitudes only multiply with magnitudes and numbers"
-#       end
-#     end
+  # Multiplication. A magnitude can be multiplied by a number or another
+  # magnitude (of arbitrary quantity).
+  # 
+  def * other
+    case other
+    when SY::Magnitude
+      self.class[ quantity * other.quantity, number * other.number ]
+    when Numeric then
+      self.class[ quantity, number * other ]
+    else
+      fail ArgumentError, "Magnitudes only multiply with magnitudes and numbers!"
+    end
+  end
 
-#     # division
-#     def / other
-#       case other
-#       when Magnitude
-#         self.class.of( quantity / other.quantity, n: self.n / other.n )
-#       when Numeric then [1, other]
-#         self.class.of( quantity, n: self.n / other )
-#       else
-#         raise ArgumentError, "magnitudes only divide by magnitudes and numbers"
-#       end
-#     end
+  # Division. A magnitude can only be divided by a number or another
+  # magnitude (of arbitrary quantity).
+  # 
+  def / other
+    # case other
+    # when Magnitude
+    #   self.class.of( quantity / other.quantity, n: self.n / other.n )
+    # when Numeric then [1, other]
+    #   self.class.of( quantity, n: self.n / other )
+    # else
+    #   raise ArgumentError, "magnitudes only divide by magnitudes and numbers"
+    # end
+  end
 
-#     # power
-#     def ** arg
-#       return case arg
-#              when Magnitude then self.n ** arg.n
-#              else
-#                raise ArgumentError unless arg.is_a? Numeric
-#                self.class.of( quantity ** arg, n: self.n ** arg )
-#              end
-#     end
+  # Raising to a power. A magnitude can (thus far) only be raised to a number (Numeric class)
+  def ** arg
+    # raise ArgumentError unless arg.is_a? Numeric
+    # self.class.of( quantity ** arg, n: self.n ** arg )
+    # # return case arg
+    # #        when Magnitude then self.n ** arg.n
+    # #        else
+    # #          raise ArgumentError unless arg.is_a? Numeric
+    # #          self.class.of( quantity ** arg, n: self.n ** arg )
+    # #        end
+  end
 
 #     # Gives the magnitude as a numeric value in a given unit. Of course,
 #     # the unit must be of the same quantity and dimension.
@@ -136,8 +145,11 @@ class SY::Magnitude
 #       end
 #     end
 
-#     # #to_s converter gives the magnitude in its most favored units
-#     def to_s
+  # #to_s converter gives the magnitude in its most favored units.
+  # 
+  def to_s
+    super
+    # FIXME
 #       unit = fav_units[0]
 #       str = if unit then string_in_unit( unit )
 #             else # use fav_units of basic dimensions
@@ -149,13 +161,17 @@ class SY::Magnitude
 #               end.to_a.transpose
 #               sps = SPS.( symbols, exponents )
 #               "%.2g#{sps == '' ? '' : '.' + sps}" % number
-#             end
-#     end
+    #             end
+  end
 
-#     # #inspect
-#     def inspect; "magnitude #{to_s} of #{quantity}" end
-
-#     private
+  # #inspect
+  def inspect
+    super
+    # FIXME
+    # "magnitude #{to_s} of #{quantity}"
+  end
+  
+  private
 
 #     def same_dimension? other
 #       case other
@@ -196,102 +212,4 @@ class SY::Magnitude
 #       @number = oo[:number] || oo[:n]
 #     end
 #   end
-# end
-
-# module SY
-#   # Unit of measurement.
-#   # 
-#   class Unit < Magnitude
-#     # Basic unit constructor. Either as
-#     # u = Unit.basic of: quantity
-#     # or
-#     # u = Unit.basic quantity
-#     def self.basic opts
-#       new opts.merge( number: 1 )
-#     end
-
-#     PREFIX_TABLE.map{|e| e[:full] }.each{ |full_pfx|
-#       eval( "def #{full_pfx}\n" +
-#             "self * #{PREFIXES[full_pfx][:factor]}\n" +
-#             "end" ) unless full_pfx.empty?
-#     }
-
-#     # Unlike ordinary magnitudes, units can have names and abbreviations.
-#     attr_reader :name, :abbr
-#     alias :short :abbr
-#     alias :symbol :abbr
-
-#     def initialize oj
-#       super
-#       @name = oj[:name] || oj[:ɴ]
-#       # abbreviation can be introduced by multiple keywords
-#       @abbr = oj[:short] || oj[:abbreviation] || oj[:abbr] || oj[:symbol]
-#       if @name then
-#         # no prefixed names, otherwise there will be multiple prefixes!
-#         @name = @name.to_s              # convert to string
-#         # the unit name is entered into the UNITS_WITHOUT_PREFIX table:
-#         UNITS_WITHOUT_PREFIX[@name] = self
-#         # and FAV_UNITS table keys are updated:
-#         FAV_UNITS[quantity] = FAV_UNITS[quantity] + [ self ]
-#       end
-#       if @abbr then
-#         raise ArgumentError unless @name.present? # name must be given if abbreviation is given
-#         # no prefixed abbrevs, otherwise there will be multiple prefixes!
-#         @abbr = @abbr.to_s           # convert to string
-#         # the unit abbrev is entered into the UNITS_WITHOUT_PREFIX table
-#         UNITS_WITHOUT_PREFIX[abbr] = self
-#       end
-#     end
-
-#     # #abs absolute value - Magnitude with number.abs
-#     def abs; Magnitude.of quantity, number: n.abs end
-      
-#     # addition
-#     def + other
-#       aE_same_quantity( other )
-#       Magnitude.of( quantity, n: self.n + other.n )
-#     end
-
-#     # subtraction
-#     def - other
-#       aE_same_quantity( other )
-#       Magnitude.of( quantity, n: self.n - other.n )
-#     end
-
-#     # multiplication
-#     def * other
-#       case other
-#       when Magnitude
-#         Magnitude.of( quantity * other.quantity, n: self.n * other.n )
-#       when Numeric then [1, other]
-#         Magnitude.of( quantity, n: self.n * other )
-#       else
-#         raise ArgumentError, "magnitudes only multiply with magnitudes and numbers"
-#       end
-#     end
-
-#     # division
-#     def / other
-#       case other
-#       when Magnitude
-#         Magnitude.of( quantity / other.quantity, n: self.n / other.n )
-#       when Numeric then [1, other]
-#         Magnitude.of( quantity, n: self.n / other )
-#       else
-#         raise ArgumentError, "magnitudes only divide by magnitudes and numbers"
-#       end
-#     end
-
-#     # power
-#     def ** arg
-#       return case arg
-#              when Magnitude then self.n ** arg.n
-#              else
-#                raise ArgumentError unless arg.is_a? Numeric
-#                Magnitude.of( quantity ** arg, n: self.n ** arg )
-#              end
-#     end
-
-#     # #basic? inquirer
-#     def basic?; @number == 1 end
-end # class SY::Magnitude
+end # SY::Magnitude

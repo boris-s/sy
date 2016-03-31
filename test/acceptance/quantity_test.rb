@@ -23,13 +23,6 @@ describe SY::Quantity do
       SY::Quantity.dimensionless.must_be_kind_of SY::Quantity
       assert SY::Quantity.dimensionless.dimension.zero?
     end
-
-    it "should also have standard .new constructor" do
-      SY::Quantity.new( dimension: @T ).must_be_kind_of SY::Quantity
-      SY::Quantity.new( of: @T ).must_be_kind_of SY::Quantity
-      SY::Quantity.new( dimension: @T ).dimension.must_equal @T
-      SY::Quantity.new( of: @T ).dimension.must_equal @T
-    end
   end
 
   describe ".standard accessor of standard quantity for a given dimension" do
@@ -40,8 +33,42 @@ describe SY::Quantity do
     end
   end
 
+  describe "quantity-specific parametrized subclass of SY::Magnitude" do
+    before do
+      @q = SY::Quantity.of( @T )
+    end
+
+    it "should be accessible through SY::Quantity#Magnitude method" do
+      assert @q.Magnitude < SY::Magnitude
+      assert @q.Magnitude.quantity.equal? @q
+    end
+  end
+
+  describe "quantity arithmetics" do
+    before do
+      @Time = SY::Quantity.of @T
+      @Length = SY::Quantity.of @L
+      @Amount = SY::Quantity.dimensionless
+    end
+
+    describe "multiplication" do
+      it "should work for any quantities" do
+        ( @Time * @Amount ).must_be_kind_of SY::Quantity
+        ( @Time * @Amount ).must_be_kind_of SY::Quantity
+        ( @Time * @Amount ).must_be_kind_of SY::Quantity
+      end
+
+      it "should not work for other types of objects" do
+        skip
+        flunk "Tests not written!"
+      end
+    end
+  end
+
   describe "#to_s" do
     it "..." do
+      skip
+      flunk "Tests not written!"
     end
   end
 
@@ -58,13 +85,6 @@ end
 # FIXME: These acceptance tests are legacy from SY 2.0.
 # 
 describe SY::Quantity do
-  it "should have .standard constructor ... " do # FIXME: How the hell is Quantity supposed to behave?
-    # FIXME: Line
-    # Amount = Quantity.standard of: Dimension.zero
-    # doesn't work. Write the tests that require it to work
-    # and make it work.
-  end
-
   before do
     # @q1 = SY::Quantity.new of: '∅'
     # @q2 = SY::Quantity.dimensionless
