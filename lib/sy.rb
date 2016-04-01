@@ -68,8 +68,21 @@ end
 # of the most common quantities and units right in the SY module code.
 #
 module SY
-  # Let SY::Amount be a standard dimensionless quantity.
+  # SY::Amount is the standard dimensionless quantity. It has no special
+  # meaning, it simply represents a dimensionless number of arbitrary things.
   Amount = Quantity.standard of: Dimension.zero
+
+  # FIXME: Now I should say more simply this simplification rule:
+
+  # # SY::Amount is disposable:
+  # # 
+  # Quantity::Term::SR << -> hash {
+  #   hash.reject! { |quantity, _| quantity == SY::Amount }
+  # }
+
+  # # Such as by
+
+  # Quantity::Term[ Amount: 1 ] >> Quantity::Term.zero
 
   # Let SY::UNIT be a standard unit of SY::Amount. Note that naming the
   # constant "UNIT" automagically (using y_support/name_magic) sets its name

@@ -18,37 +18,36 @@ class SY::Quantity
   ★ NameMagic
 
   class << self
-    alias __new__ new
-
     # Constructor of a new quantity of the supplied dimension. Example:
     # q = Quantity.of Dimension.new( "L.T⁻²" )
     # 
     # FIXME: Figure out how to denote Ruby code in the documentation.
     # 
     def of dimension, **options
-      dimension.Quantity.new **options
+      new dimension: dimension, **options
     end
 
     # Constructor of a new dimensionless quantity.
     # 
     def dimensionless **options
-      SY::Dimension.zero.Quantity.new **options
+      new dimension: SY::Dimension.zero, **options
     end
 
     # #standard constructor. Example:
     # q = Quantity.standard of: Dimension.new( "L.T⁻²" )
     def standard **options
-      dimension = SY::Dimension[ options[:dimension] || options[:of] ]
-      return dimension.standard_quantity
+      SY::Dimension[ options[:dimension] || options[:of] ].standard_quantity
     end
   end
 
-  delegate :dimension, to: "self.class"
+  selector :dimension
 
   # Quantity takes dimension as a parameter (can be supplied under :dimension
   # or :of keyword).
   # 
   def initialize **options
+    options.may_have :dimension, syn!: :of
+    @dimension = options[ :dimension ]
     param_class!( { Magnitude: SY::Magnitude },
                   with: { quantity: self } )
   end

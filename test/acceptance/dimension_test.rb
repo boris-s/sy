@@ -230,13 +230,6 @@ describe SY::Dimension do
       assert SY::Dimension[ "L³" ].equal? @L * 3
     end
 
-    describe "dimension-specific parametrized subclass of SY::Quantity" do
-      it "should be accessible through SY::Dimension#Quantity method" do
-        assert @T.Quantity < SY::Quantity
-        assert @T.Quantity.dimension.equal? @T
-      end
-    end
-
     describe "#standard_quantity method" do
       it "should return always the same Quantity instance" do
         @Z.standard_quantity.must_be_kind_of SY::Quantity

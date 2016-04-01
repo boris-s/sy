@@ -71,17 +71,6 @@ class SY::Dimension < Hash
     super BASE.normalize_symbol( arg )
   end
 
-  # Accessor of a dimension-specific parametrized subclass of SY::Quantity.
-  # 
-  def Quantity
-    @Quantity ||= SY::Quantity.parametrize( dimension: self ).tap do |c|
-      dim = self
-      # FIXME: These inspects for parametrized subclasses don't seem to work
-      c.define_singleton_method :to_s do "Quantity[#{dim}]" end
-      c.define_singleton_method :inspect do "Quantity[#{dim}]" end
-    end
-  end
-
   # Returns the exponents of the specified base dimensions. Accepts variable
   # input specifying base dimensions (:LENGTH, :L, "LENGTH", "L" etc.)
   # 
