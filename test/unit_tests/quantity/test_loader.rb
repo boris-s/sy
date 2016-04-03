@@ -8,7 +8,7 @@
 
 require_relative '../test_loader'
 
-# Make an empty class named SY::Unit for testing purposes.
+# Mention class SY::Quantity for testing purposes.
 # 
-class SY::Unit < SY::Magnitude
+class SY::Quantity
 end

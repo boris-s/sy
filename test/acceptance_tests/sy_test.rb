@@ -22,6 +22,48 @@ describe "general features" do
   end
 end
 
+describe "dimensionless quantities and units" do
+  it "should define Amount" do
+    SY::Amount.must_be_kind_of SY::Quantity
+    assert SY::Amount.standard?
+  end
+
+  it "should define UNIT" do
+    SY::UNIT.must_be_kind_of SY::Unit
+    SY::UNIT.quantity.must_equal SY::Amount
+  end
+
+  it "should define AVOGADRO_CONSTANT" do
+    SY::Nᴀ.must_equal SY::AVOGADRO_CONSTANT
+    SY::Nᴀ.must_be_within_epsilon 6.0221e23
+  end
+
+  it "define MoleAmount" do
+    assert SY::MoleAmount.equal? Amount / Nᴀ
+  end
+
+  # FIXME: The interesting tests below.
+
+  it "should attempt to define quantity Density" do
+    skip
+    # Density is not such a simple thing to say. Although commonly, people
+    # will expect volumetric density with dimension M.L⁻³, there are many
+    # other possible kinds of densities. I should check the terminology of
+    # this physical unit.
+    ( defined? SY::Density ).must_equal "constant"
+  end
+
+  it "should attempt to define quantity Frequency" do
+    skip
+    ( defined? SY::Frequency ).must_equal "constant"
+  end
+
+  it "should attempt to define quantity Frequency" do
+    skip
+    ( defined? SY::HERTZ ).must_equal "constant"
+  end
+end
+
 describe "standard dimensionless quantity" do
   it "must be named Amount" do
     SY::Dimension.zero.standard_quantity.name.must_equal :Amount

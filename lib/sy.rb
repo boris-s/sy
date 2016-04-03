@@ -85,7 +85,8 @@ module SY
   
   Nᴀ = AVOGADRO_CONSTANT = 6.02214e23
 
-  MoleAmount = Amount / Nᴀ
+  # MoleAmount = Amount / Nᴀ
+=begin
   MOLE = Unit.standard of: MoleAmount, short: "mol"
 
   # === Quantities of dimension LENGTH
@@ -189,4 +190,5 @@ module SY
   ELEMENTARY_CHARGE = 1.60217656535e-19 * COULOMB
 
   ELECTRONVOLT = Unit ELEMENTARY_CHARGE * VOLT, short: "eV"
+=end
 end

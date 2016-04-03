@@ -12,7 +12,7 @@
 # **************************************************************************
 
 require_relative 'test_loader'
-require_relative '../lib/expressible_in_units'
+require_relative '../../lib/expressible_in_units'
 
 describe "expressible_in_units.rb" do
   it "should have certain code features" do

@@ -24,8 +24,8 @@ class SY::Quantity::Term < Hash
   SR << -> hash {
     hash.reject! { |quantity, _| quantity == SY::Amount }
   }
-  # Make a way to say it simply, such as by:
-  Quantity::Term[ Amount: 1 ] >> Quantity::Term[]
+  # # Make a way to say it simply, such as by:
+  # Quantity::Term[ Amount: 1 ] >> Quantity::Term[]
 
   # Any quantities with exponent zero can be deleted:
   # 

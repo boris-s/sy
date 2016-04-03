@@ -6,9 +6,16 @@
 # test library, but does not run any tests on its own.
 # **************************************************************************
 
-require_relative '../test_loader'
+require 'minitest/autorun'
 
-# Make an empty class named SY::Quantity for testing purposes.
+# Make an empty module named SY for testing purposes.
 # 
-class SY::Quantity
+module SY
+  def self.const_missing sym
+    if sym.to_s == sym.to_s.upcase then # Assume it is a unit name.
+      1
+    else # Assume it is a magnitude name
+      sym.to_s
+    end
+  end
 end

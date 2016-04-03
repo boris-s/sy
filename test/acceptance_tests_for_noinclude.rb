@@ -16,12 +16,14 @@
 # have to be run separately.
 # **************************************************************************
 
-require_relative 'test_loader'
+require 'minitest/autorun'
+# require 'mathn'
 require_relative '../lib/sy/noinclude'
-require_relative 'sy_loader'
+require_relative '../lib/sy/imperial'
 
 describe "case of require 'sy/noinclude'" do
   it "should show at least some signs of life" do
+    skip
     # SY::Length.magnitude( 1 ).must_equal SY::METRE
     # SY::Length.magnitude( 2 ).must_equal SY::METRE * 2
     # SY::Volume.magnitude( 1 ).must_equal SY::METRE ** 3
@@ -29,15 +31,9 @@ describe "case of require 'sy/noinclude'" do
   end
 end
 
-describe "require 'sy/noinclude'; require 'sy/imperial'" do
-  before do
-    # require 'sy/noinclude'
-    # require 'sy/imperial'
-    require './../lib/sy/noinclude'
-    require './../lib/sy/imperial'
-  end
-
+describe "..." do
   it "should show signs of life" do
+    skip
     # SY::YARD.must_equal SY::FOOT * 3
     # SY::POUND.must_equal 16 * SY::OUNCE
   end

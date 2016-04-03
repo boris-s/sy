@@ -7,4 +7,8 @@
 # **************************************************************************
 
 require_relative '../test_loader'
-require_relative '../sy_loader'
+
+# Mention class named SY::Unit for testing purposes.
+# 
+class SY::Unit
+end

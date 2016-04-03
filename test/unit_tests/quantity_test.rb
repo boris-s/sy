@@ -18,6 +18,14 @@ require 'y_support/core_ext/module'
 # Require the tested component itself.
 require_relative '../../lib/sy/quantity.rb'
 
+describe "quantity/function.rb" do
+  require_relative 'quantity/function_test'
+end
+
+describe "quantity/term.rb" do
+  require_relative 'quantity/term_test'
+end
+
 describe "quantity.rb" do
   describe "class methods" do
     it "should have .of constructor" do

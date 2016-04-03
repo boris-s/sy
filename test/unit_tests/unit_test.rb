@@ -21,6 +21,10 @@ require_relative '../../lib/sy/sps'
 # Require the tested component itself.
 require_relative '../../lib/sy/unit'
 
+describe "sy/unit/sps.rb" do
+  require_relative 'unit/sps_test.rb'
+end
+
 describe "sy/unit.rb" do
   it "must be a subclass of SY::Magnitude" do
     SY::Unit.ancestors.must_include SY::Magnitude

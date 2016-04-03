@@ -10,9 +10,9 @@
 # used in the context of physical chemistry. Quantities SY::ThermalCapacity
 # and SY::Entropy have both the same physical dimension, but they have
 # different physical meaning. It is not easy to programatically capture the
-# often conventions of the different fields of science, and SY achieves this
-# by properly defining SY::Quantity class and the mutual relationships between
-# its instances.
+# conventions regarding the use of quantities in the different fields of
+# science. SY achieves this by properly defining SY::Quantity class and the
+# mutual relationships between its instances.
 # 
 class SY::Quantity
   ★ NameMagic
@@ -46,10 +46,10 @@ class SY::Quantity
   # or :of keyword).
   # 
   def initialize **options
-    options.may_have :dimension, syn!: :of
-    @dimension = options[ :dimension ]
-    param_class!( { Magnitude: SY::Magnitude },
-                  with: { quantity: self } )
+    @dimension = options.may_have :dimension, syn!: :of
+    param_class!( { Magnitude: SY::Magnitude }, with: { quantity: self } )
+    @function = options.may_have :function
+    
   end
 
   # # Convenience shortcut to register a name of the basic unit of

@@ -4,7 +4,6 @@
 # 
 class SY::Unit < SY::Magnitude
   require_relative 'unit/sps'
-
   # include NameMagic
 
   class << self

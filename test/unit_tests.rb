@@ -4,24 +4,15 @@
 # **************************************************************************
 # Unit tests for SY, a Ruby library of physical units.
 #
-# This file gradually runs all unit tests for SY.
+# This file gradually runs all existing unit tests for SY.
 # **************************************************************************
 
-require_relative 'sy_test'
-require_relative 'sy/prefixes_test'
-require_relative 'sy/se_test'
-require_relative 'sy/sps_test'
-require_relative 'sy/dimension/base_test'
-require_relative 'sy/dimension/sps_test'
-require_relative 'sy/dimension_test'
-# require_relative 'sy/measure_test'
-# require_relative 'sy/composition_test'
-require_relative 'sy/quantity_test'
-require_relative 'sy/magnitude_test'
-# require_relative 'sy/unit/sps_test'
-require_relative 'sy/unit_test'
+require_relative 'unit_tests/prefixes_test'
+require_relative 'unit_tests/se_test'
+require_relative 'unit_tests/sps_test'
+require_relative 'unit_tests/dimension_test'
+require_relative 'unit_tests/quantity_test'
+require_relative 'unit_tests/magnitude_test'
+require_relative 'unit_tests/unit_test'
+require_relative 'unit_tests/expressible_in_units_test.rb'
 
-# require_relative 'expressible_in_units_test.rb'
-
-# FIXME: Write the unit tests for 'sy/quantity/something' files,
-# not talking about acceptance tests.

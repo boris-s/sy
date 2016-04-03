@@ -28,6 +28,14 @@ require_relative '../../lib/sy/sps'
 # Require the tested component itself.
 require_relative '../../lib/sy/dimension'
 
+describe "dimension/base.rb" do
+  require_relative 'dimension/base_test'
+end
+
+describe "dimension/sps.rb" do
+  require_relative 'dimension/sps_test'
+end
+
 describe "sy/dimension.rb" do
   it "should define basic physical dimensions" do
     SY::Dimension::BASE.to_a.sort
