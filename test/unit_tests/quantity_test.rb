@@ -15,6 +15,7 @@ require_relative 'test_loader'
 require 'y_support/unicode'
 require 'y_support/name_magic'
 require 'y_support/core_ext/module'
+require 'active_support/core_ext/module/delegation'
 # Require the tested component itself.
 require_relative '../../lib/sy/quantity.rb'
 
@@ -27,6 +28,10 @@ describe "quantity/term.rb" do
 end
 
 describe "quantity.rb" do
+  it "should define Quantity::Error" do
+    assert SY::Quantity::Error < TypeError
+  end
+
   describe "class methods" do
     it "should have .of constructor" do
       SY::Quantity.methods.must_include :of
@@ -52,21 +57,22 @@ describe "quantity.rb" do
   # FIXME: Below are only sample tests from dimension_tests.rb
 
   it "should define operators +, -, *, / and negation" do
-    skip
-    SY::Dimension.instance_methods.must_include :+
-    SY::Dimension.instance_methods.must_include :-
-    SY::Dimension.instance_methods.must_include :*
-    SY::Dimension.instance_methods.must_include :/
-    SY::Dimension.instance_methods.must_include :-@
+    SY::Quantity.instance_methods.must_include :+
+    SY::Quantity.instance_methods.must_include :-
+    SY::Quantity.instance_methods.must_include :*
+    SY::Quantity.instance_methods.must_include :/
+    SY::Quantity.instance_methods.must_include :-@
+  end
+
+  it "should define #inverse method" do
+    SY::Quantity.instance_methods.must_include :inverse
   end
 
   it "should carry its own definition of #to_s method" do
-    skip
-    SY::Dimension.instance_methods( false ).must_include :to_s
+    SY::Quantity.instance_methods( false ).must_include :to_s
   end
 
   it "should carry its own definition of #inspect method" do
-    skip
-    SY::Dimension.instance_methods( false ).must_include :inspect
+    SY::Quantity.instance_methods( false ).must_include :inspect
   end
 end

@@ -17,6 +17,10 @@ require 'y_support/unicode'
 require_relative '../../lib/sy/magnitude'
 
 describe "sy/magnitude.rb" do
+  it "must define Magnitude::Error" do
+    assert SY::Magnitude::Error < TypeError
+  end
+
   it "must have .of constructor" do
     SY::Magnitude.methods.must_include :of
   end

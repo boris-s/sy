@@ -1,5 +1,7 @@
 # coding: utf-8
 
+# require 'active_support/core_ext/module/delegation'
+
 # Every quantity has a function, which maps from the quantity to its standard
 # quantity. More precisely, having a magnitude m of quantity Q with function
 # f, this can be transformed to a magnitude s of its standard quantity by

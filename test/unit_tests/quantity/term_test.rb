@@ -20,9 +20,7 @@ describe "sy/quantity/term" do
 
   describe "instance methods" do
     it "must have basic instance methods" do
-      im = @t.instance_methods
-      skip
-      im.must_include :closure
+      flunk "Quantity::Term unit tests not written!"
     end
   end
 end

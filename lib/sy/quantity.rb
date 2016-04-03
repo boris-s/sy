@@ -18,6 +18,10 @@ class SY::Quantity
   require_relative 'quantity/function'
   ★ NameMagic
 
+  # This error indicates incompatible quantities.
+  # 
+  class Error < TypeError; end
+
   class << self
     # Constructor of a new quantity of the supplied dimension. Example:
     # q = Quantity.of Dimension.new( "L.T⁻²" )
@@ -85,7 +89,24 @@ class SY::Quantity
   # end
 
   # Arithmetics
-  # #*
+
+  # FIXME: Write the description.
+  # 
+  def + other
+  end
+
+  # FIXME: Write the description.
+  # 
+  def -@ other
+  end
+
+  # FIXME: Write the description.
+  # 
+  def - other
+  end
+
+  # FIXME: Write the description.
+  # 
   def * other
     # FIXME: It's not gonna be this simple. Now I hit the hard part,
     # where quantity arithmetics has to be defined.
@@ -109,20 +130,38 @@ class SY::Quantity
       .to_quantity
   end
 
-  # # #/
-  # def / other
-  #   msg = "Quantities only divide with Quantities, Dimensions and " +
-  #     "Numerics (which leaves them unchanged)"
-  #   case other
-  #   when Numeric then self
-  #   when Quantity then self.class.of dimension - other.dimension
-  #   when Dimension then self.class.of dimension - other
-  #   else raise ArgumentError, msg end
-  # end
+  # FIXME: Write the description.
+  # 
+  def inverse
+  end
 
-  # # #**
-  # def ** num; self.class.of self.dimension * Integer( num ) end
+  # FIXME: Write the description.
+  # 
+  def / other
+    #   msg = "Quantities only divide with Quantities, Dimensions and " +
+    #     "Numerics (which leaves them unchanged)"
+    #   case other
+    #   when Numeric then self
+    #   when Quantity then self.class.of dimension - other.dimension
+    #   when Dimension then self.class.of dimension - other
+    #   else raise ArgumentError, msg end
+  end
 
-  # # Make this quantity the standard quantity for its dimension
-  # def set_as_standard; QUANTITIES[dimension.to_a] = self end
+  # FIXME: Write the description.
+  # 
+  def ** num
+  # self.class.of self.dimension * Integer( num )
+  end
+
+  # FIXME: Write the description.
+  # 
+  def to_s
+    super # FIXME: This should be a customized method like in Dimension
+  end
+
+  # FIXME: Write the description.
+  # 
+  def inspect
+    super # FIXME: This should be a customized method like in Dimension
+  end
 end # class SY::Quantity

@@ -275,22 +275,9 @@ describe SY::Dimension do
 
     describe "#inspect method" do
       it "should return specific strings" do
-        @Z.inspect.must_equal "#<Dimension:∅>"
-        @L.inspect.must_equal "#<Dimension:L>"
-        ( @L - 2 * @T ).inspect.must_equal "#<Dimension:L.T⁻²>"
-      end
-    end
-
-    describe "#standard_composition method" do
-      it "should return a standard composition of quantities" do
-        skip
-
-        # Writing this test require that SY::Composition is
-        # revisited and put in working order. This in turn
-        # requires that SY::Quantity is put in working order.
-        # This skip is justified for now.
-
-        flunk "Test not written!"
+        @Z.inspect.must_equal "Dimension:∅"
+        @L.inspect.must_equal "Dimension:L"
+        ( @L - 2 * @T ).inspect.must_equal "Dimension:L.T⁻²"
       end
     end
   end

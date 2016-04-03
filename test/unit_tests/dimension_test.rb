@@ -47,6 +47,10 @@ describe "sy/dimension.rb" do
     SY::Dimension.instances.must_be_kind_of Array
   end
 
+  it "should define Quantity::Error" do
+    assert SY::Dimension::Error < TypeError
+  end
+
   it "should have .[] and .zero constructors" do
     SY::Dimension.methods.must_include :[]
     SY::Dimension.methods.must_include :zero
@@ -87,9 +91,5 @@ describe "sy/dimension.rb" do
 
   it "should define #coerce method" do
     SY::Dimension.instance_methods.must_include :coerce
-  end
-
-  it "should define #standard_composition method" do
-    SY::Dimension.instance_methods.must_include :standard_composition
   end
 end

@@ -41,6 +41,7 @@ describe SY::Quantity do
       q = SY::Quantity.of( @T )
       assert q.Magnitude < SY::Magnitude
       assert q.Magnitude.quantity.equal? q
+      q.Magnitude.inspect.must_equal "something.Magnitude"
     end
   end
 
@@ -131,8 +132,8 @@ describe SY::Quantity do
 
     describe "addition of two quantities" do
       it "generally works only when both quantities are the same" do
-        -> { @Time + @Length }.must_raise SY::QuantityError
-        -> { @Time + SY::Quantity.of( @T ) }.must_raise SY::QuantityError
+        -> { @Time + @Length }.must_raise SY::Dimension::Error
+        -> { @Time + SY::Quantity.of( @T ) }.must_raise SY::Quantity::Error
         assert @Time.equal? @Time + @Time
       end
 
@@ -144,8 +145,8 @@ describe SY::Quantity do
     
     describe "subtraction of two quantities" do
       it "generally works only when both quantities are the same" do
-        -> { @Time - @Length }.must_raise SY::QuantityError
-        -> { @Time - SY::Quantity.of( @T ) }.must_raise SY::QuantityError
+        -> { @Time - @Length }.must_raise SY::Dimension::Error
+        -> { @Time - SY::Quantity.of( @T ) }.must_raise SY::Quantity::Error
         assert @Time.equal? @Time - @Time
       end
 

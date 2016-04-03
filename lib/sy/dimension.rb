@@ -16,6 +16,10 @@ class SY::Dimension < Hash
 
   define_coercion Integer, method: :* do |o1, o2| o2 * o1 end
 
+  # This error indicates incompatible dimensions.
+  # 
+  class Error < TypeError; end
+
   class << self
     # Presents class-owned instances (array).
     # 
@@ -153,7 +157,7 @@ class SY::Dimension < Hash
   # Produces the inspect string of the dimension.
   # 
   def inspect
-    "#<Dimension:#{self}>"
+    y_inspect :short
   end
 
   # Returns dimension's standard quantity.
@@ -161,22 +165,6 @@ class SY::Dimension < Hash
   def standard_quantity
     @standard_quantity ||= SY::Quantity.of( self )
   end
-
-  # Returns default quantity composition for this dimension.
-  # 
-  def standard_composition
-    # SY::Composition[ ( keys.map do |letter|
-    #                      self.class[ letter ].standard_quantity.absolute
-    #                    end >> values ).reject { |k, v| v.zero? } ]
-
-    # TODO: This to_composition method should actually have less use in
-    # SY. Quantities and their compositions should take the primary role of
-    # physical dimensions. More precisely, simplification (or expansion) of
-    # quantity compositions into other quantities or quantity compositions
-    # should abide by its own rules. Simplificaton or expansion using the
-    # mechanism of physical dimensions should be only a subset of these rules.
-  end
-  alias to_composition standard_composition # TODO: Deprecated, remove.
 
   delegate :standard_unit, to: :standard_quantity
 end # class SY::Dimension
