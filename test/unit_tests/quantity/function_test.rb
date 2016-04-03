@@ -30,7 +30,7 @@ describe "sy/quantity/function" do
       im.must_include :inverse_closure
       im.must_include :call
       im.must_include :[]
-      im.must_include :invert
+      im.must_include :inverse
       im.must_include :*
       im.must_include :/
       im.must_include :**
@@ -70,19 +70,16 @@ describe "sy/quantity/function" do
     end
 
     it "must swap @closure and @inverse_closure" do
-      @i.invert.closure.must_equal @i.inverse_closure
-      @i.invert.inverse_closure.must_equal @i.closure
+      @i.inverse.closure.must_equal @i.inverse_closure
+      @i.inverse.inverse_closure.must_equal @i.closure
     end
   end
 
   describe "#*" do
-    before do
-      @i1 = @f.multiplication( 2 )
-      @i2 = @f.multiplication( 3 )
-    end
-
     it "must perform function composition" do
-      c = @i1 * @i2
+      i1 = @f.multiplication( 2 )
+      i2 = @f.multiplication( 3 )
+      c = i1 * i2
       c.must_be_kind_of @f
       c.( 7 ).must_equal 42
       c.inverse_closure.( 42 ).must_equal 7
@@ -90,15 +87,35 @@ describe "sy/quantity/function" do
   end
 
   describe "#/" do
-    before do
-      @i1 = @f.multiplication( 2 )
-      @i2 = @f.multiplication( 3 )
-    end
-
-    it "must perform composition with the right operand's inverse" do
-      c = @i1 / @i2
+    it "is defined as multiplication with inverse" do
+      i1 = @f.multiplication( 2 )
+      i2 = @f.multiplication( 3 )
+      c = i1 / i2
       c.( 3 ).must_equal 2
       c.inverse_closure.( 2 ).must_equal 3
+    end
+  end
+
+  describe "#**" do
+    before do
+      @i = @f.addition( 1 )
+    end
+
+    it "performs raises the function to the argument" do
+      ( @i ** 1 ).( 0 ).must_equal 1
+      ( @i ** 1 ).inverse_closure.( 0 ).must_equal -1
+      ( @i ** 5 ).( 0 ).must_equal 5
+      ( @i ** 5 ).inverse_closure.( 0 ).must_equal -5
+      ( @i ** 0 ).( 42 ).must_equal 42
+      ( @i ** 0 ).inverse_closure.( 42 ).must_equal 42
+      ( @i ** -1 ).( 0 ).must_equal -1
+      ( @i ** -1 ).inverse_closure.( 0 ).must_equal 1
+      ( @i ** -5 ).( 0 ).must_equal -5
+      ( @i ** -5 ).inverse_closure.( 0 ).must_equal 5
+    end
+
+    it "takes only integer arguments" do
+      -> { @i ** 2.5 }.must_raise TypeError
     end
   end
 end

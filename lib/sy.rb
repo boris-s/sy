@@ -80,6 +80,12 @@ module SY
 
   # # Defines quantity term simplification rule.
   # Quantity::Term[ Amount: 1 ] >> Quantity::Term[]
+  # # FIXME: The above rule is wrong, because Amount should stay when alone,
+  # # but be disposable when in more complex terms.
+ 
+  # # # Perhaps this should be said differently:
+  # Amount.disposable! # This method should work only for dimensionless
+  #                    # quantities
 
   UNIT = Unit.standard of: Amount
   

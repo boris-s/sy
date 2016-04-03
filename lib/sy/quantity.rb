@@ -15,6 +15,7 @@
 # mutual relationships between its instances.
 # 
 class SY::Quantity
+  require_relative 'quantity/function'
   ★ NameMagic
 
   class << self
@@ -33,23 +34,28 @@ class SY::Quantity
       new dimension: SY::Dimension.zero, **options
     end
 
-    # #standard constructor. Example:
+    # Returns standard quantity of the supplied dimension. Example:
+    # 
     # q = Quantity.standard of: Dimension.new( "L.T⁻²" )
+    # 
     def standard **options
       SY::Dimension[ options[:dimension] || options[:of] ].standard_quantity
     end
   end
 
-  selector :dimension
+  selector :dimension, :function
 
   # Quantity takes dimension as a parameter (can be supplied under :dimension
   # or :of keyword).
   # 
   def initialize **options
-    @dimension = options.may_have :dimension, syn!: :of
+    @dimension = SY::Dimension[ options.may_have :dimension, syn!: :of ]
     param_class!( { Magnitude: SY::Magnitude }, with: { quantity: self } )
-    @function = options.may_have :function
-    
+    @function = if options.has? :function then
+                  options[ :function ].aT_is_a SY::Quantity::Function
+                else
+                  SY::Quantity::Function.identity
+                end
   end
 
   # # Convenience shortcut to register a name of the basic unit of

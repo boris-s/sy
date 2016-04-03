@@ -65,9 +65,12 @@ class SY::Quantity::Function
     @inverse_closure = inverse.aT_is_a Proc
   end
 
-  # Inverse function.
+  # Returns an instance of SY::Quantity::Function inverse to the
+  # receiver. This is achieved simply by swapping the function closure
+  # (accessible via +#closure+ method) and its inverse closure (accessible
+  # via +#inverse_closure+ method).
   # 
-  def invert
+  def inverse
     self.class.new( inverse_closure, inverse: closure )
   end
 
@@ -84,13 +87,16 @@ class SY::Quantity::Function
   # Composition with inverse of the other function.
   #
   def / other
-    self * other.invert
+    self * other.inverse
   end
 
   # Raising to a power.
   # 
   def ** n
-    f, _f = closure, inverse
+    n.aT_is_a Integer
+    return self.class.identity if n.zero?
+    return inverse ** -n if n < 0
+    f, _f = closure, inverse_closure
     self.class.new -> m { n.times.inject m do |m, _| f.( m ) end },
                    inverse: -> m { n.times.inject m do |m, _| _f.( m ) end }
   end

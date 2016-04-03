@@ -45,6 +45,10 @@ describe "quantity.rb" do
     SY::Quantity.instance_methods.must_include :dimension
   end
 
+  it "should have #function selector" do
+    SY::Quantity.instance_methods.must_include :function
+  end
+
   # FIXME: Below are only sample tests from dimension_tests.rb
 
   it "should define operators +, -, *, / and negation" do
