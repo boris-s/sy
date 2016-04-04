@@ -60,6 +60,10 @@ class SY::Quantity
                 else
                   SY::Quantity::Function.identity
                 end
+
+    # FIXME: The question is: Do quantities need their composition?
+    # Do they need to know how they were defined? It would seem to me
+    # that the answer is no, so long as @function is well handled...
   end
 
   # # Convenience shortcut to register a name of the basic unit of
@@ -88,82 +92,129 @@ class SY::Quantity
   #   "#{name.nil? ? 'unnamed quantity' : 'quantity "%s"' % name} (#{dimension})"
   # end
 
-  # Arithmetics
+  delegate :multiplication_table, to: "self.class"
+
+  # Applies multiplication table to a quantity term.
+  # 
+  def apply_multiplication_table( **hash )
+    fail NotImplementedError
+
+    # First thing, we will check the multiplication table
+    # for the quantity term. If it is not found there, we
+    # will have to start looking into what we got.
+    # 
+    # But let's not do it quite yet. I imagine this
+    # multiplication table here as a kind of second
+    # cache to save all the code below, while the real
+    # multiplication table is defined by Term class.
+    # 
+    # multiplication_table[ { self => 1, hash => -1 } ]
+
+    # hash should be of size 1, with a quantity as its key
+    # and either 1 or -1 as its value (exponent).
+
+    fail ArgumentError unless hash.size == 1
+    q2, exp = hash.to_a
+    fail ArgumentError unless exp == 1 || exp == -1
+    f, g = function, q2.function
+
+    if f.ratio? and g.ratio? then
+      term = Term[ self => 1, other => exp ]
+    else
+      msg = "Multiplication or division of two quantities requires that both " +
+            "are either standard quantities or scaled versions of standard " +
+            "quantities. But %s!"
+      info = if f.ratio? then
+               "quantity #{g} is not a scaled version of #{g.standard}"
+             elsif g.ratio? then
+               "quantity #{f} is not a scaled version of #{f.standard}"
+             else
+               "neither #{f} nor #{g} is a scaled version of standard " +
+                 "quantities of their dimensions"
+             end
+      fail TypeError, msg % info
+    end
+
+    # Now we call Term#simplify or Term#beautify or whatever method will tell
+    # us to which quantity does the term reduce.
+    result = term.reduce_to_quantity
+
+    # And finally, we cache the term in the multiplication table here.
+    multiplication_table.cache( hash => result )
+
+    return result
+  end
 
   # FIXME: Write the description.
   # 
   def + other
+    fail NotImplementedError
   end
 
   # FIXME: Write the description.
   # 
   def -@ other
+    fail NotImplementedError
   end
 
   # FIXME: Write the description.
   # 
   def - other
+    fail NotImplementedError
   end
 
-  # The result of the multiplication operator depends on the type of the
-  # supplied operand. If the operand is another quantity, the result of the
-  # multiplication is their product. If the operand is a number, the result
-  # of the multiplication is a quantity scaled down by the operand.
+  # Multiplication of a quantity can occur with another quantity, or with a
+  # number. When multiplied by a number, a new quantity is constructed as
+  # expected. When multiplied by a quantity, both quantities are required to
+  # have simple ratio as their function. (Internally, the method uses
+  # quantity multiplication table to avoid creation of the excessive number
+  # of SY::Quantity instances.)
   # 
   def * other
-    # TODO: Here comes the fun part. It turns out, that it would be worthwile
-    # to recognize different subtypes of quantities' functions. Standard
-    # quantities always have identity function as their function, so it seems
-    # as if they did not even need one. But if we practice redeclaring which
-    # quantity is standard (for its dimension) later, then it need be known
-    # that only quantities with identity function can become standard
-    # quantities. So far so simple.
-    # 
-    # But as soon as we start multiplying the quantities, it turns out that
-    # for the quantities, which are upscaled or downscaled versions of their
-    # respective standard quantities, their function can be determined quite
-    # easily. But if any of the multiplicands have some other function than
-    # scaling by a factor, it is no longer possible to ascribe function to
-    # the resulting quantity. In this way, the resulting quantity has pretty
-    # much nothing to do with the multiplicands. It can sometimes seem that
-    # the dimension of the resulting quantity arises from the multiplicands'
-    # dimension, but this is just an illusion. Multiplication of two
-    # quantities together should be prohibited if any of them has any other
-    # function than simple scaling.
-    # 
-    # So as the first thing, we need two kinds of quantity functions.
-    # 
     case other
     when SY::Quantity then
-      fail TypeError, "Quantities with functions other than ratios cannot be multiplied together!" unless function.is_a? SY::Quantity::Ratio and other.function.is_a? SY::Quantity::Ratio
-    else 
-      other.aT_is_a Numeric
-      # FIXME
+      apply_multiplication_table( other => 1 )
+    when Numeric
+      fail NotImplementedError
+      # FIXME: Maybe this is wrong and function / Ratio.new( other ) is right.
+      self.class.new of: dimension, function: function * Ratio.new( other )
+    else
+      fail TypeError, "A quantity can only be multiplied by another " +
+                      "quantity or by a number!"
     end
-
   end
 
   # FIXME: Write the description.
   # 
   def inverse
+    fail NotImplementedError
   end
 
-  # FIXME: Write the description.
+  # A quantity can be divided by another quantity, or by a number. When divided
+  # by a number, a new quantity is constructed as expected. When divided by
+  # a quantity, both quantities are required to have simple ratio as their
+  # function. (Internally, the method uses quantity multiplication table to
+  # avoid creation of the excessive number of SY::Quantity instances.)
   # 
   def / other
-    #   msg = "Quantities only divide with Quantities, Dimensions and " +
-    #     "Numerics (which leaves them unchanged)"
-    #   case other
-    #   when Numeric then self
-    #   when Quantity then self.class.of dimension - other.dimension
-    #   when Dimension then self.class.of dimension - other
-    #   else raise ArgumentError, msg end
+    case other
+    when SY::Quantity then
+      apply_multiplication_table( other => -1 )
+    when Numeric
+      fail NotImplementedError
+      # FIXME: Maybe this is wrong and function * Ratio.new( other ) is right.
+      self.class.new of: dimension, function: function / Ratio.new( other )
+    else
+      fail TypeError, "A quantity can only be multiplied by another " +
+                      "quantity or by a number!"
+    end
   end
 
   # FIXME: Write the description.
   # 
   def ** num
-  # self.class.of self.dimension * Integer( num )
+    fail NotImplementedError
+    # self.class.of self.dimension * Integer( num )
   end
 
   # FIXME: Write the description.

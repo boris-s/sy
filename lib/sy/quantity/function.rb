@@ -67,6 +67,12 @@ class SY::Quantity::Function
     @inverse_closure = inverse.aT_is_a Proc
   end
 
+  # Inquirer whether the function is a ratio.
+  # 
+  def ratio?
+    false
+  end
+
   # Returns an instance of SY::Quantity::Function inverse to the
   # receiver. This is achieved simply by swapping the function closure
   # (accessible via +#closure+ method) and its inverse closure (accessible

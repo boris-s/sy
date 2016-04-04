@@ -22,6 +22,12 @@ class SY::Quantity::Ratio < SY::Quantity::Function
     @coefficient = coefficient
   end
 
+  # Inquirer whether the function is a SY::Quantity::Ratio.
+  # 
+  def ratio?
+    true
+  end
+
   # Returns an instance of SY::Quantity::Function inverse to the
   # receiver. This is achieved simply by swapping the function closure
   # (accessible via +#closure+ method) and its inverse closure (accessible

@@ -34,6 +34,7 @@ describe "sy/quantity/function" do
       im.must_include :*
       im.must_include :/
       im.must_include :**
+      im.must_include :ratio?
     end
   end
 
@@ -59,6 +60,15 @@ describe "sy/quantity/function" do
       @f.addition( 7 ).must_be_kind_of @f
       @f.addition( 7 ).( 10 ).must_equal 17
       @f.addition( 7 ).inverse_closure.( 10 ).must_equal 3
+    end
+  end
+
+  describe "#ratio?" do
+    it "must return false for Quantity::Function instances" do
+      i1 = @f.new -> m { m + 1 }, inverse: -> m { m - 1 }
+      i2 = @f.new -> m { m * 2 }, inverse: -> m { m / 2 }
+      i1.ratio?.must_equal false
+      i2.ratio?.must_equal false
     end
   end
 

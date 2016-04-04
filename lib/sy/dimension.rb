@@ -37,8 +37,8 @@ class SY::Dimension < Hash
       # Validate arguments and enable variable input.
       input = if ordered.size == 0 then named
               elsif ordered.size > 1 then
-                fail ArgumentError, "SY::Dimension[] constructor admits at " +
-                                    "most 1 ordered argument!"
+                fail ArgumentError, "SY::Dimension[] constructor admits " +
+                                    "at most 1 ordered argument!"
               else ordered[0] end
       # If input is a Dimension instance, return it unchanged.
       return input if input.is_a? self

@@ -31,5 +31,6 @@ describe "sy/quantity/ratio" do
     ( @f.new( 7 ) * @f.new( 6 ) ).coefficient.must_equal 42
     ( @f.new( 7 ) ** 2 ).coefficient.must_equal 49
     ( @f.new( 7 ) / @f.new( 2 ) ).coefficient.must_equal 3.5
+    @f.new( 7 ).ratio?.must_equal true
   end
 end

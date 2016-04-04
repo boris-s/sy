@@ -47,7 +47,7 @@ describe SY::Quantity do
 
   describe "Quantity.function" do
     it "must be specifiable" do
-      f = SY::Quantity::Function.multiplication( 3600 )
+      f = SY::Quantity::Function.ratio( 3600 )
       time_in_hours = SY::Quantity.of( @T, function: f )
       time_in_hours.function.( 1 ).must_equal 3600
       time_in_hours.function.inverse.( 3600 ).must_equal 1
@@ -77,10 +77,10 @@ describe SY::Quantity do
       end
 
       it "should perform composition of the quantities' functions" do
-        f3600 = SY::Quantity::Function.multiplication 3600
+        f3600 = SY::Quantity::Function.ratio 3600
         time_in_hours = SY::Quantity.of @T, function: f3600
         time_in_hours.function.( 1 ).must_equal 3600
-        f1000 = SY::Quantity::Function.multiplication 1000
+        f1000 = SY::Quantity::Function.ratio 1000
         length_in_km = SY::Quantity.of @L, function: f1000
         product = time_in_hours * length_in_km
         product.function.( 1 ).must_equal 3_600_000
@@ -108,7 +108,7 @@ describe SY::Quantity do
       end
 
       it "should perform composition of the quantities' functions" do
-        f3600 = SY::Quantity::Function.multiplication 3600
+        f3600 = SY::Quantity::Function.ratio 3600
         time_in_hours = SY::Quantity.of @T, function: f3600
         time_in_hours.function.( 1 ).must_equal 3600
         f1000 = SY::Quantity::Function.multiplication 1000
