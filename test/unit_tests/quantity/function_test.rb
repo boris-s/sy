@@ -91,7 +91,7 @@ describe "sy/quantity/function" do
       i1 = @f.multiplication( 2 )
       i2 = @f.multiplication( 3 )
       c = i1 / i2
-      c.( 3 ).must_equal 2
+      c.( 3 ).must_equal 2
       c.inverse_closure.( 2 ).must_equal 3
     end
   end

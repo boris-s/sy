@@ -23,6 +23,10 @@ describe "quantity/function.rb" do
   require_relative 'quantity/function_test'
 end
 
+describe "quantity/ratio.rb" do
+  require_relative 'quantity/ratio_test'
+end
+
 describe "quantity/term.rb" do
   require_relative 'quantity/term_test'
 end

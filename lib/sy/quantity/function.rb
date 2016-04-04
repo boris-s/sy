@@ -31,6 +31,8 @@ class SY::Quantity::Function
     # units into dozens.
     # 
     def multiplication coefficient
+      return SY::Quantity::Ratio.new( coefficient )
+      # FIXME: Delete the code below and write tests for the code above.
       coefficient.aT_is_a Numeric
       fail TypeError, "Coefficient must be non-zero!" if coefficient == 0
       new( -> m { m * coefficient }, inverse: -> m { m / coefficient } )

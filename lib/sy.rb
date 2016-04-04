@@ -1,5 +1,7 @@
 # encoding: utf-8
 
+require 'mathn'
+
 unless defined? SY::UNIT_TEST
   # require 'y_support/null_object'
   require 'y_support/name_magic'

@@ -105,29 +105,42 @@ class SY::Quantity
   def - other
   end
 
-  # FIXME: Write the description.
+  # The result of the multiplication operator depends on the type of the
+  # supplied operand. If the operand is another quantity, the result of the
+  # multiplication is their product. If the operand is a number, the result
+  # of the multiplication is a quantity scaled down by the operand.
   # 
   def * other
-    # FIXME: It's not gonna be this simple. Now I hit the hard part,
-    # where quantity arithmetics has to be defined.
+    # TODO: Here comes the fun part. It turns out, that it would be worthwile
+    # to recognize different subtypes of quantities' functions. Standard
+    # quantities always have identity function as their function, so it seems
+    # as if they did not even need one. But if we practice redeclaring which
+    # quantity is standard (for its dimension) later, then it need be known
+    # that only quantities with identity function can become standard
+    # quantities. So far so simple.
     # 
-    msg = "Quantities only multiply with Quantities, Dimensions and " +
-      "Numerics (which leaves them unchanged)"
-    return case other
-    when Numeric then self
-    when SY::Quantity then self.class.of dimension + other.dimension
-    when SY::Dimension then self.class.of dimension + other
-    else raise ArgumentError, msg end
+    # But as soon as we start multiplying the quantities, it turns out that
+    # for the quantities, which are upscaled or downscaled versions of their
+    # respective standard quantities, their function can be determined quite
+    # easily. But if any of the multiplicands have some other function than
+    # scaling by a factor, it is no longer possible to ascribe function to
+    # the resulting quantity. In this way, the resulting quantity has pretty
+    # much nothing to do with the multiplicands. It can sometimes seem that
+    # the dimension of the resulting quantity arises from the multiplicands'
+    # dimension, but this is just an illusion. Multiplication of two
+    # quantities together should be prohibited if any of them has any other
+    # function than simple scaling.
+    # 
+    # So as the first thing, we need two kinds of quantity functions.
+    # 
+    case other
+    when SY::Quantity then
+      fail TypeError, "Quantities with functions other than ratios cannot be multiplied together!" unless function.is_a? SY::Quantity::Ratio and other.function.is_a? SY::Quantity::Ratio
+    else 
+      other.aT_is_a Numeric
+      # FIXME
+    end
 
-    # This is how it is in the working version:
-    rel = [ self, q2 ].any? &:relative
-    ( SY::Composition[ self => 1 ] + SY::Composition[ q2 => 1 ] )
-      .to_quantity relative: rel
-
-    # Which, now that I am discarding the distinction between
-    # absolute and relative quantities, will look like
-    ( SY::Composition[ self => 1 ] + SY::Composition[ q2 => 1 ] )
-      .to_quantity
   end
 
   # FIXME: Write the description.
