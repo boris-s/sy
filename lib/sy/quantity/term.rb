@@ -58,7 +58,8 @@ class SY::Quantity::Term < Hash
     # end
   end
 
-  # Base terms are terms which consist of only one quantity with exponent 1. FIXME: Or do they consist of only one *standard* quantity with exponent 1?
+  # Base terms consist of only one quantity with exponent 1.
+  # FIXME: Or do they consist of only one *standard* quantity with exponent 1?
   # 
   def base?
     fail NotImplementedError
@@ -70,5 +71,35 @@ class SY::Quantity::Term < Hash
     fail NotImplementedError
   end
 
-  # FIXME: See old file composition.rb for more inspiration.
+  # For each term, there is at least one way of reducing it to
+  # quantity. Empty term reduces to the standard dimensionless quantity. Base
+  # terms reduce to their component quantity (they have only one). And as for
+  # other terms, if no better reduction is available, they reduce to the
+  # quantity implied by the sum of their dimensions and the product of their
+  # functions (which must be of Quantity::Ratio type).
+  #
+  # Sometimes, better reductions are available. These are implied by quantity
+  # compositions.
+  # 
+  def reduce_to_quantity
+    return SY::Dimension.zero.standard_quantity if empty?
+    return to_a.first.first if base?
+    quantity_compositions.each { |composition|
+     try_it_on self, :both_ways # that's depth 1 search
+     # FIXME: more in-depth search is possible
+     # the search is also not overly difficult.
+     # Search is cached, but as soon as new quantity composition
+     # is added, the cache should be cleared.
+
+     # quantity compositions are added ... upon creation
+     # of non-disposable (ie. named) quantities by quantity
+     # multiplication or division, both by another quantity
+     # and a number.
+     #
+     # ie. quantity compositions are created upon naming.
+     # as soon as new quantity composition is defined,
+     # caches need to be cleared (both Term reduce cache
+     # and Quantity multiplication table).
+    }
+  end
 end
