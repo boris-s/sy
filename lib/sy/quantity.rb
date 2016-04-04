@@ -24,9 +24,9 @@ class SY::Quantity
 
   class << self
     # Constructor of a new quantity of the supplied dimension. Example:
+    # ```ruby
     # q = Quantity.of Dimension.new( "L.T⁻²" )
-    # 
-    # FIXME: Figure out how to denote Ruby code in the documentation.
+    # ```
     # 
     def of dimension, **options
       new dimension: dimension, **options

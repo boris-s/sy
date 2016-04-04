@@ -46,15 +46,13 @@ describe "sy/quantity/function" do
     end
 
     it "must have .identity constructor" do
-      @f.identity.must_be_kind_of @f
-      @f.identity.( 42 ).must_equal 42
-      @f.identity.inverse_closure.( 42 ).must_equal 42
+      @f.identity.must_be_kind_of SY::Quantity::Ratio
+      @f.identity.coefficient.must_equal 1
     end
 
     it "must have .multiplication constructor" do
-      @f.multiplication( 7 ).must_be_kind_of @f
-      @f.multiplication( 7 ).( 6 ).must_equal 42
-      @f.multiplication( 7 ).inverse_closure.( 42 ).must_equal 6
+      @f.ratio( 7 ).must_be_kind_of SY::Quantity::Ratio
+      @f.ratio( 7 ).coefficient.must_equal 7
     end
 
     it "must have .addition constructor" do
@@ -77,8 +75,8 @@ describe "sy/quantity/function" do
 
   describe "#*" do
     it "must perform function composition" do
-      i1 = @f.multiplication( 2 )
-      i2 = @f.multiplication( 3 )
+      i1 = @f.ratio( 2 )
+      i2 = @f.ratio( 3 )
       c = i1 * i2
       c.must_be_kind_of @f
       c.( 7 ).must_equal 42
@@ -88,10 +86,10 @@ describe "sy/quantity/function" do
 
   describe "#/" do
     it "is defined as multiplication with inverse" do
-      i1 = @f.multiplication( 2 )
-      i2 = @f.multiplication( 3 )
+      i1 = @f.ratio( 2 )
+      i2 = @f.ratio( 3 )
       c = i1 / i2
-      c.( 3 ).must_equal 2
+      c.( 3 ).must_equal 2
       c.inverse_closure.( 2 ).must_equal 3
     end
   end

@@ -23,7 +23,13 @@ describe "sy/quantity/ratio" do
     @f = SY::Quantity::Ratio
   end
 
-  it "..." do
-    flunk "Tests not written!"
+  it "should define a subclass of Quantity::Function with certain features" do
+    assert @f < SY::Quantity::Function
+    @f.new( 7 ).( 6 ).must_equal 42
+    @f.new( 7 ).inverse_closure.( 42 ).must_equal 6
+    @f.new( 7 ).coefficient.must_equal 7
+    ( @f.new( 7 ) * @f.new( 6 ) ).coefficient.must_equal 42
+    ( @f.new( 7 ) ** 2 ).coefficient.must_equal 49
+    ( @f.new( 7 ) / @f.new( 2 ) ).coefficient.must_equal 3.5
   end
 end

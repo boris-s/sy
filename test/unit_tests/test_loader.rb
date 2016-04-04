@@ -7,6 +7,7 @@
 # **************************************************************************
 
 require 'minitest/autorun'
+require 'mathn'
 
 # Make an empty module named SY for testing purposes.
 # 

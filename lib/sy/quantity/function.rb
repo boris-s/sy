@@ -17,11 +17,13 @@
 # reasons, Quantity::Function class is introduced here.
 #
 class SY::Quantity::Function
+  require_relative 'ratio'
+
   class << self
     # Constructor of an identity function.
     #
     def identity
-      new( -> m { m }, inverse: -> m { m } )
+      SY::Quantity::Ratio.new 1
     end
 
     # Simple multiplication by a constant coefficient. Example: Function of
@@ -30,12 +32,8 @@ class SY::Quantity::Function
     # units. Its inverse is -> m { m / 12 }, which can be used to convert
     # units into dozens.
     # 
-    def multiplication coefficient
+    def ratio coefficient
       return SY::Quantity::Ratio.new( coefficient )
-      # FIXME: Delete the code below and write tests for the code above.
-      coefficient.aT_is_a Numeric
-      fail TypeError, "Coefficient must be non-zero!" if coefficient == 0
-      new( -> m { m * coefficient }, inverse: -> m { m / coefficient } )
     end
 
     # Simple addition of a constant number. Example: Function of
@@ -85,7 +83,6 @@ class SY::Quantity::Function
     f_inv, g_inv = inverse_closure, other.inverse_closure
     self.class.new -> m { f.( g.( m ) ) },
                    inverse: -> m { g_inv.( f_inv.( m ) ) }
-    
   end
 
   # Composition with inverse of the other function.
