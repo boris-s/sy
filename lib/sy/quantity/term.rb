@@ -1,10 +1,11 @@
 # encoding: utf-8
 
-# This class represents a product of a number of quantities raised to certain
-# exponents. Represented as a hash subclass, whose keys are quantities and
-# values are exponents. Please note that not all quantities can form products
-# with other quantities. In order to be suitable for multiplication with
-# other quantities, the function of a quantity needs to be a simple ratio
+# This class represents a product of a number of quantities raised
+# to certain exponents. Represented as a hash subclass, whose keys
+# are quantities and values are exponents. Please note that not all
+# quantities can form products with other quantities. In order to
+# be suitable for multiplication with other quantities, the
+# function of a quantity needs to be a simple ratio
 # (SY::Quantity::Ratio class).
 #
 class SY::Quantity::Term < Hash
@@ -17,15 +18,16 @@ class SY::Quantity::Term < Hash
     
     undef_method :new
     
-    # A constructor of +SY::Quantity::Term+. Always returns the same object
-    # for the same combination of quantities and their exponents.
+    # A constructor of +SY::Quantity::Term+. Always returns the
+    # same object for the same combination of quantities and their
+    # exponents.
     # 
     def [] *ordered_args, **hash
       # Validate arguments and enable variable input.
       input = if ordered_args.size == 0 then hash_args
               elsif ordered_args.size > 1 then
-                fail ArgumentError, "SY::Quantity::Term[] constructor admits " +
-                                    "at most 1 ordered argument!"
+                fail ArgumentError, "SY::Quantity::Term[] " +
+                  "constructor admits at most 1 ordered argument!"
               else ordered[0] end
       # If input is a Term instance, return it unchanged.
       return input if input.is_a? self
@@ -72,14 +74,15 @@ class SY::Quantity::Term < Hash
   end
 
   # For each term, there is at least one way of reducing it to
-  # quantity. Empty term reduces to the standard dimensionless quantity. Base
-  # terms reduce to their component quantity (they have only one). And as for
-  # other terms, if no better reduction is available, they reduce to the
-  # quantity implied by the sum of their dimensions and the product of their
-  # functions (which must be of Quantity::Ratio type).
+  # quantity. Empty term reduces to the standard dimensionless
+  # quantity. Base terms reduce to their component quantity (they
+  # have only one). And as for other terms, if no better reduction
+  # is available, they reduce to the quantity implied by the sum of
+  # their dimensions and the product of their functions (which must
+  # be of Quantity::Ratio type).
   #
-  # Sometimes, better reductions are available. These are implied by quantity
-  # compositions.
+  # Sometimes, better reductions are available. These are implied
+  # by quantity compositions.
   # 
   def reduce_to_quantity
     return SY::Dimension.zero.standard_quantity if empty?

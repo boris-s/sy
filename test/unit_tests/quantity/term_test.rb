@@ -1,12 +1,13 @@
 #! /usr/bin/ruby
 # encoding: utf-8
 
-# **************************************************************************
+# ****************************************************************
 # Unit tests for file sy/quantity/term.rb.
 #
-# File quantity/term.rb defines class SY::Quantity::Term, which represents
-# a product of a certain number of quantities raised to certain exponents.
-# **************************************************************************
+# File quantity/term.rb defines class SY::Quantity::Term, which
+# represents a product of a certain number of quantities raised to
+# certain exponents.
+# ****************************************************************
 
 require_relative 'test_loader'
 # Require the external libraries needed by the tested component.
@@ -20,7 +21,6 @@ describe "sy/quantity/term" do
 
   describe "instance methods" do
     it "must have basic instance methods" do
-      skip
       flunk "Quantity::Term unit tests not written!"
     end
   end

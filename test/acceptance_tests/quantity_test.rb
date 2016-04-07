@@ -111,7 +111,7 @@ describe SY::Quantity do
         f3600 = SY::Quantity::Function.ratio 3600
         time_in_hours = SY::Quantity.of @T, function: f3600
         time_in_hours.function.( 1 ).must_equal 3600
-        f1000 = SY::Quantity::Function.multiplication 1000
+        f1000 = SY::Quantity::Function.ratio 1000
         length_in_km = SY::Quantity.of @L, function: f1000
         speed_km_per_h = length_in_km / time_in_hours
         speed_km_per_h.function.inverse_closure.( 10 ).must_equal 36
