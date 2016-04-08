@@ -9,6 +9,10 @@
 # (SY::Quantity::Ratio class).
 #
 class SY::Quantity::Term < Hash
+  require_relative 'term/nullary'
+  require_relative 'term/unary'
+  require_relative 'term/binary'
+
   class << self
     # Presents class-owned instances (array)
     # 
@@ -104,5 +108,9 @@ class SY::Quantity::Term < Hash
      # caches need to be cleared (both Term reduce cache
      # and Quantity multiplication table).
     }
+  end
+
+  def arity
+    fail NotImplementedError
   end
 end

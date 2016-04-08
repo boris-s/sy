@@ -15,8 +15,18 @@
 # mutual relationships between its instances.
 # 
 class SY::Quantity
-  require_relative 'quantity/function'
   ★ NameMagic
+
+  require_relative 'quantity/function'
+  require_relative 'quantity/ratio'
+  require_relative 'quantity/term'
+  require_relative 'quantity/composition'
+  require_relative 'quantity/multiplication_table'
+
+  # FIXME: I think that this one will be superseded
+  # by quantity/composition/table
+  require_relative 'quantity/simplification_rules'
+
 
   # This error indicates incompatible quantities.
   # 

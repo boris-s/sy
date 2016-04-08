@@ -8,5 +8,6 @@
 # division of other quantities are named.
 # 
 class SY::Quantity::Composition < Struct.new :quantity, :term
+  require_relative 'composition/table'
   # FIXME: Write the tests!
 end
