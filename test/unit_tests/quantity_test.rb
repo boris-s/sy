@@ -1,14 +1,15 @@
 #! /usr/bin/ruby
 # encoding: utf-8
 
-# **************************************************************************
+# *****************************************************************
 # Unit tests for file sy/se.rb.
 #
-# File se.rb defines class Se (superscripted exponent), which is used in
-# construction of Sps (superscripted product string), such as "kg.m.s⁻²".
-# Se is a subclass of String, which represents strings such as "⁰", "¹",
-# "²", "⁴²", "⁻⁴²". Specification of its main features is below.
-# **************************************************************************
+# File se.rb defines class Se (superscripted exponent), which is
+# used in construction of Sps (superscripted product string), such
+# as "kg.m.s⁻²".  Se is a subclass of String, which represents
+# strings such as "⁰", "¹", "²", "⁴²", "⁻⁴²". Specification of its
+# main features is below.
+# *****************************************************************
 
 require_relative 'test_loader'
 # Require the external libraries needed by the tested component.
@@ -31,9 +32,17 @@ describe "quantity/term.rb" do
   require_relative 'quantity/term_test'
 end
 
+# FIXME: See to it that the tests of all subordinate assets
+# of quantity are invoked by the above statements.
+
 describe "quantity.rb" do
   it "should define Quantity::Error" do
     assert SY::Quantity::Error < TypeError
+  end
+
+  it "should use NameMagic with permanent naming" do
+    assert SY::Quantity.include? NameMagic
+    assert SY::Quantity.permanent_names?
   end
 
   describe "class methods" do

@@ -9,6 +9,7 @@
 # (SY::Quantity::Ratio class).
 #
 class SY::Quantity::Term < Hash
+  require_relative 'term/multiplication_table'
   require_relative 'term/nullary'
   require_relative 'term/unary'
   require_relative 'term/binary'

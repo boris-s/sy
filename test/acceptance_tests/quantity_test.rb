@@ -1,39 +1,70 @@
 #! /usr/bin/ruby
 # encoding: utf-8
 
-# **************************************************************************
+# *****************************************************************
 # Acceptance tests for SY::Quantity.
-# **************************************************************************
+# *****************************************************************
 
 require_relative 'test_loader'
 
 describe SY::Quantity do
   before do
+    @USER_MODULE = Module.new do include SY end
+  end
+
+  describe "constructors of" do
+    describe "standard quantities" do
+      describe "Quantity.standard" do
+        # # Example:
+        # Length = SY::Quantity.standard of: SY::Dimension[ :LENGTH ]
+        # # Behind the scenes, it works by invoking
+        # Dimension[ :LENGTH ].standard_quantity
+      end
+    end
+
+    describe "scaled quantities" do
+      describe "Quantity.scaled" do
+      end
+
+      describe "Quantity.of" do
+      end
+
+      describe "Quantity.new" do
+        # FIXME: The line below are a suggestion of how .new
+        # constructor might work for scaled quantities.
+        # 
+        # f = Quantity::Function.ratio AVOGADRO_CONSTANT
+        # MoleAmount = Quantity.new function: f, of: Amount
+      end
+    end
+
+    describe "composed quantities" do
+      describe "Quantity.composed" do
+      end
+
+      describe "Quantity.new" do
+      end
+    end
+
+    describe "nonstandard quantities" do
+      describe "Quantity.nonstandard" do
+        # # Must allow two versions of syntax:
+        # ( of: Quantity, function: Proc, inverse: Proc )
+        # # and
+        # ( of: Quantity, function: Quantity::Function )
+      end
+
+      describe "Quantity.new" do
+      end
+    end
+  end
+end
+
+=begin
+describe "Older tests" do
+  before do
     @T = SY::Dimension[ :TIME ]
     @L = SY::Dimension[ :LENGTH ]
-  end
-
-  describe "constructors" do
-    it "should have .of constructor" do
-      q = SY::Quantity.of( @T )
-      q.must_be_kind_of SY::Quantity
-      q.dimension.must_equal @T
-    end
-
-    it "should have .dimensionless constructor" do
-      q = SY::Quantity.dimensionless
-      q.must_be_kind_of SY::Quantity
-      assert q.dimension.zero?
-    end
-  end
-
-  describe ".standard accessor" do
-    it "should return the standard quantity for the dimension" do
-      q = SY::Quantity.standard( of: @T )
-      q.must_be_kind_of SY::Quantity
-      q.dimension.must_equal @T
-      assert q.equal? @T.standard_quantity
-    end
   end
 
   describe "parametrized subclass Quantity#Magnitude" do
@@ -109,7 +140,9 @@ describe SY::Quantity do
 
       it "should perform composition of the quantities' functions" do
         f3600 = SY::Quantity::Function.ratio 3600
-        time_in_hours = SY::Quantity.of @T, function: f3600
+        def err_msg
+          occurred, but nonstandard quantities may not be inverted!
+          time_in_hours = SY::Quantity.of @T, function: f3600
         time_in_hours.function.( 1 ).must_equal 3600
         f1000 = SY::Quantity::Function.ratio 1000
         length_in_km = SY::Quantity.of @L, function: f1000
@@ -474,3 +507,4 @@ describe SY::Quantity do
     SY::Length.composition.must_equal SY::Composition.singular( :Length )
   end
 end
+=end
