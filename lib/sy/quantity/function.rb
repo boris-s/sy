@@ -2,19 +2,25 @@
 
 # require 'active_support/core_ext/module/delegation'
 
-# Every quantity has a function, which maps from the quantity to its standard
-# quantity. More precisely, having a magnitude m of quantity Q with function
-# f, this can be transformed to a magnitude s of its standard quantity by
-# expression: s = f( m ). In Ruby, functions are conveniently expressed as
-# closures, but in converting quantities, we are interested both in function
-# and its inverse function. Moreover, functions of quantities are frequently
-# quite simple. For example, let's consider dimensionless quantity
-# DozenAmount, whose standard quantity is amount. Then the amount d in dozens
-# is converted to the amount simply by multiplying by twelve: f(m) = m *
-# 12. We could express this as a lambda: f = -> m { m * 12 }. But the problem
-# is, that when we want to convert Amount to DozenAmount, ordinary Ruby
-# lambdas offer no easy way of finding their inverse function. For these
-# reasons, Quantity::Function class is introduced here.
+# Some quantities can be defined as functions of other quantities.
+# This class represents such mapping of one quantity to another.
+# For example, scaled quantities can be expressed as their
+# standard quantity scaled by a ratio. For composed quantities,
+# function can be found that maps them to other quantities of the
+# same dimension. Nonstandard quantities can be expressed as a
+# function of their parent quantity. Ruby does have its built-in
+# function class, Proc. But procs are generally not bijective, and
+# even if they are, it is not easy to figure out the inverse
+# function from a Proc. This class represents bijective functions
+# which carry their own inverse function with them. For example,
+# let's consider dimensionless quantity DozenAmount, whose standard
+# quantity is amount. Then dozen amount d is converted into unit
+# amount by multiplying by 12: f(m) = m * 12. In Ruby lambda
+# notation, this would be f = -> m { m * 12 }. But the although
+# everybody knows that the inverse conversion is achieved by
+# dividing by 12, having the object -> m { m * 12 }, there is no
+# easy way to find that its inverse is -> m { m / 12 }. For this
+# reasons, this class is introduced.
 #
 class SY::Quantity::Function
   require_relative 'ratio'
@@ -26,57 +32,60 @@ class SY::Quantity::Function
       SY::Quantity::Ratio.new 1
     end
 
-    # Simple multiplication by a constant coefficient. Example: Function of
-    # DozenAmount is Function.multiplication( 12 ). Lambda of this function
-    # is -> m { m * 12 }. This lambda can be used to convert dozens into
-    # units. Its inverse is -> m { m / 12 }, which can be used to convert
-    # units into dozens.
+    # Simple multiplication by a coefficient. Example: Function
+    # DozenAmount is constructed as Function.ratio( 12 ). Closure
+    # of this function is -> m { m * 12 }, inverse closure is
+    # -> m { m / 12 }. This lambda can be used to convert dozens
+    # into units and vice versa.
     # 
     def ratio coefficient
-      return SY::Quantity::Ratio.new( coefficient )
+      SY::Quantity::Ratio.new( coefficient )
     end
 
-    # Simple addition of a constant number. Example: Function of
-    # CelsiusTemperature is (approximately) Function.addition( 253.15
-    # ). Lambda of this function is -> m { m + 253.15 }. This lambda can be
-    # used to convert degrees of Celsius into kelvins. Its inverse is -> m {
-    # m - 253.15 }, which can be used to convert kelvins back to degrees of
-    # Celsius.
+    # Simple addition of a constant number. Example: Function
+    # CelsiusTemperature is created as Function.addition( 253.15 )
+    # Its closure is -> m { m + 253.15 }. It can be used to convert
+    # degrees of Celsius into kelvins. Its inverse closure is
+    # -> m { m - 253.15 }, which can be used to convert kelvins
+    # back to degrees of Celsius.
     # 
     def addition constant
-      constant.aT_is_a Numeric
+      "offset".( constant ).must.be_a Numeric
       new( -> m { m + constant }, inverse: -> m { m - constant } )
     end
 
-    # TODO: Think about .linear, .logarithmic and .negative_logarithmic
-    # (for decibels, pH etc.) as seen in old measure.rb.
+    # TODO:
+    # Think about linear, logarithmic and negative logarithmic
+    # constructors (for degrees of Fahrenheit, decibels, pH etc.)
   end
 
   selector :closure, :inverse_closure
   delegate :call, :[], to: :closure
 
-  # The constructor expects the function in lambda notation as the first
-  # argument and the inverse function in lambda notation as +inverse:+
-  # argument. Example:
+  # The constructor expects the function closure (in Ruby lambda
+  # notation) as the first argument. The second mandatory parameter
+  # :inverse expects inverse closure as its argument. Example
   #
   # Quantity::Function.new -> m { m * 2 }, inverse: -> m { m / 2 }
   #
-  def initialize closure,
-                 inverse: fail( ArgumentError, "Inverse function required!" )
-    @closure = closure.aT_is_a Proc
-    @inverse_closure = inverse.aT_is_a Proc
+  def initialize( closure, inverse: )
+    @closure = "first argument".( closure ).must.be_a Proc
+    @inverse_closure =
+      "argument of inverse:".( inverse ).must.be_a Proc
   end
 
-  # Inquirer whether the function is a ratio.
+  # Inquirer whether the function is of SY::Quantity::Ration type.
   # 
   def ratio?
     false
   end
 
-  # Returns an instance of SY::Quantity::Function inverse to the
-  # receiver. This is achieved simply by swapping the function closure
-  # (accessible via +#closure+ method) and its inverse closure (accessible
-  # via +#inverse_closure+ method).
+  # Returns an instance of SY::Quantity::Function, which is an
+  # inverse function of the reeceiver. Since SY::Quantity::Function
+  # instances carry their inverse closures with them, inverting
+  # them is simply achieved by swapping the function closure
+  # (accessible via +#closure+ method) and its inverse closure
+  # (accessible via +#inverse_closure+ method).
   # 
   def inverse
     self.class.new( inverse_closure, inverse: closure )
@@ -100,11 +109,11 @@ class SY::Quantity::Function
   # Raising to a power.
   # 
   def ** n
-    n.aT_is_a Integer
+    "exponent".( n ).must.be_kind_of Integer
     return self.class.identity if n.zero?
     return inverse ** -n if n < 0
     f, _f = closure, inverse_closure
     self.class.new -> m { n.times.inject m do |m, _| f.( m ) end },
-                   inverse: -> m { n.times.inject m do |m, _| _f.( m ) end }
+      inverse: -> m { n.times.inject m do |m, _| _f.( m ) end }
   end
-end
+end # class SY::Quantity::Function

@@ -3,22 +3,14 @@
 require 'mathn'
 
 unless defined? SY::UNIT_TEST
-  # require 'y_support/null_object'
+  require 'y_support/core_ext'
   require 'y_support/name_magic'
-  require 'y_support/core_ext/hash'
-  require 'y_support/core_ext/array'
-  require 'y_support/core_ext/module'
-  # require 'y_support/core_ext/class'
-  require 'y_support/typing'
   require 'y_support/flex_coerce'
-  require 'y_support/unicode'
-  # require 'y_support/abstract_algebra'
+  require 'y_support/literate'
 
   require 'active_support/core_ext/module/delegation'
   # require 'active_support/core_ext/array/extract_options'
   # require 'active_support/core_ext/string/starts_ends_with'
-
-  # require 'flex_coerce'
 
   require_relative 'sy/version'
   require_relative 'expressible_in_units'
@@ -93,8 +85,9 @@ module SY
   
   Nᴀ = AVOGADRO_CONSTANT = 6.02214e23
 
-  # MoleAmount = Amount / Nᴀ
 =begin
+
+  # MoleAmount = Amount / Nᴀ
   MOLE = Unit.standard of: MoleAmount, short: "mol"
 
   # === Quantities of dimension LENGTH

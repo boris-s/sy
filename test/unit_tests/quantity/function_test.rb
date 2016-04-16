@@ -1,22 +1,22 @@
 #! /usr/bin/ruby
 # encoding: utf-8
 
-# **************************************************************************
+# *****************************************************************
 # Unit tests for file sy/quantity/function.rb.
 #
-# File function.rb defines class SY::Quantity::Function, representing a
-# function with easily accessible inverse function. The class serves for
-# the purposes of defining relationships between quantities, specifically
-# between a quantity and its standard quantity.
-# **************************************************************************
+# File function.rb defines class SY::Quantity::Function, a function
+# with easily accessible inverse. The class serves for the purposes
+# of mapping quantities into one another, especially mapping a
+# quantity to its parent quantity or its standard quantity.
+# *****************************************************************
 
 require_relative 'test_loader'
 # Require the external libraries needed by the tested component.
-require 'y_support/core_ext/class'
-require 'y_support/typing'
+require 'y_support/core_ext'
+require 'y_support/literate'
 require 'active_support/core_ext/module/delegation'
 # Require the tested component itself.
-require_relative '../../../lib/sy/quantity/function.rb'
+require_relative '../../../lib/sy/quantity/function'
 
 describe "sy/quantity/function" do
   before do

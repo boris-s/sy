@@ -1,7 +1,4 @@
-#encoding: utf-8
-
-# require 'y_support/core_ext/module'
-# require 'y_support/unicode'
+# coding: utf-8
 
 # Metrological quantity is the key class of SY. A quantity may have
 # its physical dimension, but beyond that, it is characterized by
@@ -53,7 +50,7 @@
 # inner workings of SY::Quantity are too complicated for you to
 # understand and you'd better rely that I spent a lot of
 # computational effort to get it right. Just joking.
-#
+# 
 # Due to the above, 4 types of quantities are recognized in SY:
 # standard, nonstandard, scaled and composed. Standard quantities
 # are unique to each dimension and their function is implicitly set
@@ -66,7 +63,7 @@
 # as a negative logarithm of concentration. CelsiusTemperature is
 # a nonstandard quantity arising by offseting standard Temperature
 # (whose standard unit is kelvin). Examples:
-#
+# 
 # 1. Standard quantities belong to a dimension and their function
 #    is implicitly identity function.
 # 
@@ -74,21 +71,21 @@
 # 
 # 2. Scaled quantities arise from a preexisting quantity (other
 #    than a nonstandard quantity) scaled by a ratio.
-#
+# 
 #      Nᴀ = 6.02214e23
 #      MoleAmount = Quantity.scaled of: Amount, ratio: Nᴀ
 # 
 #    Syntactic sugar for the above is:
-#
+# 
 #      MoleAmount = Amount / Nᴀ
 # 
 # 3. Composed quantities arise from quantity terms. (Note that
 #    quantity terms may not include nonstandard quantities.)
-#
+# 
 #      Speed = Quantity.composed( Length: 1, Time: -1 )
 # 
 #    Syntactic sugar for the above is:
-#
+# 
 #      Speed = Length / Time
 # 
 # 4. Finally, nonstandard quantities are defined by indicating a
@@ -98,19 +95,18 @@
 #        Quantity.nonstandard of: Temperature,
 #                             function: -> x { x + 273.15 },
 #                             inverse: -> x { x - 273.15 }
-#
+# 
 #    There is syntactic sugar available for this particular type
 #    of nonstandard quantities:
 # 
 #      CelsiusTemperature = Temperature - 273.15
-#                            
+# 
 #    Note, however, that this syntactic sugar does not apply to
 #    more complex nonstandard quantities, which have to be defined
 #    explicitly using Quantity.nonstandard constructor.
 # 
 class SY::Quantity
-  ★ NameMagic
-  permanent_names!
+  ★ NameMagic and permanent_names!
 
   require_relative 'quantity/function'
   require_relative 'quantity/ratio'
@@ -123,11 +119,56 @@ class SY::Quantity
   class Error < TypeError; end
 
   class << self
-    # Constructor of a new quantity. Example:
+    # Standard quantity of the supplied dimension. Example:
     # 
-    # ```ruby
-    # q = Quantity.of Dimension.new( "L.T⁻²" )
-    # ```
+    #   q = Quantity.standard of: Dimension[ "L.T⁻²" ]
+    # 
+    def standard of:, **named_args
+      # This method goes down the difficult path of imitating a
+      # constructor. The problem is that an unsuspecting user
+      # could be asking to construct an instance with different
+      # parameters. Luckily, the only allowed parameters here are
+      # :name (alias :ɴ) and :name!. Normally, NameMagic would
+      # take care of them automatically, but in this difficult
+      # situation, we have to handle these manually.
+      dimension = SY::Dimension[ of ]
+      # If no named arguments were supplied, we are done.
+      return dimension.standard_quantity if named_args.empty?
+      # The caller did supply named arguments. If this method
+      # was a quantity constructor, we would just pass them forth
+      # to .new constructor. However, there will be no constructor
+      # call here, since the instance already exists:
+      quantity = dimension.standard_quantity
+      # Handle the named arguments.
+      named_args named_args do
+        may_have :name, alias: :ɴ
+        must_not_have :name!, "Parameters :name (:ɴ) and :name! " +
+          "may not be both given!" if has? :name
+        note "name the instance using either #name= or #name!"
+        quantity.name = delete( :name ) if has? :name
+        quantity.name! delete( :name! ) if has? :name!
+        must_be_empty
+      end
+
+      # Finally, return the quantity.
+      return quantity
+    end
+
+    # Constructor of a new scaled quantity. Example:
+    # 
+    #   DozenAmount = Quantity.scaled of: Amount, ratio: 12
+    # 
+    # FIXME: Now I hit another problem. Scaled quantities are
+    # scaled with respect to their parent quantity, or are they
+    # scaled with respect to their standard quantity?
+    # 
+    def scaled of:, ratio: 1, **named_args
+      new dimension: dimension, **options
+    end
+
+    # Constructor of a new scaled quantity. Example:
+    # 
+    #   q = Quantity.of Dimension.new( "L.T⁻²" )
     # 
     def of dimension, **options
       new dimension: dimension, **options
@@ -138,15 +179,6 @@ class SY::Quantity
     def dimensionless **options
       new dimension: SY::Dimension.zero, **options
     end
-
-    # Standard quantity of the supplied dimension. Example:
-    # 
-    # q = Quantity.standard of: Dimension.new( "L.T⁻²" )
-    # 
-    def standard **options
-      SY::Dimension[ options[:dimension] || options[:of] ]
-        .standard_quantity
-    end
   end
 
   selector :dimension, :function
@@ -155,22 +187,24 @@ class SY::Quantity
   # type of quantity we are constructing. There are two types
   # of elementary quantities (standard and nonstandard)
   # 
-  def initialize **named_args
-    # Handle parameter :dimension.
-    @dimension = named_args.may_have :dimension, syn!: :of
-    # Handle parameter :composition.
-    @composition = named_args.may_have :composition
-    # Handle parameter :function.
-    @function = named_args.may_have :function
+  def initialize **nn
+    # Describe the named arguments.
+    named_args nn do
+      may_have :dimension, alias: :of
+      may_have :composition
+      may_have :function
+    end
+    # Extract them.
+    @dimension = nn.delete :dimension
+    @composition = nn.delete :composition
+    @function = nn.delete :function
+    # @function defaults to identity function.
     @function ||= SY::Quantity::Function.identity
-    
+    # Construct Magnitude parametrized subclass for the instance.
     param_class!( { Magnitude: SY::Magnitude },
                   with: { quantity: self } )
-
-
     #
-    #
-    #There are two kinds of quantities: "Primary" or
+    # There are two kinds of quantities: "Primary" or
     # "elementary" ones, and the ones that are composed of other
     # quantities. Now we have this quantity composition table, but
     # we really don't want to induce anonymous, temporary

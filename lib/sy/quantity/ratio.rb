@@ -2,8 +2,8 @@
 
 # require 'active_support/core_ext/module/delegation'
 
-# Ratio is a quantity function meaning that the quantity is simply upscaled
-# or downscaled version of the standard quantity of the dimension.
+# Ratio is a function that simply scales one quantity to another
+# by a coefficient (multiplication by a coefficient).
 #
 class SY::Quantity::Ratio < SY::Quantity::Function
   selector :coefficient
@@ -29,9 +29,9 @@ class SY::Quantity::Ratio < SY::Quantity::Function
   end
 
   # Returns an instance of SY::Quantity::Function inverse to the
-  # receiver. This is achieved simply by swapping the function closure
-  # (accessible via +#closure+ method) and its inverse closure (accessible
-  # via +#inverse_closure+ method).
+  # receiver. This is achieved simply by swapping the function
+  # closure (accessible via +#closure+ method) and its inverse
+  # closure (accessible via +#inverse_closure+ method).
   # 
   def inverse
     self.class.new( 1 / coefficient )
@@ -53,4 +53,4 @@ class SY::Quantity::Ratio < SY::Quantity::Function
   def ** n
     self.class.new( coefficient ** n )
   end
-end
+end # class SY::Quantity::Ratio

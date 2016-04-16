@@ -24,21 +24,25 @@ end
 
 describe "dimensionless quantities and units" do
   it "should define Amount" do
+    skip
     SY::Amount.must_be_kind_of SY::Quantity
     assert SY::Amount.standard?
   end
 
   it "should define UNIT" do
+    skip
     SY::UNIT.must_be_kind_of SY::Unit
     SY::UNIT.quantity.must_equal SY::Amount
   end
 
   it "should define AVOGADRO_CONSTANT" do
+    skip
     SY::Nᴀ.must_equal SY::AVOGADRO_CONSTANT
     SY::Nᴀ.must_be_within_epsilon 6.0221e23
   end
 
   it "define MoleAmount" do
+    skip
     assert SY::MoleAmount.equal? Amount / Nᴀ
   end
 
@@ -82,17 +86,17 @@ describe "standard dimensionless quantity" do
   end
 end
 
-describe "mole amount quantity" do
-  before do
-    @q = SY::MoleAmount
-  end
+# describe "mole amount quantity" do
+#   before do
+#     @q = SY::MoleAmount
+#   end
 
-  it "must be dimensionless" do
-    assert SY::MoleAmount.dimension.zero?
-  end
+#   it "must be dimensionless" do
+#     assert SY::MoleAmount.dimension.zero?
+#   end
 
-  # FIXME: Write the tests for :coerces parameter.
-end
+#   # FIXME: Write the tests for :coerces parameter.
+# end
 
 
 describe SY do

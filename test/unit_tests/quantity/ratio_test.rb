@@ -1,18 +1,18 @@
 #! /usr/bin/ruby
 # encoding: utf-8
 
-# **************************************************************************
+# *****************************************************************
 # Unit tests for file sy/quantity/ratio.rb.
 #
-# File function.rb defines class SY::Quantity::Ratio, which is a subclass of
-# SY::Quantity::Function. Ratios are frequently used in defining scaled up /
-# down quantities.
-# **************************************************************************
+# File function.rb defines class SY::Quantity::Ratio, which is a
+# subclass of SY::Quantity::Function. Ratios are frequently used in
+# defining scaled up / down quantities.
+# *****************************************************************
 
 require_relative 'test_loader'
 # Require the external libraries needed by the tested component.
 require 'y_support/core_ext/class'
-require 'y_support/typing'
+require 'y_support/literate'
 require 'active_support/core_ext/module/delegation'
 # Require the tested component itself.
 require_relative '../../../lib/sy/quantity/function.rb'
@@ -23,7 +23,7 @@ describe "sy/quantity/ratio" do
     @f = SY::Quantity::Ratio
   end
 
-  it "should define a subclass of Quantity::Function with certain features" do
+  it "defines a specific subclass of Quantity::Function" do
     assert @f < SY::Quantity::Function
     @f.new( 7 ).( 6 ).must_equal 42
     @f.new( 7 ).inverse_closure.( 42 ).must_equal 6

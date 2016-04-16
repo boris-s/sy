@@ -11,8 +11,9 @@
 class SY::Dimension < Hash
   require_relative 'dimension/base'
   require_relative 'dimension/sps'
-
-  include FlexCoerce
+  ★ Literate
+  ★ FlexCoerce
+  represents "physical dimension"
 
   define_coercion Integer, method: :* do |o1, o2| o2 * o1 end
 
@@ -29,16 +30,17 @@ class SY::Dimension < Hash
 
     undef_method :new
     
-    # A constructor of +SY::Dimension+. Accepts variable input and always
-    # returns the same object for the same dimension. The input can look like
-    # :L, :LENGTH, "LENGTH", { L: 1, T: -2 } or "L.T⁻²".
+    # A constructor of +SY::Dimension+. Accepts variable input and
+    # always returns the same object for the same dimension. The
+    # input can look like :L, :LENGTH, "LENGTH", { L: 1, T: -2 } or
+    # "L.T⁻²".
     #
     def [] *ordered, **named
       # Validate arguments and enable variable input.
       input = if ordered.size == 0 then named
               elsif ordered.size > 1 then
-                fail ArgumentError, "SY::Dimension[] constructor admits " +
-                                    "at most 1 ordered argument!"
+                fail ArgumentError, "SY::Dimension[] " +
+                  "constructor takes at most 1 ordered argument!"
               else ordered[0] end
       # If input is a Dimension instance, return it unchanged.
       return input if input.is_a? self
@@ -110,20 +112,29 @@ class SY::Dimension < Hash
 
   # Dimension arithmetic: multiplication by a number.
   # 
-  def * integer
-    integer.aT_is_a Integer
-    self.class[ keys >> values.map { |exp| exp * integer } ]
+  def * int
+    "argument".( int ).must.be_kind_of Integer
+    self.class[ keys >> values.map { |exp| exp * int } ]
   end
 
   # Dimension arithmetic: division by a number.
   # 
-  def / integer
-    integer.aT_is_a Integer
-    self.class[ keys >> values.map do |exp|
-                  fail TypeError, "Dimensions with rational exponents " +
-                                  "not implemented!" if exp % integer != 0
-                  exp / integer
-                end ]
+  def / int
+    # Validate the argument.
+    "divisor".( int ).must.be_kind_of Integer
+    # Validate the exponents.
+    "dimension".( self ).try "to divide %s by #{int}" do
+      note "When dividing Dimension instance by an integer, " +
+           "all its exponents must be divisible by it."
+      note "#{self} has exponents #{values}"
+      values.each do |exp|
+        fail "Exponent #{exp} is not divisible by #{int}!" unless
+          exp % int == 0
+      end
+    end
+    # Construct the result.
+    return self.class[ keys >> values.map { |exp| exp / int } ]
+    fail NotImplementedError
   end
 
   # True if the dimension is zero, otherwise false.
@@ -139,15 +150,16 @@ class SY::Dimension < Hash
   end
   alias basic? base?
 
-  # Converts the receiver to a superscripted product string denoting the
-  # dimension.
+  # Converts the receiver to a superscripted product string
+  # denoting the dimension.
   # 
   def to_sps option=true
     return Sps.new self if option
     return Sps.new keys.map { |k| BASE.short_symbol k } >> values
   end
 
-  # Converts the dimension into its superscripted product string (SPS).
+  # Converts the dimension into its superscripted product string
+  # (SPS).
   # 
   def to_s
     sps = to_sps( false )

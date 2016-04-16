@@ -1,11 +1,11 @@
 #! /usr/bin/ruby
 # encoding: utf-8
 
-# **************************************************************************
+# *****************************************************************
 # Unit tests for SY, a Ruby library of physical units.
 #
 # This file gradually runs all existing unit tests for SY.
-# **************************************************************************
+# *****************************************************************
 
 require_relative 'unit_tests/prefixes_test'
 require_relative 'unit_tests/se_test'

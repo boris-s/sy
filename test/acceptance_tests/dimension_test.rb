@@ -1,9 +1,9 @@
 #! /usr/bin/ruby
 # encoding: utf-8
 
-# **************************************************************************
+# *****************************************************************
 # Acceptance tests for SY::Dimension.
-# **************************************************************************
+# *****************************************************************
 
 require_relative 'test_loader'
 
@@ -30,10 +30,18 @@ describe SY::Dimension do
   describe "features" do
     before do
       # Set up the lists of admissible base dimension symbols.
-      @full_symbols = :LENGTH, :TIME, :MASS, :TEMPERATURE, :ELECTRIC_CHARGE
-      @short_symbols = :L, :T, :M, :Θ, :Q
-      @full_strings = @full_symbols.map &:to_s
-      @short_strings = @short_symbols.map &:to_s
+      @full_ßs = :LENGTH,
+                   :TIME,
+                   :MASS,
+                   :TEMPERATURE,
+                   :ELECTRIC_CHARGE
+      @full_ςs = @full_ßs.map &:to_s
+      @short_ßs = :L,
+                  :T,
+                  :M,
+                  :Θ,
+                  :Q
+      @short_ςs = @short_ßs.map &:to_s
       # Set up some sample dimensions.
       @L = SY::Dimension[ :LENGTH ]
       @T = SY::Dimension[ :TIME ]
@@ -42,59 +50,68 @@ describe SY::Dimension do
     end
 
     describe "hash-like behavior" do
-      it "should have #[] method returning the exponents of base dimensions" do
-        @L[ :LENGTH ].must_equal 1
-        @L[ "TIME" ].must_equal 0
-        @L[ :M ].must_equal 0
-        @L[ "Θ" ].must_equal 0
-        @full_symbols.map { |s| @L[s] }.must_equal [ 1, 0, 0, 0, 0 ]
-        @full_symbols.map { |s| @T[s] }.must_equal [ 0, 1, 0, 0, 0 ]
-        @full_symbols.map { |s| @M[s] }.must_equal [ 0, 0, 1, 0, 0 ]
-        @full_symbols.map { |s| @Z[s] }.must_equal [ 0, 0, 0, 0, 0 ]
-        @short_symbols.map { |s| @L[s] }.must_equal [ 1, 0, 0, 0, 0 ]
-        @short_symbols.map { |s| @T[s] }.must_equal [ 0, 1, 0, 0, 0 ]
-        @short_symbols.map { |s| @M[s] }.must_equal [ 0, 0, 1, 0, 0 ]
-        @short_symbols.map { |s| @Z[s] }.must_equal [ 0, 0, 0, 0, 0 ]
-        @full_strings.map { |s| @L[s] }.must_equal [ 1, 0, 0, 0, 0 ]
-        @full_strings.map { |s| @T[s] }.must_equal [ 0, 1, 0, 0, 0 ]
-        @full_strings.map { |s| @M[s] }.must_equal [ 0, 0, 1, 0, 0 ]
-        @full_strings.map { |s| @Z[s] }.must_equal [ 0, 0, 0, 0, 0 ]
-        @short_strings.map { |s| @L[s] }.must_equal [ 1, 0, 0, 0, 0 ]
-        @short_strings.map { |s| @T[s] }.must_equal [ 0, 1, 0, 0, 0 ]
-        @short_strings.map { |s| @M[s] }.must_equal [ 0, 0, 1, 0, 0 ]
-        @short_strings.map { |s| @Z[s] }.must_equal [ 0, 0, 0, 0, 0 ]
-        -> { @L[ :FOOBAR ] }.must_raise TypeError
+      describe "#[]" do
+        it "returns exponents when given base dimension symbols" do
+          @L[ :LENGTH ].must_equal 1
+          @L[ "TIME" ].must_equal 0
+          @L[ :M ].must_equal 0
+          @L[ "Θ" ].must_equal 0
+          @full_ßs.map { |s| @L[s] }.must_equal [ 1, 0, 0, 0, 0 ]
+          @full_ßs.map { |s| @T[s] }.must_equal [ 0, 1, 0, 0, 0 ]
+          @full_ßs.map { |s| @M[s] }.must_equal [ 0, 0, 1, 0, 0 ]
+          @full_ßs.map { |s| @Z[s] }.must_equal [ 0, 0, 0, 0, 0 ]
+          @short_ßs.map { |s| @L[s] }.must_equal [ 1, 0, 0, 0, 0 ]
+          @short_ßs.map { |s| @T[s] }.must_equal [ 0, 1, 0, 0, 0 ]
+          @short_ßs.map { |s| @M[s] }.must_equal [ 0, 0, 1, 0, 0 ]
+          @short_ßs.map { |s| @Z[s] }.must_equal [ 0, 0, 0, 0, 0 ]
+          @full_ςs.map { |s| @L[s] }.must_equal [ 1, 0, 0, 0, 0 ]
+          @full_ςs.map { |s| @T[s] }.must_equal [ 0, 1, 0, 0, 0 ]
+          @full_ςs.map { |s| @M[s] }.must_equal [ 0, 0, 1, 0, 0 ]
+          @full_ςs.map { |s| @Z[s] }.must_equal [ 0, 0, 0, 0, 0 ]
+          @short_ςs.map { |s| @L[s] }.must_equal [ 1, 0, 0, 0, 0 ]
+          @short_ςs.map { |s| @T[s] }.must_equal [ 0, 1, 0, 0, 0 ]
+          @short_ςs.map { |s| @M[s] }.must_equal [ 0, 0, 1, 0, 0 ]
+          @short_ςs.map { |s| @Z[s] }.must_equal [ 0, 0, 0, 0, 0 ]
+          -> { @L[ :FOOBAR ] }.must_raise TypeError
+        end
       end
 
-      it "should have #values_at method accepting variable notation" do
-        @L.values_at( *@full_symbols ).must_equal [ 1, 0, 0, 0, 0 ]
-        @L.values_at( :L, :T ).must_equal [ 1, 0 ]
-        @L.values_at( "LENGTH", "T", :TEMPERATURE, :M ).must_equal [ 1, 0, 0, 0 ]
+      describe "#values_at" do
+        it "should accept variable notation" do
+          @L.values_at( *@full_ßs ).must_equal [ 1, 0, 0, 0, 0 ]
+          @L.values_at( :L, :T ).must_equal [ 1, 0 ]
+          @L.values_at( "LENGTH", "T", :TEMPERATURE, :M )
+            .must_equal [ 1, 0, 0, 0 ]
+        end
       end
 
-      it "should have #== method working as expected" do
-        ( @Z == @Z ).must_equal true
-        ( @L == SY::Dimension[ :LENGTH ] ).must_equal true
-        ( @L == SY::Dimension[ :MASS ] ).must_equal false
-        ( @L == { FOO: 1, BAR: 0 } ).must_equal false
-        ( @L == [ :FOO, :BAR ] ).must_equal false
-        ( [ :FOO, :BAR ] == @L ).must_equal false
+      describe "#==" do
+        it "should work as expected" do
+          ( @Z == @Z ).must_equal true
+          ( @L == SY::Dimension[ :LENGTH ] ).must_equal true
+          ( @L == SY::Dimension[ :MASS ] ).must_equal false
+          ( @L == { FOO: 1, BAR: 0 } ).must_equal false
+          ( @L == [ :FOO, :BAR ] ).must_equal false
+          ( [ :FOO, :BAR ] == @L ).must_equal false
+        end
       end
 
-      describe "#merge method" do
+      describe "#merge" do
         it "should only accept Dimension-type arguments" do
           @L.merge( @Z ).must_equal @Z
           -> { @L.merge FOO: 1 }.must_raise TypeError
         end
 
-        it "should return always the same instance for the same dimension" do
+        it "should return same instance for the same dimension" do
           assert @L.merge( @Z ).equal? @Z
           assert @Z.merge( @T ).equal? @T
           assert ( @T.merge @T do |_, a, b| 0 end ).equal? @Z
         end
       end
+    end
 
-      it "should have disabled #merge! and #[]= methods" do
+    describe "#merge! and #[]=" do
+      it "should be disabled" do
         -> { @Z[ :LENGTH ] = 1 }.must_raise NoMethodError
         -> { @Z.merge!( LENGTH: 1 ) }.must_raise NoMethodError
       end
@@ -107,8 +124,9 @@ describe SY::Dimension do
           ( -@Z ).must_equal @Z
         end
 
-        it "should always return the same object for the same dimension" do
-          assert ( -SY::Dimension[ "L.T⁻¹" ] ).equal? SY::Dimension[ "T.L⁻¹" ]
+        it "should return same object for the same dimension" do
+          assert ( -SY::Dimension[ "L.T⁻¹" ] )
+                  .equal? SY::Dimension[ "T.L⁻¹" ]
         end
       end
 
@@ -122,9 +140,10 @@ describe SY::Dimension do
           ( @M + @T ).must_equal SY::Dimension[ M: 1, T: 1 ]
         end
 
-        it "should always return the same object for the same dimension" do
+        it "should return same object for the same dimension" do
           assert SY::Dimension[ "M.Q.L³.T⁻¹" ]
-                  .equal? SY::Dimension[ "L.M.T⁻¹" ] + SY::Dimension[ "Q.L²" ]
+                  .equal? SY::Dimension[ "L.M.T⁻¹" ] +
+                          SY::Dimension[ "Q.L²" ]
         end
       end
 
@@ -139,8 +158,9 @@ describe SY::Dimension do
           ( SY::Dimension[ M: 1, T: 1 ] - @M ).must_equal @T
         end
 
-        it "should always return the same object for the same dimension" do
-          assert ( SY::Dimension[ "M.Q.L³.T⁻¹" ] - SY::Dimension[ "Q.L²" ] )
+        it "should return same object for the same dimension" do
+          assert ( SY::Dimension[ "M.Q.L³.T⁻¹" ] -
+                   SY::Dimension[ "Q.L²" ] )
                   .equal? SY::Dimension[ "L.M.T⁻¹" ]
         end
       end
@@ -174,8 +194,9 @@ describe SY::Dimension do
           ( @L * 3 ).must_equal SY::Dimension[ "L³" ]
         end
 
-        it "should always return the same object for the same dimension" do
-          assert SY::Dimension[ "L².T⁻²" ].equal? SY::Dimension[ "L.T⁻¹" ] * 2
+        it "should return same object for the same dimension" do
+          assert SY::Dimension[ "L².T⁻²" ]
+                  .equal? SY::Dimension[ "L.T⁻¹" ] * 2
         end
         
         it "should reject non-integer operands" do
@@ -185,33 +206,52 @@ describe SY::Dimension do
         it "should also allow the first operand to be integer" do
           ( 0 * @T ).must_equal @Z
           ( 1 * @T ).must_equal @T
-          ( -2 * SY::Dimension[ "L.T⁻¹" ] ).must_equal SY::Dimension[ "T².L⁻²" ]
+          ( -2 * SY::Dimension[ "L.T⁻¹" ] )
+            .must_equal SY::Dimension[ "T².L⁻²" ]
         end
       end
       
       describe "division by an integer" do
-        it "should divide the exponents by the operand when all are divisible" do
+        it "should divide the exponents when all are divisible" do
           ( @Z / 2 ).must_equal @Z
           ( @L / 1 ).must_equal @L
           ( SY::Dimension[ "L³" ] / 3 ).must_equal @L
         end
 
-        it "should always return the same object for the same dimension" do
+        it "should return same object for the same dimension" do
           ( SY::Dimension[ "L⁴.M⁴" ] / 2 ).object_id
             .must_equal SY::Dimension[ "L².M²" ].object_id
         end
 
         it "should reject non-integer divisor" do
-          -> { @L / 1.0 }.must_raise TypeError
+          begin
+            @L / 1.0
+          rescue TypeError => error
+            error.message.must_equal <<-MSG.heredoc
+              Divisor expected to be kind of Integer, but its class
+              Float does not comply! (Problem object: 1.0)
+            MSG
+          else flunk "TypeError expected!" end
         end
         
-        it "should reject the divisor if any of the exponents not divisible" do
-          -> { SY::Dimension[ L: 3 ] / 2 }.must_raise TypeError
+        it "should reject the divisor if any of the exponents " +
+           "is not divisible by it, with a good error message" do
+          begin
+            SY::Dimension[ L: 3 ] / 2
+          rescue TypeError => error
+            error.message.must_equal <<-MSG.heredoc
+              When trying to divide dimension L³ by 2, error has
+              occurred. Dimension L³ has exponents [ 3 ]. However,
+              exponent 3 is not divisible by 2! Note: When dividing
+              Dimension instance by an integer, all its exponents
+              must be divisible by it.
+            MSG
+          else flunk "TypeError expected!" end
         end
       end
     end
 
-    it "should always return the same instance for the same dimension" do
+    it "should return same instance for the same dimension" do
       assert @Z.equal? SY::Dimension.zero
       assert @Z.equal? SY::Dimension[ {} ]
       assert @L.equal? SY::Dimension[ :LENGTH ]
@@ -230,36 +270,44 @@ describe SY::Dimension do
       assert SY::Dimension[ "L³" ].equal? @L * 3
     end
 
-    describe "#standard_quantity method" do
+    describe "#standard_quantity" do
       it "should return always the same Quantity instance" do
         @Z.standard_quantity.must_be_kind_of SY::Quantity
-        @Z.standard_quantity.object_id
-          .must_equal ( @L - @L ).standard_quantity.object_id
+        assert @Z.standard_quantity
+          .equal? ( @L - @L ).standard_quantity
         @L.standard_quantity.must_be_kind_of SY::Quantity
-        @L.standard_quantity.object_id
-          .must_equal ( SY::Dimension[ L: 2 ] / 2 ).standard_quantity.object_id
+        assert @L.standard_quantity
+          .equal? ( SY::Dimension[ L: 2 ] / 2 ).standard_quantity
       end
     end
 
-    it "should have #zero? method" do
-      @Z.zero?.must_equal true
-      @T.zero?.must_equal false
+    describe "#zero?" do
+      it "should work as expected" do
+        @Z.zero?.must_equal true
+        @T.zero?.must_equal false
+      end
     end
 
-    it "should have #base? method" do
-      @L.base?.must_equal true
-      @T.base?.must_equal true
-      @Z.base?.must_equal false
-      SY::Dimension[ L: 1, T: -1 ].base?.must_equal false
+    describe "#base?" do
+      it "should have #base? method" do
+        @L.base?.must_equal true
+        @T.base?.must_equal true
+        @Z.base?.must_equal false
+        SY::Dimension[ L: 1, T: -1 ].base?.must_equal false
+      end
     end
 
-    it "should have #to_sps method (superscripted product string)" do
-      @L.to_sps.must_equal "LENGTH"
-      @Z.to_sps.must_equal ""
-      SY::Dimension[ L: 1, T: -2 ].to_sps.must_equal "LENGTH.TIME⁻²"
-      @L.to_sps( false ).must_equal "L"
-      @Z.to_sps( false ).must_equal ""
-      SY::Dimension[ L: 1, T: -2 ].to_sps( false ).must_equal "L.T⁻²"
+    describe "#to_sps" do
+      it "should return sps (superscripted product string)" do
+        @L.to_sps.must_equal "LENGTH"
+        @Z.to_sps.must_equal ""
+        SY::Dimension[ L: 1, T: -2 ].to_sps
+          .must_equal "LENGTH.TIME⁻²"
+        @L.to_sps( false ).must_equal "L"
+        @Z.to_sps( false ).must_equal ""
+        SY::Dimension[ L: 1, T: -2 ].to_sps( false )
+          .must_equal "L.T⁻²"
+      end
     end
 
     describe "#to_s method" do

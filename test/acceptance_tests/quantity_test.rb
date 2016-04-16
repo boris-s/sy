@@ -9,16 +9,38 @@ require_relative 'test_loader'
 
 describe SY::Quantity do
   before do
-    @USER_MODULE = Module.new do include SY end
+    @Q = SY::Quantity
+    @D = SY::Dimension
   end
 
   describe "constructors of" do
     describe "standard quantities" do
       describe "Quantity.standard" do
-        # # Example:
-        # Length = SY::Quantity.standard of: SY::Dimension[ :LENGTH ]
-        # # Behind the scenes, it works by invoking
-        # Dimension[ :LENGTH ].standard_quantity
+        it "must require :of parameter" do
+          -> { @Q.standard }.must_raise ArgumentError
+          q = @Q.standard( of: :LENGTH )
+          q.must_be_kind_of @Q
+          q.dimension.must_equal @D[ :LENGTH ]
+          q = @Q.standard of: @D[ :LENGTH ]
+          q.must_be_kind_of @Q
+          q.dimension.must_equal @D[ :LENGTH ]
+        end
+
+        it "must allow name: and name!: parameters" do
+          q = @Q.standard( of: :LENGTH, name: :Length )
+          q.name.must_equal :Length
+          -> { @Q.standard of :LENGTH, name: :Foo }
+            .must_raise NameError
+        end
+
+        it "must reject malformed arguments" do
+          -> { @Q.standard of: :TIME, ɴ: :Length, name!: :Length }
+            .must_raise ArgumentError
+          -> { @Q.standard of: :TIME, ɴ: :Length, foo: :bar }
+            .must_raise ArgumentError
+          -> { @Q.standard of: :TIME, ɴ: :Length, name: :foo }
+            .must_raise TypeError
+        end
       end
     end
 
@@ -37,15 +59,15 @@ describe SY::Quantity do
         # MoleAmount = Quantity.new function: f, of: Amount
       end
     end
-
+    
     describe "composed quantities" do
       describe "Quantity.composed" do
       end
-
+      
       describe "Quantity.new" do
       end
     end
-
+    
     describe "nonstandard quantities" do
       describe "Quantity.nonstandard" do
         # # Must allow two versions of syntax:
@@ -53,7 +75,7 @@ describe SY::Quantity do
         # # and
         # ( of: Quantity, function: Quantity::Function )
       end
-
+      
       describe "Quantity.new" do
       end
     end

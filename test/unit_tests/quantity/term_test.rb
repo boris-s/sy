@@ -2,7 +2,7 @@
 # encoding: utf-8
 
 # ****************************************************************
-# Unit tests for file sy/quantity/term.rb.
+# Unit tests for file sy/quantity/term.rb
 #
 # File quantity/term.rb defines class SY::Quantity::Term, which
 # represents a product of a certain number of quantities raised to
@@ -12,7 +12,7 @@
 require_relative 'test_loader'
 # Require the external libraries needed by the tested component.
 # Require the tested component itself.
-require_relative '../../../lib/sy/quantity/term.rb'
+require_relative '../../../lib/sy/quantity/term'
 
 describe "sy/quantity/term" do
   before do
