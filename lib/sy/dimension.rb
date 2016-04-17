@@ -123,10 +123,11 @@ class SY::Dimension < Hash
     # Validate the argument.
     "divisor".( int ).must.be_kind_of Integer
     # Validate the exponents.
-    "dimension".( self ).try "to divide %s by #{int}" do
-      note "When dividing Dimension instance by an integer, " +
+    "dimension #{self}".( self ).try "to divide %s by #{int}" do
+      note "When dividing a Dimension instance by an integer, " +
            "all its exponents must be divisible by it."
-      note "#{self} has exponents #{values}"
+      note "#{grammatical_subject} has exponents " +
+           "[ #{(values-[0]).join ', '} ]"
       values.each do |exp|
         fail "Exponent #{exp} is not divisible by #{int}!" unless
           exp % int == 0

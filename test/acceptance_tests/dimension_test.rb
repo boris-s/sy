@@ -229,7 +229,7 @@ describe SY::Dimension do
           rescue TypeError => error
             error.message.must_equal <<-MSG.heredoc
               Divisor expected to be kind of Integer, but its class
-              Float does not comply! (Problem object: 1.0)
+              Float does not comply! (Examined object: 1.0)
             MSG
           else flunk "TypeError expected!" end
         end
@@ -241,10 +241,10 @@ describe SY::Dimension do
           rescue TypeError => error
             error.message.must_equal <<-MSG.heredoc
               When trying to divide dimension L³ by 2, error has
-              occurred. Dimension L³ has exponents [ 3 ]. However,
-              exponent 3 is not divisible by 2! Note: When dividing
-              Dimension instance by an integer, all its exponents
-              must be divisible by it.
+              occurred: Exponent 3 is not divisible by 2! Note:
+              When dividing a Dimension instance by an integer,
+              all its exponents must be divisible by it. Dimension 
+              L³ has exponents [ 3 ].
             MSG
           else flunk "TypeError expected!" end
         end

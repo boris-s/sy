@@ -1,20 +1,20 @@
 #! /usr/bin/ruby
 # encoding: utf-8
 
-# **************************************************************************
-# Another set of acceptance tests for the case when SY is loaded by require
-# 'sy/noinclude'.
+# *****************************************************************
+# Another set of acceptance tests for the case when SY is loaded by
+# require 'sy/noinclude'.
 #
-# Loading SY by require 'sy/noinclude' prevents automatic inclusion of the
-# unit methods in the relevant built-in classes, such as Numeric. This is
-# preferred by the users who believe that "require" statement should avoid
-# including any gem modules in the built-in classes (unless the user invokes
-# "include" statement).
+# Loading SY by require 'sy/noinclude' prevents automatic inclusion
+# of the unit methods in the relevant built-in classes, such as
+# Numeric. This is preferred by the users who believe that
+# "require" statement should avoid including any gem modules in the
+# built-in classes (unless the user invokes "include" statement).
 #
-# Since noinclude option alters the behavior of SY in such way that it cannot
-# be restored to normal by require 'sy', acceptance tests for noinclude option
-# have to be run separately.
-# **************************************************************************
+# Since noinclude option alters the behavior of SY in such way that
+# it cannot be restored to normal by require 'sy', acceptance tests
+# for noinclude option have to be run separately.
+# *****************************************************************
 
 require 'minitest/autorun'
 # require 'mathn'
