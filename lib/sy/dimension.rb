@@ -1,21 +1,18 @@
-#encoding: utf-8
-
-# require 'y_support/core_ext/array'
-# require 'y_support/core_ext/hash'
-# require 'y_support/typing'
-# require 'y_support/flex_coerce'
-# require 'active_support/core_ext/module/delegation'
+# coding: utf-8
 
 # Metrological dimension
 # 
 class SY::Dimension < Hash
   require_relative 'dimension/base'
   require_relative 'dimension/sps'
+
   ★ Literate
-  ★ FlexCoerce
+  
   represents "physical dimension"
 
-  define_coercion Integer, method: :* do |o1, o2| o2 * o1 end
+  ★ FlexCoerce
+  
+  coerces Integer, :* do |a, b| b * a end
 
   # This error indicates incompatible dimensions.
   # 
@@ -37,27 +34,33 @@ class SY::Dimension < Hash
     #
     def [] *ordered, **named
       # Validate arguments and enable variable input.
-      input = if ordered.size == 0 then named
-              elsif ordered.size > 1 then
-                fail ArgumentError, "SY::Dimension[] " +
-                  "constructor takes at most 1 ordered argument!"
-              else ordered[0] end
+      input = ordered_args ordered do
+        case size
+        when 0 then named
+        when 1 then first
+        else
+          fail "Constructor Dimension[] takes at most 1 argument!"
+        end
+      end
       # If input is a Dimension instance, return it unchanged.
       return input if input.is_a? self
-      # It is assumed that the input implies an Sps.
+      # It is assumed that the input is an Sps.
       triples = SY::Dimension::Sps.new( input ).parse
       # Convert the input to hash and normalize dimension symbols.
-      hash = triples.each_with_object Hash.new do |(_, ß, exponent), h|
+      hash = triples.each_with_object Hash.new do
+        |(_, ß, exponent), h|
         h[ SY::Dimension::BASE.normalize_symbol( ß ) ] = exponent
       end
       # Set exponents of unmentioned base dimensions to 0.
       hash.default! BASE.values >> BASE.values.map { 0 }
-      # Make sure each combination of base dimensions has only one instance.
+      # See if the registry already contains required instance.
       instance = instances.find { |i| i == hash }
+      # If not, construct a new instance.
       unless instance
         instance = super hash
         instances << instance
       end
+      # Return the result.
       return instance
     end
 
@@ -70,25 +73,27 @@ class SY::Dimension < Hash
 
   undef_method :merge!, :[]=
 
-  # Returns the exponent of the specified base dimension. Accepts variable
-  # input specifying the base dimension (:LENGTH, :L, "LENGTH", "L" etc.)
+  # Returns the exponent of the specified base dimension. Accepts
+  # variable input specifying the base dimension (:LENGTH, :L,
+  # "LENGTH", "L" etc.)
   #
   def [] arg
     super BASE.normalize_symbol( arg )
   end
 
-  # Returns the exponents of the specified base dimensions. Accepts variable
-  # input specifying base dimensions (:LENGTH, :L, "LENGTH", "L" etc.)
+  # Returns the exponents of the specified base dimensions. Accepts
+  # variable input specifying base dimensions (:LENGTH, :L,
+  # "LENGTH", "L" etc.)
   # 
   def values_at *keys
     super *keys.map { |sym| BASE.normalize_symbol( sym ) }
   end
 
-  # SY::Dimension#merge method only accepts SY::Dimension instances as arguments.
+  # SY::Dimension#merge method only accepts SY::Dimension instances
+  # as arguments.
   # 
   def merge arg, &block
-    fail TypeError, "#{self.class}#merge method requires " +
-                    "#{self.class}-type argument!" unless arg.is_a? self.class
+    "argument of Dimension#merge".( arg ).must.be_a self.class
     self.class[ super ]
   end
 

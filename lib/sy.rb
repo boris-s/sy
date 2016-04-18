@@ -24,48 +24,62 @@ unless defined? SY::UNIT_TEST
   # require_relative 'sy/matrix'
 end
 
-# The most prominent feature of SY is, that it extends the Numeric class
-# with methods corresponding to units and their abbreviations.
+# SY is a library of physical units. It defines classes for
+# physical dimensions (SY::Dimension) such as LENGTH, quantities
+# (SY::Quantity) such as Speed, Force or Energy, and units, such as
+# metre, newton or joule. After you require SY, you can say
+# 5.metre, or Rational( 5, 2 ).metre, and the computer will
+# understand that these numbers represent magnitudes of the
+# physical quantity SY::Length expressed in the unit
+# SY::METRE. Equally, we can use abbreviations (such as 5.m,
+# 2.5.m), prefixes (such as 5.km, 5.kilometre, 5.km), exponents
+# (such as 5.m² for 5 square metres) and chaining (such as 5.m.s⁻¹
+# to denote speed of 5 metres per second). Imperial units (miles,
+# pounds, inches etc.) are available by require
+# 'sy/imperial'. Described behavior is achieved by automatic
+# extending of Numeric class when you type require 'sy'. If you
+# wish to use SY without extending Numeric class, use require
+# 'sy/noinclude'.
 #
-# In other words, we can say 5.metre, or Rational( 5, 2 ).metre, and the
-# computer will understand, that these numbers represent magnitudes of the
-# physical quantity SY::Length expressed in the unit SY::METRE. Equally,
-# we can use abbreviations (such as 5.m, 2.5.m), prefixes (such as 5.km,
-# 5.kilometre, 5.km), exponents (such as 5.m² for 5 square metres) and
-# chaining (such as 5.m.s⁻¹ to denote speed of 5 metres per second).
+# SY uses Unicode superscript characters (such as ², ³, ⁻¹) to
+# denote unit exponents (such as 1.m³, 1.m.s⁻¹). Please learn to
+# type them quickly. Until you learn how to type them efficiently,
+# you can use alternative syntax, such as 1.m(3),
+# 1.m.s(-1). However, Unicode exponents will make the physical
+# models that you will be constructing with SY much more
+# readable. And we know that code is (usually) write once, read
+# many times. So it pays off to make the model more readable for
+# the many subsequent revisions.
 #
-# You should definitely learn how to type Unicode exponent characters, such
-# as ², ³, ⁻¹ etc. It is possible to use alterantive syntax such as 5.m.s(-1)
-# instead of 5.m.s⁻¹, but you should avoid it whenever possible. Unicode
-# exponents make the physical models that you will be constructing with SY
-# much more readable. And we know that code is (usually) write once, read
-# many times. So it pays off to type an extra keystroke when writing the to
-# make the model more readable for the many subsequent revisions.
-#
-# One more remark here would be, that due to the fact, that many unit names
-# and abbreviations are very short and common words, there can be collisions.
-# For example ActiveSupport already provides handling for time units (hour,
-# minute, second etc.), which would collide with SY methods of the same name.
-# Since SY relies on method_missing, if these methods are already defined for
-# numerics, SY method_missing will not activate and ActiveSupport methods will
-# be used. In this particular case, SY methods still can be invoked using
-# abbreviations (5.s, 5.h, 5.min)
+# Furthermore, due to the fact that some units and their
+# abbreviations are very simple words, there can be collisions with
+# method names from other libraries. For example ActiveSupport
+# already provides handling for time units (hour, minute, second),
+# whose names collide with SY methods of the same name. Since SY
+# relies on method_missing to create the unit methods just in time
+# when the user asks for them, ActiveSupport will prevent SY from
+# creating the time units that have already been defined. This is a
+# feature, not a design error. SY methods can still be invoked
+# using abbreviations (5.s, 5.h, 5.min)
 # 
-# The module SY defines certain physical quantities, units and frequently
-# used constants. SY library uses NameMagic mixin ('y_support/name_magic') to
-# automagically define the unit methods as soon as the newly defined unit is
-# assigned to its constant. For example, as soon as we execute the line
+# In this file (sy.rb), module SY is defined and along with it, a
+# number of frequrently used physical quantities, units and
+# physical constants. SY library uses NameMagic mixin (part of
+# YSupport) to to automagically name quantities and units simply
+# by assigning them to constants. Example:
 #
-# METRE = Unit.standard.of Length, short: "m"
+# METRE = Unit.standard of: Length, short: "m"
 # 
-# the system will immediately know that expression 42.m is a number expressed
-# in metres. Below, you can find all the metric physical quantities, units
-# and constants introduced in SY. (Imperial units are found in the file
-# sy/imperial.rb.) The user is free to define additional own quantities and
-# units.
+# the system will immediately know that 5.metre represents a
+# magnitude of quantity "Length". This is how the code statements
+# in this file work. In case I forgot to include your favorite
+# quantity / unit in SY, you are free to define it on your own.
 #
 module SY
   AUTOINCLUDE = true unless defined? SY::AUTOINCLUDE
+  # FIXME: The following line is commented out for the
+  # development purposes.
+
   # Numeric.class_exec { include ExpressibleInUnits } if SY::AUTOINCLUDE
 
   # === Dimensionless quantities
@@ -146,14 +160,16 @@ module SY
   Frequency = 1 / Time
   HERTZ = Unit.of Frequency, short: "Hz"
   Speed = Length / Time
-  # FIXME: We shirked Speed.standard! I wonder what problems will it cause.
-  # Maybe the division operator should guess that the constructed quantity is
-  # standard because both Length and Time are standard. But this should be
-  # confirmed only when NameMagic detects assignment to Speed constant, since
-  # there were no earlier named quantities of the dimension L.T⁻¹. Slowly,
-  # I no longer think that @standard_quantity should be a property of
-  # Dimension instances. But then again, maybe yes, just it should be possible
-  # to overwrite it.
+
+  # FIXME: We shirked Speed.standard! I wonder what problems will
+  # it cause. Maybe the division operator should guess that the
+  # constructed quantity is standard because both Length and Time
+  # are standard. But this should be confirmed only when NameMagic
+  # detects assignment to Speed constant, since there were no
+  # earlier named quantities of the dimension L.T⁻¹. Slowly, I no
+  # longer think that @standard_quantity should be a property of
+  # Dimension instances. But then again, maybe yes, just it should
+  # be possible to overwrite it.
 
   SPEED_OF_LIGHT = 299_792_458 * METRE / SECOND
 

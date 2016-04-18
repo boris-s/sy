@@ -39,7 +39,7 @@ describe SY::Quantity do
           -> { @Q.standard of: :TIME, ɴ: :Length, foo: :bar }
             .must_raise ArgumentError
           -> { @Q.standard of: :TIME, ɴ: :Length, name: :foo }
-            .must_raise TypeError
+            .must_raise ArgumentError
         end
       end
     end

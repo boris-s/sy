@@ -2,17 +2,18 @@
 
 # require 'y_support/core_ext/class'
 
-# This class represents a product (multiplication) of some symbols (such as
-# "meter", "joule", "second") with some prefixes (such as "kilo", "mega",
-# "giga") expressed as a string. The factors may be raised to exponents
-# expressed as superscript digits.  Examples: "kg.m.s⁻²", "L.θ⁻¹",
-# "LENGTH.TIME⁻¹", "a⁻¹b²"...
+# This class represents a product (multiplication) of some symbols
+# (such as "meter", "joule", "second") with some prefixes (such as
+# "kilo", "mega", "giga") expressed as a string. The factors may be
+# raised to exponents expressed as superscript digits.  Examples:
+# "kg.m.s⁻²", "L.θ⁻¹", "LENGTH.TIME⁻¹", "a⁻¹b²"...
 # 
 class SY::Sps < String
   class << self
-    # The argument can be constructed either from an array of tuples
-    # representing the Sps factors, or an array of pairs representing the
-    # same, or a hash, or, alternatively, a valid string form can be given.
+    # The argument can be constructed either from an array of
+    # tuples representing the Sps factors, or an array of pairs
+    # representing the same, or a hash, or, alternatively, a valid
+    # string form can be given.
     #
     # Examples:
     # [[ :k, :m, 1 ], [ '', 'h', -1 ]] #=> "km.h⁻¹"
@@ -22,36 +23,44 @@ class SY::Sps < String
     def new( arg,
              symbols: fail( ArgumentError, "Symbols not given!" ),
              prefixes: [] )
-      fail ArgumentError, "Nil argument not acceptable!" if arg.nil?
+      fail ArgumentError, "Nil argument not acceptable!" if
+        arg.nil?
       # Construct the superscripted string from the input.
       str = case arg
             when Array, Hash then # It is a collection of tuples.
               to_sps( arg )     # Convert to string.
             else String arg end # It is assumed to be a string.
       # Normalize the input and construct the instance from it.
-      triples = parse( str, symbols: symbols, prefixes: prefixes )
-      validate_triples( triples, symbols: symbols, prefixes: prefixes )
+      triples = parse( str,
+                       symbols: symbols,
+                       prefixes: prefixes )
+      validate_triples( triples,
+                        symbols: symbols,
+                        prefixes: prefixes )
       instance = super to_sps triples
       # Customize, validate and return the instance.
-      customize( instance, symbols: symbols, prefixes: prefixes )
+      customize( instance,
+                 symbols: symbols,
+                 prefixes: prefixes )
       return instance.validate
     end
     
     private
 
-    # Takes one string as an argument and parses it using a given set of
-    # acceptable symbols and prefixes. It returns an array of factors
-    # represented as triples [ prefix, symbol, exponent ], where prefix
-    # and symbol are strings, and exponent is an integer.
+    # Takes one string as an argument and parses it using a given
+    # set of acceptable symbols and prefixes. It returns an array
+    # of factors represented as triples [ prefix, symbol, exponent
+    # ], where prefix and symbol are strings, and exponent is an
+    # integer.
     #
-    def parse( string,
-               symbols: fail( ArgumentError, "Symbols not given!" ),
+    def parse( string, symbols:,
                prefixes: [] )
       symbols = symbols.map &:to_s
       prefixes = ( prefixes.map( &:to_s ) << '' ).uniq
       sections = string.split '.' # Split the string into factors.
       if sections.empty?          # Handle the empty string case.
-        fail TypeError, "Unable to parse: '#{string}'!" unless string.empty?
+        fail TypeError, "Unable to parse: '#{string}'!" unless
+          string.empty?
         return []
       end
       # Parse the string sections.

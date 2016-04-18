@@ -142,14 +142,16 @@ class SY::Quantity
       # Handle the named arguments.
       named_args named_args do
         may_have :name, alias: :ɴ
-        must_not_have :name!, "Parameters :name (:ɴ) and :name! " +
-          "may not be both given!" if has? :name
+        fail "Parameters :name (:ɴ) and :name! may not be both " +
+             "given!" if has? :name! if has? :name
         note "name the instance using either #name= or #name!"
-        quantity.name = delete( :name ) if has? :name
-        quantity.name! delete( :name! ) if has? :name!
-        must_be_empty
+        name = delete :name
+        name_with_bang = delete :name!
+        must.be_empty
+        # Do the naming.
+        quantity.name = name if name
+        quantity.name! name_with_bang if name_with_bang
       end
-
       # Finally, return the quantity.
       return quantity
     end

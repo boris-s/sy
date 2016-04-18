@@ -12,7 +12,7 @@ class SY::Magnitude < Struct.new :quantity, :number
   # ★ Comparable
   ★ FlexCoerce
 
-  define_coercion Numeric, method: :* do |o1, o2| o2 * o1 end
+  coerces Numeric, :* do |o1, o2| o2 * o1 end
 
   # This error indicates an attempt to create impossible magnitude.
   # 
