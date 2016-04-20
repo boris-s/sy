@@ -164,8 +164,9 @@ class SY::Quantity
     # scaled with respect to their parent quantity, or are they
     # scaled with respect to their standard quantity?
     # 
-    def scaled of:, ratio: 1, **named_args
-      new dimension: dimension, **options
+    def scaled parent, ratio: 1, **named_args
+      dimension = of.dimension
+      Quantity::Scaled.new( parent, ratio: ratio, **named_args )
     end
 
     # Constructor of a new scaled quantity. Example:
@@ -192,20 +193,30 @@ class SY::Quantity
   def initialize **nn
     # Describe the named arguments.
     named_args nn do
-      may_have :dimension, alias: :of
-      may_have :composition
-      may_have :function
+      # if @composition = delete :composition then
+      #   # Constructing a composed quantity.
+      #   @dimension = @composition.dimension
+        
+
+
+      # @parent = delete :parent
+      # fail "Parameters :composition and :parent may not be " +
+      #      "both given!" if @composition && @parent
+      
+
+      # @dimension = delete :dimension
+      # @function = delete :function
+      # fail "Unknown keys: #{keys}!" unless empty?
+      
     end
-    # Extract them.
-    @dimension = nn.delete :dimension
-    @composition = nn.delete :composition
-    @function = nn.delete :function
+
     # @function defaults to identity function.
     @function ||= SY::Quantity::Function.identity
+
     # Construct Magnitude parametrized subclass for the instance.
     param_class!( { Magnitude: SY::Magnitude },
                   with: { quantity: self } )
-    #
+
     # There are two kinds of quantities: "Primary" or
     # "elementary" ones, and the ones that are composed of other
     # quantities. Now we have this quantity composition table, but
@@ -286,8 +297,11 @@ class SY::Quantity
     when SY::Quantity then multiply_by_quantity( other )
     when Numeric then multiply_by_number( other )
     else
-      fail TypeError,
-           "Quantity cannot be multiplied by a #{other.class}!"
+      fail TypeError, <<-MSG
+        A quantity can only be multiplied by another quantity or
+        a number! (Attempt to multiply by a #{other.class} has
+        occurred.)
+      MSG
     end
   end
 
@@ -312,15 +326,21 @@ class SY::Quantity
     when SY::Quantity then divide_by_quantity( other )
     when Numeric then divide_by_number( other )
     else
-      fail TypeError,
-           "Quantity cannot be multiplied by a #{other.class}!"
+      fail TypeError, <<-MSG
+        A quantity can only be divided by another quantity or
+        a number! (Attempt to divide by a #{other.class} has
+        occurred.)
+      MSG
     end
   end
 
   # Raises the receiver to a number.
   # 
   def ** number
-    
+    argument number do
+      fail "A quantity can only be raised to an integer " +
+           "exponent" unless is_a? Numeric
+    end
     # Compose the power term.
     term = Term[ self => number ]
     # Reduce the term to quantity.
@@ -332,13 +352,15 @@ class SY::Quantity
   # FIXME: Write the description.
   # 
   def to_s
-    super # FIXME: This should be a customized method like in Dimension
+    super
+    # FIXME: This should be a customized method like in Dimension.
   end
 
   # FIXME: Write the description.
   # 
   def inspect
-    super # FIXME: This should be a customized method like in Dimension
+    super
+    # FIXME: This should be a customized method like in Dimension.
   end
 
   private
@@ -348,7 +370,7 @@ class SY::Quantity
   # magnitude by the number to convert to parent quantity.
   # 
   def multiply_by_number( number )
-    SY::Quantity.scaled of: self, ratio: 1 / number
+    SY::Quantity.scaled( of: self, ratio: 1 / number )
   end
 
   # Constructs a daughter quantity by dividing self by a number.
@@ -356,7 +378,7 @@ class SY::Quantity
   # magnitude by the number to convert it to parent quantity.
   # 
   def divide_by_number( number )
-    SY::Quantity.scaled of: self, ratio: number
+    SY::Quantity.scaled( of: self, ratio: number )
   end
 
   # Multiplies self with another quantity.

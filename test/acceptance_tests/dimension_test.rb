@@ -229,7 +229,7 @@ describe SY::Dimension do
           rescue TypeError => error
             error.message.must_equal <<-MSG.heredoc
               Divisor expected to be kind of Integer, but its class
-              Float does not comply! (Examined object: 1.0)
+              Float does not comply! Examined object: 1.0.
             MSG
           else flunk "TypeError expected!" end
         end

@@ -1,3 +1,4 @@
+# coding: utf-8
 # encoding: utf-8
 
 require 'mathn'
@@ -56,21 +57,21 @@ end
 # method names from other libraries. For example ActiveSupport
 # already provides handling for time units (hour, minute, second),
 # whose names collide with SY methods of the same name. Since SY
-# relies on method_missing to create the unit methods just in time
-# when the user asks for them, ActiveSupport will prevent SY from
-# creating the time units that have already been defined. This is a
-# feature, not a design error. SY methods can still be invoked
-# using abbreviations (5.s, 5.h, 5.min)
+# relies on #method_missing to create the unit methods just in time
+# when you ask for them, methods defined by ActiveSupport will
+# prevent SY from creating its own unit methods. This is a feature,
+# not a design error. To access SY methods, you can still use
+# abbreviations (5.s, 5.h, 5.min).
 # 
 # In this file (sy.rb), module SY is defined and along with it, a
 # number of frequrently used physical quantities, units and
 # physical constants. SY library uses NameMagic mixin (part of
-# YSupport) to to automagically name quantities and units simply
+# YSupport) to automagically name quantities and units simply
 # by assigning them to constants. Example:
 #
 # METRE = Unit.standard of: Length, short: "m"
 # 
-# the system will immediately know that 5.metre represents a
+# will make the system immediately know that 5.metre represents a
 # magnitude of quantity "Length". This is how the code statements
 # in this file work. In case I forgot to include your favorite
 # quantity / unit in SY, you are free to define it on your own.
@@ -99,10 +100,11 @@ module SY
   
   Nᴀ = AVOGADRO_CONSTANT = 6.02214e23
 
-=begin
 
   # MoleAmount = Amount / Nᴀ
-  MOLE = Unit.standard of: MoleAmount, short: "mol"
+  # MOLE = Unit.standard of: MoleAmount, short: "mol"
+
+=begin
 
   # === Quantities of dimension LENGTH
 

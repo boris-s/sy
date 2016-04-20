@@ -13,8 +13,8 @@ describe SY::Quantity do
     @D = SY::Dimension
   end
 
-  describe "constructors of" do
-    describe "standard quantities" do
+  describe "constructors" do
+    describe "constructors of standard quantities" do
       describe "Quantity.standard" do
         it "must require :of parameter" do
           -> { @Q.standard }.must_raise ArgumentError
@@ -44,8 +44,10 @@ describe SY::Quantity do
       end
     end
 
-    describe "scaled quantities" do
+    describe "constructors of scaled quantities" do
       describe "Quantity.scaled" do
+        q = SY::Quantity.standard of: :TIME
+        q60 = SY::Quantity.scaled of: q, ratio: 60
       end
 
       describe "Quantity.of" do
@@ -60,7 +62,7 @@ describe SY::Quantity do
       end
     end
     
-    describe "composed quantities" do
+    describe "constructors of composed quantities" do
       describe "Quantity.composed" do
       end
       
@@ -68,7 +70,7 @@ describe SY::Quantity do
       end
     end
     
-    describe "nonstandard quantities" do
+    describe "constructors of nonstandard quantities" do
       describe "Quantity.nonstandard" do
         # # Must allow two versions of syntax:
         # ( of: Quantity, function: Proc, inverse: Proc )
@@ -78,6 +80,13 @@ describe SY::Quantity do
       
       describe "Quantity.new" do
       end
+    end
+  end # describe "constructors"
+
+  describe "#multiply_by_number" do
+    it "constructs a scaled quantity" do
+      q = @Q.dimensionless
+      q.send :multiply_by_number, 12
     end
   end
 end
@@ -487,22 +496,28 @@ describe "Older tests" do
   end
 end
 
+=end
+
+
 # FIXME: These acceptance tests are legacy from SY 2.0.
 # 
 describe SY::Quantity do
   before do
-    # @q1 = SY::Quantity.new of: '∅'
-    # @q2 = SY::Quantity.dimensionless
-    # @amount_in_dozens = begin
-    #                       SY.Quantity( "AmountInDozens" )
-    #                     rescue
-    #                       SY::Quantity.dimensionless amount: 12, ɴ: "AmountInDozens"
-    #                     end
-    # @inch_length = begin
-    #                  SY.Quantity( "InchLength" )
-    #                rescue NameError
-    #                  SY::Quantity.of SY::Length.dimension, ɴ: "InchLength"
-    #                end
+    @q1 = SY::Quantity.new of: '∅'
+    @q2 = SY::Quantity.dimensionless
+    skip
+    @amount_in_dozens =
+      begin
+        SY.Quantity( "AmountInDozens" )
+      rescue
+        SY::Quantity.dimensionless amount: 12, ɴ: "AmountInDozens"
+      end
+    @inch_length = 
+      begin
+        SY.Quantity( "InchLength" )
+      rescue NameError
+        SY::Quantity.of SY::Length.dimension, ɴ: "InchLength"
+      end
   end
 
   it "should behave as expected" do
@@ -513,7 +528,8 @@ describe SY::Quantity do
     assert_equal false, @q1.relative?
     assert_equal SY::Composition.new, @q1.composition
     @q1.set_composition SY::Composition[ SY::Amount => 1 ]
-    assert_equal SY::Composition[ SY::Amount => 1 ], @q1.composition
+    assert_equal SY::Composition[ SY::Amount => 1 ],
+                 @q1.composition
     @amount_in_dozens.must_be_kind_of SY::Quantity
     d1 = @amount_in_dozens.magnitude 1
     a12 = SY::Amount.magnitude 12
@@ -522,11 +538,11 @@ describe SY::Quantity do
     ra = r.( a12.amount )
     @amount_in_dozens.magnitude ra
     ra = @amount_in_dozens.read( a12 )
-    assert_equal @amount_in_dozens.magnitude( 1 ),
-                 @amount_in_dozens.read( SY::Amount.magnitude( 12 ) )
+    @amount_in_dozens.read( SY::Amount.magnitude( 12 ) )
+      .must_equal @amount_in_dozens.magnitude( 1 )
     assert_equal SY::Amount.magnitude( 12 ),
                  @amount_in_dozens.write( 1, SY::Amount )
-    SY::Length.composition.must_equal SY::Composition.singular( :Length )
+    SY::Length.composition
+      .must_equal SY::Composition.singular( :Length )
   end
 end
-=end
