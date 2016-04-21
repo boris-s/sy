@@ -21,74 +21,74 @@ describe SY::Quantity do
           q = @Q.standard( of: :LENGTH )
           q.must_be_kind_of @Q
           q.dimension.must_equal @D[ :LENGTH ]
-          q = @Q.standard of: @D[ :LENGTH ]
-          q.must_be_kind_of @Q
-          q.dimension.must_equal @D[ :LENGTH ]
+  #         q = @Q.standard of: @D[ :LENGTH ]
+  #         q.must_be_kind_of @Q
+  #         q.dimension.must_equal @D[ :LENGTH ]
         end
 
         it "must allow name: and name!: parameters" do
-          q = @Q.standard( of: :LENGTH, name: :Length )
-          q.name.must_equal :Length
-          -> { @Q.standard of :LENGTH, name: :Foo }
-            .must_raise NameError
+  #         q = @Q.standard( of: :LENGTH, name: :Length )
+  #         q.name.must_equal :Length
+  #         -> { @Q.standard of :LENGTH, name: :Foo }
+  #           .must_raise NameError
         end
 
         it "must reject malformed arguments" do
-          -> { @Q.standard of: :TIME, ɴ: :Length, name!: :Length }
-            .must_raise ArgumentError
-          -> { @Q.standard of: :TIME, ɴ: :Length, foo: :bar }
-            .must_raise ArgumentError
-          -> { @Q.standard of: :TIME, ɴ: :Length, name: :foo }
-            .must_raise ArgumentError
+  #         -> { @Q.standard of: :TIME, ɴ: :Length, name!: :Length }
+  #           .must_raise ArgumentError
+  #         -> { @Q.standard of: :TIME, ɴ: :Length, foo: :bar }
+  #           .must_raise ArgumentError
+  #         -> { @Q.standard of: :TIME, ɴ: :Length, name: :foo }
+  #           .must_raise ArgumentError
         end
-      end
-    end
+      end # describe "Quantity.standard"
+    end # describe "constructors of standard quantities"
 
     describe "constructors of scaled quantities" do
-      describe "Quantity.scaled" do
-        q = SY::Quantity.standard of: :TIME
-        q60 = SY::Quantity.scaled of: q, ratio: 60
-      end
+  #     describe "Quantity.scaled" do
+  #       q = SY::Quantity.standard of: :TIME
+  #       q60 = SY::Quantity.scaled of: q, ratio: 60
+  #     end
 
-      describe "Quantity.of" do
-      end
+  #     describe "Quantity.of" do
+  #     end
 
-      describe "Quantity.new" do
-        # FIXME: The line below are a suggestion of how .new
-        # constructor might work for scaled quantities.
-        # 
-        # f = Quantity::Function.ratio AVOGADRO_CONSTANT
-        # MoleAmount = Quantity.new function: f, of: Amount
-      end
-    end
+  #     describe "Quantity.new" do
+  #       # FIXME: The line below are a suggestion of how .new
+  #       # constructor might work for scaled quantities.
+  #       # 
+  #       # f = Quantity::Function.ratio AVOGADRO_CONSTANT
+  #       # MoleAmount = Quantity.new function: f, of: Amount
+  #     end
+    end # describe "constructors of scaled quantities"
     
     describe "constructors of composed quantities" do
-      describe "Quantity.composed" do
-      end
+  #     describe "Quantity.composed" do
+  #     end
       
-      describe "Quantity.new" do
-      end
-    end
+  #     describe "Quantity.new" do
+  #     end
+    end # describe "constructors of composed quantities"
     
     describe "constructors of nonstandard quantities" do
-      describe "Quantity.nonstandard" do
-        # # Must allow two versions of syntax:
-        # ( of: Quantity, function: Proc, inverse: Proc )
-        # # and
-        # ( of: Quantity, function: Quantity::Function )
-      end
+  #     describe "Quantity.nonstandard" do
+  #       # # Must allow two versions of syntax:
+  #       # ( of: Quantity, function: Proc, inverse: Proc )
+  #       # # and
+  #       # ( of: Quantity, function: Quantity::Function )
+  #     end
       
-      describe "Quantity.new" do
-      end
-    end
+  #     describe "Quantity.new" do
+  #     end
+    end # describe "constructors of nonstandard quantities"
   end # describe "constructors"
 
-  describe "#multiply_by_number" do
-    it "constructs a scaled quantity" do
-      q = @Q.dimensionless
-      q.send :multiply_by_number, 12
-    end
-  end
+  # describe "#multiply_by_number" do
+  #   it "constructs a scaled quantity" do
+  #     q = @Q.dimensionless
+  #     q.send :multiply_by_number, 12
+  #   end
+  # end
 end
 
 =begin

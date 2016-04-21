@@ -8,6 +8,6 @@
 # **************************************************************************
 
 require 'minitest/autorun'
-# require 'mathn'
+require 'mathn'
 require_relative '../../lib/sy'
-require_relative '../../lib/sy/imperial'
+# require_relative '../../lib/sy/imperial'

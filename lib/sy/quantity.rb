@@ -128,9 +128,10 @@ class SY::Quantity
       # constructor. The problem is that an unsuspecting user
       # could be asking to construct an instance with different
       # parameters. Luckily, the only allowed parameters here are
-      # :name (alias :ɴ) and :name!. Normally, NameMagic would
-      # take care of them automatically, but in this difficult
-      # situation, we have to handle these manually.
+      # those related to naming: :name (alias :ɴ) and :name!.
+      # Normally, NameMagic takes care of these automatically, but
+      # in this difficult situation, they have to be handled
+      # manually.
       dimension = SY::Dimension[ of ]
       # If no named arguments were supplied, we are done.
       return dimension.standard_quantity if named_args.empty?
@@ -173,8 +174,8 @@ class SY::Quantity
     # 
     #   q = Quantity.of Dimension.new( "L.T⁻²" )
     # 
-    def of dimension, **options
-      new dimension: dimension, **options
+    def of dimension, ratio: 1, **named_args
+      new dimension: dimension, **named_args
     end
 
     # Constructor of a new dimensionless quantity.
@@ -182,34 +183,55 @@ class SY::Quantity
     def dimensionless **options
       new dimension: SY::Dimension.zero, **options
     end
+
+    # Constructor of nonstandard quantities.
+    # 
+    def nonstandard( parent, function: )
+      # TODO: Think about other nonstandard quantities: linear
+      # such as degrees of Fahrenheit, logarithmic (decibels),
+      # negative logarithmic (pH) etc.
+    end
   end
 
   selector :dimension, :function
 
   # The parameters needed to construct a quantity depend on the
-  # type of quantity we are constructing. There are two types
-  # of elementary quantities (standard and nonstandard)
+  # type of quantity we are constructing. There are two types of
+  # elementary quantities (standard and nonstandard)
   # 
   def initialize **nn
-    # Describe the named arguments.
-    named_args nn do
-      # if @composition = delete :composition then
-      #   # Constructing a composed quantity.
-      #   @dimension = @composition.dimension
-        
+    named_args nn do # describe and process named arguments
+      » "quantity constructor may have explicitly given dimension"
+      may_have :dimension
+      if has? :dimension then
+        @dimension = SY::Dimension[ delete( :dimension ) ]
+        » "if dimension is given, composition must not be given"
+        must.not_have :composition
+        » "function may be given"
+        may_have :function
+        » "but parent quantity must not be given"
+        must.not_have :parent
+        @function = SY::Quantity::Function.new( delete :function )
 
+        # FIXME: :function has to be handled. If it's a Ratio, then
+        # this constructor defines a scaled quantity with respect
+        # to the standard quantity of its dimension. If it's a
+        # general function, then this constructor defines a
+        # nonstandard quantity whose parent quantity is the
+        # standard quantity of the supplied dimension.
+      else
+        # Other ways of constructing quantities than just providing
+        # dimension and function can be employed
 
-      # @parent = delete :parent
-      # fail "Parameters :composition and :parent may not be " +
-      #      "both given!" if @composition && @parent
-      
-
-      # @dimension = delete :dimension
-      # @function = delete :function
-      # fail "Unknown keys: #{keys}!" unless empty?
-      
+        # If it does, it must not have explicit composition.
+        fail "Dimension and composition may not be given " +
+          "both at the same time" if has? :composition
+        # Now, if function is not given, we can construct the
+        # right
+        # away a new quantity. We are done.
+      end
     end
-
+    
     # @function defaults to identity function.
     @function ||= SY::Quantity::Function.identity
 
@@ -217,18 +239,11 @@ class SY::Quantity
     param_class!( { Magnitude: SY::Magnitude },
                   with: { quantity: self } )
 
-    # There are two kinds of quantities: "Primary" or
-    # "elementary" ones, and the ones that are composed of other
-    # quantities. Now we have this quantity composition table, but
-    # we really don't want to induce anonymous, temporary
-    # quantities constructed throughout computation into the
-    # composition table. So the quantities do need to know wheter
-    # they were constructed as elementary or composed from other
-    # quantities, in which case they need to remeber their
-    # composition at least until the moment the composition table
-    # knows it. The composition table learns about new composed
-    # quantities the moment they are named. (Quantity names are
-    # permanent.)
+    # The composition table should learn about new composed
+    # quantities the moment these are named. (Another way would
+    # be to construct unnamed quantities and introduce them to
+    # the table explicitly, provided the coder knows what she is
+    # doing.)
     # 
     # Do they need to know how they were defined? It would seem to
     # me that the answer is no, so long as @function is well

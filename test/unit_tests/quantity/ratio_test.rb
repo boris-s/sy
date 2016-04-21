@@ -4,9 +4,9 @@
 # *****************************************************************
 # Unit tests for file sy/quantity/ratio.rb.
 #
-# File function.rb defines class SY::Quantity::Ratio, which is a
-# subclass of SY::Quantity::Function. Ratios are frequently used in
-# defining scaled up / down quantities.
+# File ratio.rb defines class SY::Quantity::Ratio, which is a
+# subclass of SY::Quantity::Function. Ratios are primarily used in
+# defining scaled quantities.
 # *****************************************************************
 
 require_relative 'test_loader'
@@ -20,17 +20,16 @@ require_relative '../../../lib/sy/quantity/ratio.rb'
 
 describe "sy/quantity/ratio" do
   before do
-    @f = SY::Quantity::Ratio
+    @F = SY::Quantity::Ratio
   end
 
   it "defines a specific subclass of Quantity::Function" do
-    assert @f < SY::Quantity::Function
-    @f.new( 7 ).( 6 ).must_equal 42
-    @f.new( 7 ).inverse_closure.( 42 ).must_equal 6
-    @f.new( 7 ).coefficient.must_equal 7
-    ( @f.new( 7 ) * @f.new( 6 ) ).coefficient.must_equal 42
-    ( @f.new( 7 ) ** 2 ).coefficient.must_equal 49
-    ( @f.new( 7 ) / @f.new( 2 ) ).coefficient.must_equal 3.5
-    @f.new( 7 ).ratio?.must_equal true
+    assert @F < SY::Quantity::Function
+    @F.new( 7 ).ratio?.must_equal true
+    @F.new( 7 ).( 6 ).must_equal 42
+    @F.new( 7 ).inverse_closure.( 42 ).must_equal 6
+    @F.new( 7 ).coefficient.must_equal 7
+    ( @F.new( 7 ) * @F.new( 6 ) ).coefficient.must_equal 42
+    ( @F.new( 7 ) ** 2 ).coefficient.must_equal 49
   end
 end

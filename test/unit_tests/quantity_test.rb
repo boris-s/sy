@@ -2,13 +2,17 @@
 # encoding: utf-8
 
 # *****************************************************************
-# Unit tests for file sy/se.rb.
+# Unit tests for file sy/quantity.rb.
 #
-# File se.rb defines class Se (superscripted exponent), which is
-# used in construction of Sps (superscripted product string), such
-# as "kg.m.s⁻²".  Se is a subclass of String, which represents
-# strings such as "⁰", "¹", "²", "⁴²", "⁻⁴²". Specification of its
-# main features is below.
+# File quantity.rb defines class SY::Quantity, the core class of
+# SY. That's because a physical magnitude is a pair [ quantity,
+# number ]. Magnitudes can be added / subtracted from one another
+# only when they are of the same quantity. A quantity may have a
+# physical dimension, but there are also dimensionless quantities.
+# Quantity is important because it defines the physical meaning
+# of its magnitudes. For example, Entropy and ThermalCapacity have
+# the same dimension, but different physical meaning. Code
+# specifications for quantity.rb follow.
 # *****************************************************************
 
 require_relative 'test_loader'
@@ -20,17 +24,10 @@ require 'active_support/core_ext/module/delegation'
 # Require the tested component itself.
 require_relative '../../lib/sy/quantity.rb'
 
-describe "quantity/function.rb" do
-  require_relative 'quantity/function_test'
-end
-
-describe "quantity/ratio.rb" do
-  require_relative 'quantity/ratio_test'
-end
-
-describe "quantity/term.rb" do
-  require_relative 'quantity/term_test'
-end
+# Test the subordinate assets
+require_relative 'quantity/function_test'
+require_relative 'quantity/ratio_test'
+require_relative 'quantity/term_test'
 
 # FIXME: See to it that the tests of all subordinate assets
 # of quantity are invoked by the above statements.

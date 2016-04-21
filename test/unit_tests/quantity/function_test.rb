@@ -20,53 +20,52 @@ require_relative '../../../lib/sy/quantity/function'
 
 describe "sy/quantity/function" do
   before do
-    @f = SY::Quantity::Function
+    @F = SY::Quantity::Function
   end
 
   describe "instance methods" do
     it "must have basic instance methods" do
-      im = @f.instance_methods
+      im = @F.instance_methods
       im.must_include :closure
       im.must_include :inverse_closure
       im.must_include :call
       im.must_include :[]
+      im.must_include :ratio?
       im.must_include :inverse
       im.must_include :*
-      im.must_include :/
       im.must_include :**
-      im.must_include :ratio?
     end
   end
 
   describe "constructors" do
     it "must have .new constructor" do
-      i = @f.new -> x { x * 2 }, inverse: -> x { x / 2 }
-      i.must_be_kind_of @f
+      i = @F.new -> x { x * 2 }, inverse: -> x { x / 2 }
+      i.must_be_kind_of @F
       i.closure.( 21 ).must_equal 42
       i.inverse_closure.( 42 ).must_equal 21
     end
 
     it "must have .identity constructor" do
-      @f.identity.must_be_kind_of SY::Quantity::Ratio
-      @f.identity.coefficient.must_equal 1
+      @F.identity.must_be_kind_of SY::Quantity::Ratio
+      @F.identity.coefficient.must_equal 1
     end
 
     it "must have .multiplication constructor" do
-      @f.ratio( 7 ).must_be_kind_of SY::Quantity::Ratio
-      @f.ratio( 7 ).coefficient.must_equal 7
+      @F.ratio( 7 ).must_be_kind_of SY::Quantity::Ratio
+      @F.ratio( 7 ).coefficient.must_equal 7
     end
 
-    it "must have .addition constructor" do
-      @f.addition( 7 ).must_be_kind_of @f
-      @f.addition( 7 ).( 10 ).must_equal 17
-      @f.addition( 7 ).inverse_closure.( 10 ).must_equal 3
+    it "must have .offset constructor" do
+      @F.offset( 7 ).must_be_kind_of @F
+      @F.offset( 7 ).( 10 ).must_equal 17
+      @F.offset( 7 ).inverse_closure.( 10 ).must_equal 3
     end
   end
 
   describe "#ratio?" do
     it "must return false for Quantity::Function instances" do
-      i1 = @f.new -> m { m + 1 }, inverse: -> m { m - 1 }
-      i2 = @f.new -> m { m * 2 }, inverse: -> m { m / 2 }
+      i1 = @F.new -> m { m + 1 }, inverse: -> m { m - 1 }
+      i2 = @F.new -> m { m * 2 }, inverse: -> m { m / 2 }
       i1.ratio?.must_equal false
       i2.ratio?.must_equal false
     end
@@ -74,7 +73,7 @@ describe "sy/quantity/function" do
 
   describe "#invert" do
     before do
-      @i = @f.new -> m { m * 2 }, inverse: -> m { m / 2 }
+      @i = @F.new -> m { m * 2 }, inverse: -> m { m / 2 }
     end
 
     it "must swap @closure and @inverse_closure" do
@@ -85,28 +84,18 @@ describe "sy/quantity/function" do
 
   describe "#*" do
     it "must perform function composition" do
-      i1 = @f.ratio( 2 )
-      i2 = @f.ratio( 3 )
+      i1 = @F.ratio( 2 )
+      i2 = @F.ratio( 3 )
       c = i1 * i2
-      c.must_be_kind_of @f
+      c.must_be_kind_of @F
       c.( 7 ).must_equal 42
       c.inverse_closure.( 42 ).must_equal 7
     end
   end
 
-  describe "#/" do
-    it "is defined as multiplication with inverse" do
-      i1 = @f.ratio( 2 )
-      i2 = @f.ratio( 3 )
-      c = i1 / i2
-      c.( 3 ).must_equal 2
-      c.inverse_closure.( 2 ).must_equal 3
-    end
-  end
-
   describe "#**" do
     before do
-      @i = @f.addition( 1 )
+      @i = @F.offset( 1 )
     end
 
     it "performs raises the function to the argument" do

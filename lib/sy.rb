@@ -25,6 +25,7 @@ unless defined? SY::UNIT_TEST
   # require_relative 'sy/matrix'
 end
 
+
 # SY is a library of physical units. It defines classes for
 # physical dimensions (SY::Dimension) such as LENGTH, quantities
 # (SY::Quantity) such as Speed, Force or Energy, and units, such as
@@ -77,6 +78,7 @@ end
 # quantity / unit in SY, you are free to define it on your own.
 #
 module SY
+
   AUTOINCLUDE = true unless defined? SY::AUTOINCLUDE
   # FIXME: The following line is commented out for the
   # development purposes.
@@ -85,7 +87,9 @@ module SY
 
   # === Dimensionless quantities
 
+
   Amount = Quantity.standard of: Dimension.zero
+=begin
 
   # # Defines quantity term simplification rule.
   # Quantity::Term[ Amount: 1 ] >> Quantity::Term[]
@@ -103,8 +107,6 @@ module SY
 
   # MoleAmount = Amount / Nᴀ
   # MOLE = Unit.standard of: MoleAmount, short: "mol"
-
-=begin
 
   # === Quantities of dimension LENGTH
 

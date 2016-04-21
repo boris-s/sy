@@ -1,80 +1,83 @@
 # coding: utf-8
 
-# require 'active_support/core_ext/module/delegation'
-
-# Some quantities can be defined as functions of other quantities.
-# This class represents such mapping of one quantity to another.
-# For example, scaled quantities can be expressed as their
-# standard quantity scaled by a ratio. For composed quantities,
-# function can be found that maps them to other quantities of the
-# same dimension. Nonstandard quantities can be expressed as a
-# function of their parent quantity. Ruby does have its built-in
-# function class, Proc. But procs are generally not bijective, and
-# even if they are, it is not easy to figure out the inverse
-# function from a Proc. This class represents bijective functions
-# which carry their own inverse function with them. For example,
-# let's consider dimensionless quantity DozenAmount, whose standard
-# quantity is amount. Then dozen amount d is converted into unit
-# amount by multiplying by 12: f(m) = m * 12. In Ruby lambda
-# notation, this would be f = -> m { m * 12 }. But the although
-# everybody knows that the inverse conversion is achieved by
-# dividing by 12, having the object -> m { m * 12 }, there is no
-# easy way to find that its inverse is -> m { m / 12 }. For this
-# reasons, this class is introduced.
+# Quantity::Function serves to define a quantity as a function of
+# another (parent) quantity. For example, CelsiusTemperature is
+# defined as Temperature offset by 273.15. Many quantities are
+# defined as simply scaled versions of their parent quantities
+# (eg. MoleAmount vs. Amount is scaled by Nᴀ). Since two-way
+# conversion between parent and daughter quantities is needed, and
+# since standard Proc fuctions are not easily invertible, instances
+# of Quantity::Function carry both forward and inverse closure.
 #
 class SY::Quantity::Function
+  # Scaled quantities have function Quantity::Ratio
   require_relative 'ratio'
 
   class << self
-    # Constructor of an identity function.
+    # Constructor of identity function.
     #
     def identity
       SY::Quantity::Ratio.new 1
     end
 
-    # Simple multiplication by a coefficient. Example: Function
-    # DozenAmount is constructed as Function.ratio( 12 ). Closure
-    # of this function is -> m { m * 12 }, inverse closure is
-    # -> m { m / 12 }. This lambda can be used to convert dozens
-    # into units and vice versa.
+    # Constructor of SY::Quantity::Ratio. Example:
+    #
+    #   f = SY::Function.ratio( 12 )
+    #   
+    # can be used to construct DozenAmount
+    # 
+    #   DozenAmount = SY::Quantity.scaled( Amount, function: f )
     # 
     def ratio coefficient
       SY::Quantity::Ratio.new( coefficient )
     end
 
-    # Simple addition of a constant number. Example: Function
-    # CelsiusTemperature is created as Function.addition( 253.15 )
-    # Its closure is -> m { m + 253.15 }. It can be used to convert
-    # degrees of Celsius into kelvins. Its inverse closure is
-    # -> m { m - 253.15 }, which can be used to convert kelvins
-    # back to degrees of Celsius.
+    # Constructor of an offset function. Example:
+    #
+    #   f = SY::Function.offset( 273.15 )
+    #   
+    # can be used to construct CelsiusTemperature
     # 
-    def addition constant
+    #   CelsiusTemperature =
+    #     SY::Quantity.nonstandard( Temperature, function: f )
+    #
+    def offset constant
       "offset".( constant ).must.be_a Numeric
       new( -> m { m + constant }, inverse: -> m { m - constant } )
     end
-
-    # TODO:
-    # Think about linear, logarithmic and negative logarithmic
-    # constructors (for degrees of Fahrenheit, decibels, pH etc.)
   end
 
-  selector :closure, :inverse_closure
+  # Selector #closure of instances of SY::Quantity::Function gives
+  # access to @closure property, holding a Proc-type function that
+  # can be used to convert a quantity to its parent quantity.
+  # 
+  selector :closure
+
+  # Selector #inverse_closure of instances of
+  # SY::Quantity::Function gives access to @inverse_closure
+  # property, a Proc-type function inverse to the function
+  # available under selector #closure.
+  # 
+  selector :inverse_closure
+
   delegate :call, :[], to: :closure
 
-  # The constructor expects the function closure (in Ruby lambda
-  # notation) as the first argument. The second mandatory parameter
-  # :inverse expects inverse closure as its argument. Example
+  # The constructor expects a Proc-type argument and its inverse
+  # under :inverse keyword. Example:
   #
-  # Quantity::Function.new -> m { m * 2 }, inverse: -> m { m / 2 }
+  # f = Quantity::Function
+  #       .new( -> m { m * 2 }, inverse: -> m { m / 2 } )
   #
   def initialize( closure, inverse: )
-    @closure = "first argument".( closure ).must.be_a Proc
-    @inverse_closure =
-      "argument of inverse:".( inverse ).must.be_a Proc
+    @closure = "first argument".( closure )
+      .must.be_a Proc
+    @inverse_closure = "argument of inverse:".( inverse )
+      .must.be_a Proc
   end
 
-  # Inquirer whether the function is of SY::Quantity::Ration type.
+  # Inquirer whether the function is of SY::Quantity::Ratio type.
+  # Set to return _false_ by default, redefined to return _true_
+  # in SY::Quantity::Ratio.
   # 
   def ratio?
     false
@@ -98,12 +101,6 @@ class SY::Quantity::Function
     f_inv, g_inv = inverse_closure, other.inverse_closure
     self.class.new -> m { f.( g.( m ) ) },
                    inverse: -> m { g_inv.( f_inv.( m ) ) }
-  end
-
-  # Composition with inverse of the other function.
-  #
-  def / other
-    self * other.inverse
   end
 
   # Raising to a power.
