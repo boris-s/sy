@@ -78,51 +78,49 @@ end
 # quantity / unit in SY, you are free to define it on your own.
 #
 module SY
-
   AUTOINCLUDE = true unless defined? SY::AUTOINCLUDE
-  # FIXME: The following line is commented out for the
-  # development purposes.
-
-  # Numeric.class_exec { include ExpressibleInUnits } if SY::AUTOINCLUDE
+  Numeric.class_exec { ★ ExpressibleInUnits } if SY::AUTOINCLUDE
 
   # === Dimensionless quantities
 
-
   Amount = Quantity.standard of: Dimension.zero
-=begin
 
   # # Defines quantity term simplification rule.
   # Quantity::Term[ Amount: 1 ] >> Quantity::Term[]
-  # # FIXME: The above rule is wrong, because Amount should stay when alone,
-  # # but be disposable when in more complex terms.
+
+  # # FIXME: The above rule is wrong, because Amount should stay
+  # # when alone, but be disposable when in more complex terms.
  
   # # # Perhaps this should be said differently:
-  # Amount.disposable! # This method should work only for dimensionless
-  #                    # quantities
+  # Amount.disposable! # This method should work only for
+  #                    # dimensionless quantities
 
-  UNIT = Unit.standard of: Amount
+  UNIT = Unit.basic of: Amount
   
   Nᴀ = AVOGADRO_CONSTANT = 6.02214e23
 
-
-  # MoleAmount = Amount / Nᴀ
-  # MOLE = Unit.standard of: MoleAmount, short: "mol"
+  MoleAmount = Amount / Nᴀ
+  MOLE = Unit.basic of: MoleAmount, short: "mol"
 
   # === Quantities of dimension LENGTH
 
   Length = Quantity.standard of: Dimension[ :LENGTH ]
-  METRE = Unit.standard of: Length, short: "m"
+  METRE = Unit.basic of: Length, short: "m"
 
   # === Quantities of dimension MASS
   
   Mass = Quantity.standard of: Dimension[ :MASS ]
-  KILOGRAM = Unit.standard of: Mass, short: "kg"
+  KILOGRAM = Unit.basic of: Mass, short: "kg"
+  # FIXME: Make sure magnitudes coerce Numerics.
   GRAM = Unit 0.001 * KILOGRAM, short: "g"
+=begin
   TON = Unit 1000 * KILOGRAM, short: "t"
   DALTON = Unit 1.66053892173e-27 * KILOGRAM, short: "Da"
+=end
 
   # === Quantities of dimension TIME
 
+=begin
   Time = Quantity.standard of: Dimension[ :TIME ]
   SECOND = Unit.standard of: Time, short: "s"
   MINUTE = Unit 60 * SECOND, short: "min"

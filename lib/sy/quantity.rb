@@ -1,68 +1,40 @@
 # coding: utf-8
 
-# Metrological quantity is the key class of SY. A quantity may have
-# its physical dimension, but beyond that, it is characterized by
-# its meaning and context in which it is used. For example,
-# quantities SY::Amount and SY::MoleAmount are both dimensionless,
-# but the second one counts in moles and is used in the context of
-# chemistry. Quantities SY::ThermalCapacity and SY::Entropy have
-# both the same physical dimension, but their meaning is different.
-# It is not easy to capture the conventions of different fields of
-# science in a single abstraction. SY therefore does not try to
-# cover all existing conventions out there. Instead, it tries to
-# define SY::Quantity in a way that can cover 80% of usecases
-# within a reasonably concise abstraction.
+# Class Quantity is the key class of SY. Quantity is more important
+# than dimension, because it defines physical meaning and context.
+# Example: quantities SY::Amount and SY::MoleAmount are both
+# dimensionless, but the second one counts in moles and is used in
+# the context of chemistry. Quantities SY::ThermalCapacity and
+# SY::Entropy have both the same physical dimension, but their
+# meaning is different. Quantities in different fields of science
+# abide by different conventions. SY therefore does not try to
+# cover all existing cases out there. Instead, SY::Quantity is
+# designed to cover 80% usecases within a concise abstraction.
 # 
-# Everybody knows that physical quantities have dimensions. Time
-# has dimension TIME, Speed has dimension LENGTH.TIME⁻¹,
-# ThermalCapacity has dimension MASS.LENGTH².TIME⁻².TEMPERATURE⁻¹,
-# while Amount and MoleAmount are dimensionless. Quantities can
-# undergo multiplication operation with other quantities, and the
-# result is a composed quantity. Quantity term (reified as
-# SY::Quantity::Term class) is a product of a number of quantities
-# raised to certain exponents (such as "Length.Time⁻¹").
+# Physical quantities typically have dimensions. Time has dimension
+# TIME, Speed has dimension LENGTH.TIME⁻¹, ThermalCapacity has
+# dimension MASS.LENGTH².TIME⁻².TEMPERATURE⁻¹. Amount and
+# MoleAmount are dimensionless – can be considered of zero
+# dimension. Quantities can be multiplied by other quantities, and
+# the result is a composed quantity. Dimensions of the factor
+# quantities are also composed. However, dimensional analysis is
+# not sufficient to simplify quantity terms. Quantity term (reified
+# as SY::Quantity::Term class) is, expectedly, a product of a
+# number of quantities raised to certain exponents. Example:
+# SY::Quantity::Term[ "Length.Time⁻¹" ]. Again, dimension does not
+# suffice to determine that Molarity is not the same thing as
+# Amount.Length⁻³ – both are of dimension LENGTH⁻³. Quantity
+# compositions are reified as class SY::Quantity::Composition.
 #
-# It turns out that when one tries to capture quantity in a
-# software abstraction, the quantities need to know how did they
-# arise from other quantities. In other words, quantities need to
-# know their composition. This wouldn't be the case if dimensional
-# analysis was sufficient to simplify quantity terms. But dimension
-# is not enough to tell that Molarity is not the same thing as
-# Amount.Length⁻³ when both quantities have the same dimension
-# (LENGTH⁻³). Moreover, certain quantities represent specific
-# functions of other quantities. For example, CelsiusTemperature is
-# converted to Temperature (measured in kelvins) by adding 273.15
-# to its magnitude. MoleAmount is Amount scaled by Avogadro
-# constant. In SY, function which maps quantity to its parent
-# quantity is reified as class SY::Quantity::Function. It might
-# seem that the function alone might be enough to distinguish
-# Molarity from Amount.Length⁻³, since the former can be converted
-# to the latter by multiplying the magnitude by Avogadro constant,
-# but putting this into practice would force too much
-# responsibility on SY::Quantity::Function class. It is better if
-# the way quantities are composed of other quantities is reified as
-# SY::Quantity::Composition class. Although there is global
-# quantity composition table (SY::Quantity::Composition::Table),
-# when you do calculation with units, anonymous Quantity instances
-# are temporarily constructed, and these should not be induced to
-# the global composition table. For this reason, Quantity instances
-# need to carry its composition as their own attribute. In short,
-# inner workings of SY::Quantity are too complicated for you to
-# understand and you'd better rely that I spent a lot of
-# computational effort to get it right. Just joking.
+# Certain quantities are defined as functions of other quantities
+# (parent quantities). These functions are reified as class
+# SY::Quantity::Function. Examples: CelsiusTemperature is defined
+# as Temperature (measured in kelvins) offset by 273.15.K.
+# MoleAmount is Amount scaled by Avogadro constant. In SY,
+# this function is reified as SY::Quantity::Function.
 # 
-# Due to the above, 4 types of quantities are recognized in SY:
-# standard, nonstandard, scaled and composed. Standard quantities
-# are unique to each dimension and their function is implicitly set
-# to identity function. Scaled quantities arise by multiplying
-# already defined quantities by a ratio. Composed quantities are
-# constructed by indicating the quantity term from which they
-# arise. Finally, nonstandard quantities are defined by indicating
-# the (unary) functions of other quantities other than simple
-# scaling. For example, pH is a nonstandard quantity which arises
-# as a negative logarithm of concentration. CelsiusTemperature is
-# a nonstandard quantity arising by offseting standard Temperature
-# (whose standard unit is kelvin). Examples:
+# From the above, 4 distinct types of quantities can be identified:
+# standard, nonstandard, scaled and composed:
 # 
 # 1. Standard quantities belong to a dimension and their function
 #    is implicitly identity function.
@@ -114,9 +86,13 @@ class SY::Quantity
   require_relative 'quantity/composition'
   require_relative 'quantity/multiplication_table'
 
-  # Error to indicate incompatible quantities.
+  # Exception to indicate incompatible quantities.
   # 
   class Error < TypeError; end
+
+  # Exception to indicate unrelated quantities.
+  # 
+  class NotRelated < Error; end
 
   class << self
     # Standard quantity of the supplied dimension. Example:
@@ -124,36 +100,33 @@ class SY::Quantity
     #   q = Quantity.standard of: Dimension[ "L.T⁻²" ]
     # 
     def standard of:, **named_args
-      # This method goes down the difficult path of imitating a
-      # constructor. The problem is that an unsuspecting user
-      # could be asking to construct an instance with different
-      # parameters. Luckily, the only allowed parameters here are
-      # those related to naming: :name (alias :ɴ) and :name!.
-      # Normally, NameMagic takes care of these automatically, but
-      # in this difficult situation, they have to be handled
-      # manually.
       dimension = SY::Dimension[ of ]
-      # If no named arguments were supplied, we are done.
-      return dimension.standard_quantity if named_args.empty?
-      # The caller did supply named arguments. If this method
-      # was a quantity constructor, we would just pass them forth
-      # to .new constructor. However, there will be no constructor
-      # call here, since the instance already exists:
+      # Standard quantity comes from Dimension#standard_quantity,
+      # which takes no arguments.
       quantity = dimension.standard_quantity
-      # Handle the named arguments.
-      named_args named_args do
+      # If we also received no named_args, all is fine:
+      return dimension.standard_quantity if named_args.empty?
+      # However, if we did receive named_args, it means the caller
+      # tries to name the quantity instance (named_args not related
+      # to naming are not permitted). Naming may succeed or fail.
+      # To .new constructor, NameMagic provides full automation of
+      # the naming-related parameters, but since .standard goes
+      # through Dimension#standard_quantity, we have to call
+      # either NameMagic#name= or NameMagic#name! manually.
+      name, name_with_bang = named_args named_args do
         may_have :name, alias: :ɴ
-        fail "Parameters :name (:ɴ) and :name! may not be both " +
+        fail "Parameters :name (:ɴ) and :name! must not be both " +
              "given!" if has? :name! if has? :name
-        note "name the instance using either #name= or #name!"
-        name = delete :name
-        name_with_bang = delete :name!
-        must.be_empty
-        # Do the naming.
-        quantity.name = name if name
-        quantity.name! name_with_bang if name_with_bang
+        » "we received :name xor :name! argument"
+        [ delete( :name ), delete( :name! ) ].tap {
+          » "no parameters except :name / :ɴ / :name! are allowed"
+          » "(and :name! is available only for compatibility)"
+          must.be_empty
+        }
       end
-      # Finally, return the quantity.
+      # Method #name= or #name! is used accordingly.
+      quantity.name = name if name
+      quantity.name! name_with_bang if name_with_bang
       return quantity
     end
 
@@ -161,27 +134,36 @@ class SY::Quantity
     # 
     #   DozenAmount = Quantity.scaled of: Amount, ratio: 12
     # 
-    # FIXME: Now I hit another problem. Scaled quantities are
-    # scaled with respect to their parent quantity, or are they
-    # scaled with respect to their standard quantity?
+    # Answer: When deriving quantities from other quantities, the
+    # function is always defined with respect to their parent
+    # quantity. More precisely, the function maps from magnitudes
+    # of the daugther quantity to the parent quantity.
+    # to their parent quantity. This doesn't need to be standard
+    # quantity. When there is a need for conversion between two
+    # quantities, then this is possible if a path can be found
+    # between the two. If the two are of the same dimension
     # 
-    def scaled parent, ratio: 1, **named_args
-      dimension = of.dimension
-      Quantity::Scaled.new( parent, ratio: ratio, **named_args )
+    def scaled from:, factor: 1, **named_args
+      "factor".( factor ).must.be_kind_of Numeric
+      new parent: from,
+          function: Ratio.new( 1.0 / factor ),
+          **named_args
     end
 
-    # Constructor of a new scaled quantity. Example:
+    # Constructor of a new quantity from a dimension. Example:
     # 
     #   q = Quantity.of Dimension.new( "L.T⁻²" )
     # 
-    def of dimension, ratio: 1, **named_args
-      new dimension: dimension, **named_args
+    def of dimension:, factor: 1, **named_args
+      new dimension: SY::Dimension[ dimension ],
+          # function: SY::Quantity::Ratio.new( factor ),
+          **named_args
     end
 
     # Constructor of a new dimensionless quantity.
     # 
-    def dimensionless **options
-      new dimension: SY::Dimension.zero, **options
+    def dimensionless **named_args
+      new dimension: SY::Dimension.zero, **named_args
     end
 
     # Constructor of nonstandard quantities.
@@ -190,28 +172,50 @@ class SY::Quantity
       # TODO: Think about other nonstandard quantities: linear
       # such as degrees of Fahrenheit, logarithmic (decibels),
       # negative logarithmic (pH) etc.
+
+      # TODO: I wonder how to formalize "protection" of quantities
+      # that I used in my definition earlier to protect quantities
+      # from decomposing into a term of the standard quantities of
+      # the base dimensions. Is it that there should be more than
+      # one standard quantity allowed for each dimension? All equal
+      # to each other? Or should the "protected" quantity be
+      # introduced as a nonstandard quantity?
     end
   end
 
   selector :dimension, :function
 
   # The parameters needed to construct a quantity depend on the
-  # type of quantity we are constructing. There are two types of
-  # elementary quantities (standard and nonstandard)
+  # type of quantity we are constructing. The parameters are:
+  #
+  # * dimension: If given, must be of SY::Dimension class.
+  # * function: If given, must be of SY::Quantity::Function class.
+  #
+  # Note that the above requirements make .new constructor quite
+  # demanding and clumsy for everyday use. Its main purpose is to
+  # be a servant of more convenient constructors .of, .standard,
+  # .scaled, .composed and .nonstandard.
   # 
   def initialize **nn
+    # Let's note that I will make #new constructor demanding. The
+    # constructor requires correct types and is non-fool-proof.
+
     named_args nn do # describe and process named arguments
       » "quantity constructor may have explicitly given dimension"
-      may_have :dimension
-      if has? :dimension then
-        @dimension = SY::Dimension[ delete( :dimension ) ]
+      if @dimension = delete( :dimension ) then
         » "if dimension is given, composition must not be given"
         must.not_have :composition
-        » "function may be given"
+        » "function may be given, but parent quantity must not"
         may_have :function
-        » "but parent quantity must not be given"
         must.not_have :parent
-        @function = SY::Quantity::Function.new( delete :function )
+        @function = delete :function
+        # If function is not given, initialization is done.
+
+        # Just perhaps, to set missing @function to identity, but
+        # let's not do it until the need is obvious.
+    
+        # # @function defaults to identity function.
+        # @function ||= SY::Quantity::Function.identity
 
         # FIXME: :function has to be handled. If it's a Ratio, then
         # this constructor defines a scaled quantity with respect
@@ -226,36 +230,75 @@ class SY::Quantity
         # If it does, it must not have explicit composition.
         fail "Dimension and composition may not be given " +
           "both at the same time" if has? :composition
-        # Now, if function is not given, we can construct the
-        # right
-        # away a new quantity. We are done.
+
+        # Composition table should learn about new composed
+        # quantities the moment these are named. (Another way would
+        # be to construct unnamed quantities and introduce them to
+        # the table explicitly.)
       end
     end
-    
-    # @function defaults to identity function.
-    @function ||= SY::Quantity::Function.identity
 
-    # Construct Magnitude parametrized subclass for the instance.
+    # Construct a parametrized subclass of Magnitude.
     param_class!( { Magnitude: SY::Magnitude },
                   with: { quantity: self } )
-
-    # The composition table should learn about new composed
-    # quantities the moment these are named. (Another way would
-    # be to construct unnamed quantities and introduce them to
-    # the table explicitly, provided the coder knows what she is
-    # doing.)
-    # 
-    # Do they need to know how they were defined? It would seem to
-    # me that the answer is no, so long as @function is well
-    # handled...
   end
 
-  # Inquirer whether this is a nonstandard quantity.
+  # Inquirer method whether this is a derived quantity.
+  # 
+  def derived?
+    false
+  end
+
+  # Inquirer method whether this is a scaled quantity.
+  # 
+  def scaled?
+    false
+  end
+
+  # Inquirer method whether this is a nonstandard quantity.
   # 
   def nonstandard?
     false
   end
 
+  # Inquirer method whether this is a composed quantity.
+  # 
+  def composed?
+    false
+  end
+
+  # Inquirer method whether this is a basic quantity. Note that
+  # basic quantity is one that is neither composed nor derived.
+  # 
+  def basic?
+    not composed? || derived?
+  end
+
+  # Inquirer method whether this is a standard quantity of its
+  # dimension.
+  # 
+  def standard?
+    self == dimension.standard_quantity
+  end
+
+  # Inquirer method whether this is a dimensionless quantity. Note
+  # that counterintuitively, class SY::Quantity is more crucial
+  # than SY::Dimension. Although it is true that most widely used
+  # quantities do have their physical dimension, SY makes it
+  # possible to construct new quantities without giving a
+  # dimension, in which case null dimension is implied if asked
+  # for. It is also possible to supply null dimension to the
+  # relevant SY::Quantity constructors explicitly. In both cases,
+  # the resulting quantity is dimensionless, unless its descent or
+  # composition (if any) implies otherwise.
+  # 
+  def dimensionless?
+    fail NotImplementedError
+  end
+
+  # FIXME: I wonder why this convenience shortcut was needed.
+  # Maybe I'll figure after I read old sy.rb again...
+  # 
   # # Convenience shortcut to register a name of the basic unit of
   # # self in the UNITS table. Admits either syntax:
   # # quantity.name_basic_unit "name", symbol: "s"
@@ -268,21 +311,20 @@ class SY::Quantity
   # end
   # alias :ɴ_basic_unit :name_basic_unit
 
+  # FIXME: Dtto.
+  # 
   # # #basic_unit convenience reader of the BASIC_UNITS table
   # def basic_unit; BASIC_UNITS[self] end
 
+  # FIXME: Dtto.
+  # 
   # # #fav_units convenience reader of the FAV_UNITS table
   # def fav_units; FAV_UNITS[self] end
 
-  # # #to_s convertor
-  # def to_s; "#{name.nil? ? "quantity" : name} (#{dimension})" end
-    
-  # # Inspector
-  # def inspect
-  #   "#{name.nil? ? 'unnamed quantity' : 'quantity "%s"' % name} (#{dimension})"
-  # end
-
-  delegate :multiplication_table, to: "self.class"
+  # # FIXME: For now, I don't think second multiplication_table
+  # # (apart from the one owned by SY::Quantity::Term) is not
+  # # necessary at the moment.
+  # delegate :multiplication_table, to: "self.class"
 
   # FIXME: Write the description.
   # 
@@ -331,10 +373,10 @@ class SY::Quantity
     return inversion_result
   end
 
-  # A quantity can be divided by another quantity, or by a
-  # number. When divided by a quantity, the result is a
-  # composed quantity. When divided by a number, the result is
-  # a scaled daughter of the receiver.
+  # A quantity can be divided by another quantity, or by a number.
+  # When divided by a quantity, the result is a composed quantity.
+  # When divided by a number, the result is a scaled daughter
+  # quantity of the receiver.
   # 
   def / other
     case other
@@ -364,18 +406,141 @@ class SY::Quantity
     return inversion_result
   end
 
+  # Returns a magnitude of the quantity.
+  # 
+  def magnitude number
+    self.Magnitude[ self, number ]
+  end
+
+  # Returns a conversion function to another quantity.
+  # 
+  def conversion_function_to( other )
+    "argument".( other ).must.be_a SY::Quantity
+    return SY::Quantity::Ratio.new 1.0 if self == other
+    # Find the relevant function sequence and reduce it using :*
+    begin
+      function_sequence_to( other ).reduce :*
+    rescue SY::Quantity::NotRelated
+      fail SY::Quantity::NotRelated, <<-MSG.heredoc
+        Quantities #{self} and #{other} are not related, therefore
+        conversion function between them cannot be found!
+      MSG
+    end
+  end
+  # FIXME: #>> alias not tested!
+  alias >> conversion_function_to
+
+  # Returns a conversion function from another quantity.
+  # 
+  def conversion_function_from( other )
+    "argument".( other ).must.be_a SY::Quantity
+    return SY::Quantity::Ratio.new 1.0 if self == other
+    # Find the relevant function sequence and reduce it using :*
+    begin
+      function_sequence_from( other ).reduce :*
+    rescue SY::Quantity::NotRelated
+      fail SY::Quantity::NotRelated, <<-MSG.heredoc
+        Quantities #{self} and #{other} are not related, therefore
+        conversion function between them cannot be found!
+      MSG
+    end
+  end
+  # FIXME: #<< alias not tested!
+  alias << conversion_function_from
+
   # FIXME: Write the description.
   # 
   def to_s
     super
     # FIXME: This should be a customized method like in Dimension.
+    # FIXME: Earlier code was:
+    # 
+    # "#{name.nil? ? "quantity" : name} (#{dimension})"
   end
 
   # FIXME: Write the description.
   # 
   def inspect
     super
-    # FIXME: This should be a customized method like in Dimension.
+    # FIXME: This should be a custom method (see eg. Dimension).
+    # FIXME: Earlier code was:
+    # 
+    # [ name.nil? ? 'unnamed quantity' : 'quantity "%s"' % name,
+    #   dimension ].join ' '
+  end
+
+  protected
+
+  # Returns a sequence of SY::Quantity::Function-type objects
+  # corresponding to a path of directly related quantities from
+  # self to another quantity given as an argument. Each function in
+  # the sequence performs one step of conversion chain from self
+  # towards the other quantity. The argument must be a quantity. If
+  # the receiver and the argument are not related, exception
+  # SY::Quantity::NotRelated is raised.
+  # 
+  def function_sequence_to( other )
+    path_to( other ).map { |q1, arrow, q2|
+      # Let's remember that for a derived quantity, function (if
+      # any) converts to its parent quantity.
+      case arrow
+      when :< then q1.function
+      when :> then q2.function.inverse
+      end
+    }
+  end
+
+  # Returns a sequence of SY::Quantity::Function-type objects
+  # corresponding to a path of directly related quantities from a
+  # quantity given as argument to self. Each function in the
+  # sequence performs one step of conversion in the direction from
+  # other quantity to self. The argument must be a quantity. If the
+  # receiver and the argument are not related, exception
+  # SY::Quantity::NotRelated is raised.
+  # 
+  def function_sequence_from( other )
+    path_from( other ).map { |q1, arrow, q2|
+      # Let's remember that for a derived quantity, function (if
+      # any) converts to its parent quantity.
+      case arrow
+      when :< then q1.function
+      when :> then q2.function.inverse
+      end
+    }
+  end
+
+  # Returns a path from self to a related quantity given as an
+  # argument. The path is an array of triples [ q1, sign, q2 ],
+  # where within each triple, q1 and q2 are directly related
+  # quantities (forming an edge of the path) and sign is one of
+  # symbols :< or :>, denoting whether q1 is a daughter of q2, or
+  # vice versa. The contract of the method requires that the
+  # supplied argument must be a quantity. If a path cannot be
+  # found, SY::Quantity::NotRelated is raised.
+  # 
+  def path_to( other )
+    return [] if other == self
+    begin
+      fail NotRelated unless derived?
+      parent.path_to( other ).unshift [ self, :<, parent ]
+    rescue NotRelated
+      fail NotRelated, "Quantities #{self} and #{other} are " +
+                       "not related!" unless other.derived?
+      path_to( other.parent ) << [ other.parent, :>, other ]
+    end
+  end
+
+  # Returns a path to self from a related quantity given as an
+  # argument. The path is an array of triples [ q1, sign, q2 ],
+  # where within each triple, q1 and q2 are directly related
+  # quantities (forming an edge of the path) and sign is one of
+  # symbols :< or :>, denoting whether q1 is a daughter of q2, or
+  # vice versa. The contract of the method requires that the
+  # supplied argument must be a SY::Quantity. If a path cannot be
+  # found, SY::Quantity::NotRelated is raised.
+  # 
+  def path_from( other )
+    other.path_to( self )
   end
 
   private
@@ -385,7 +550,7 @@ class SY::Quantity
   # magnitude by the number to convert to parent quantity.
   # 
   def multiply_by_number( number )
-    SY::Quantity.scaled( of: self, ratio: 1 / number )
+    SY::Quantity.scaled( from: self, factor: 1.0 / number )
   end
 
   # Constructs a daughter quantity by dividing self by a number.
@@ -393,17 +558,18 @@ class SY::Quantity
   # magnitude by the number to convert it to parent quantity.
   # 
   def divide_by_number( number )
-    SY::Quantity.scaled( of: self, ratio: number )
+    SY::Quantity.scaled( from: self, factor: number.to_f )
   end
 
-  # Multiplies self with another quantity.
+  # Multiplies self with another quantity. Requires that the
+  # argument be a quantity other than a nonstandard quantity.
   # 
   def multiply_by_quantity( quantity )
-    if quantity.nonstandard? then
-      msg = "Attempt to multiply #{self} by #{quantity}, " +
-            "a nonstandard quantity, has occurred. Nonstandard " +
-            "quantities may not be multiplied by other quantities!"
-      fail TypeError, msg
+    if quantity.nonstandard? then fail TypeError, <<-COMPLAINT
+        Attempt to multiply #{self} by #{quantity}, a nonstandard
+        quantity, has occurred. Nonstandard quantities may not be
+        multiplied by other quantities!
+      COMPLAINT
     end
     # Compose the multiplication term.
     term = Term[ self => 1, quantity => 1 ]

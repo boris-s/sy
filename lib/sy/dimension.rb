@@ -181,7 +181,7 @@ class SY::Dimension < Hash
   # Returns dimension's standard quantity.
   # 
   def standard_quantity
-    @standard_quantity ||= SY::Quantity.of( self )
+    @standard_quantity ||= SY::Quantity.of dimension: self
   end
 
   delegate :standard_unit, to: :standard_quantity

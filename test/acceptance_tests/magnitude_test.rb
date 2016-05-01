@@ -1,9 +1,9 @@
 #! /usr/bin/ruby
-# encoding: utf-8
+# coding: utf-8
 
-# **************************************************************************
+# *****************************************************************
 # Acceptance tests for SY::Magnitude.
-# **************************************************************************
+# *****************************************************************
 
 require_relative 'test_loader'
 
@@ -14,7 +14,7 @@ describe SY::Magnitude do
     @Length = SY::Quantity.standard of: @L
   end
 
-  describe ".new constructor" do
+  describe ".new" do
     it "must return expected magnitudes" do
       SY::Magnitude.new( @Time, 42 ).must_be_kind_of SY::Magnitude
       SY::Magnitude.new( quantity: @Time, number: 42 )
@@ -34,18 +34,20 @@ describe SY::Magnitude do
 
   describe ".of constructor" do
     it "must return expected magnitudes" do
-      SY::Magnitude.of( @Length, number: 3 ).must_be_kind_of SY::Magnitude
+      m = SY::Magnitude.of( @Length, number: 3 )
+      m.must_be_kind_of SY::Magnitude
+      m.number.must_equal 3
     end
   end
 
-  describe "Number-like behavior (ie. arithmetics)" do
+  describe "Number-like behavior" do
     before do
       @t0 = SY::Magnitude.of @Time, number: 0
       @t1 = SY::Magnitude.of @Time, number: 1
       @l0 = SY::Magnitude.of @Length, number: 0
       @l2 = SY::Magnitude.of @Length, number: 2
     end
-
+    
     describe "negation" do
       # FIXME
     end
@@ -66,8 +68,10 @@ describe SY::Magnitude do
       end
 
       it "must allow multiplication by other magnitudes" do
+        skip
         ( @t1 * @l2 ).must_be_kind_of SY::Magnitude
-        ( @t1 * @l2 ).quantity.must_equal @t1.quantity * @l2.quantity
+        ( @t1 * @l2 ).quantity
+          .must_equal @t1.quantity * @l2.quantity
         ( @t1 * @l2 ).number.must_equal 2
       end
     end
@@ -78,6 +82,25 @@ describe SY::Magnitude do
 
     describe "raising to a power" do
       # FIXME
+    end
+    
+    describe "#<=>" do
+      it "works as expected" do
+        ( @t0 <=> @t0 ).must_equal 0
+        ( @t1 <=> @t0 ).must_equal 1
+        ( @t0 <=> @t1 ).must_equal -1
+        dmL = SY::Quantity.scaled from: @Length, factor: 10.0
+        a = @Length.magnitude 1
+        b = dmL.magnitude 10
+        skip
+        ( a <=> b ).must_equal 0
+      end
+    end
+
+    describe "comparison behavior" do
+      it "must include Comparable" do
+        assert SY::Magnitude < Comparable
+      end
     end
 
     describe "coercion behavior" do

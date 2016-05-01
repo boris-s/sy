@@ -1,67 +1,93 @@
-#encoding: utf-8
+# coding: utf-8
 
 # Unit of measurement.
 # 
 class SY::Unit < SY::Magnitude
   require_relative 'unit/sps'
-  # include NameMagic
+  ★ NameMagic
+
+  # Since kilogram is officially the basic unit of mass, it would
+  # be somehow stupid to disallow this unit name on the grounds
+  # that it begins with "kilo". Blame the SI committee.
+  # 
+  PROTECTED_NAMES = [ "kilogram" ]
+
+  # Let's make sure the user won't define unit names which
+  # perchance start with one of the standard prefixes. Hook
+  # #naming_exec is used to censor out unsuitable unit names.
+  # 
+  naming_exec do |ɴ|
+    "unit name".( ɴ.to_s ).raises( NameError ).try {
+      « "must be either all upper case or all lower case"
+      fail unless self == upcase || self == downcase
+      « "must not start with a full prefix (kilo, mili, mega...)"
+      SY::PREFIXES.each { |pfx|
+        if downcased_version.starts_with? pfx[:full] then
+          « "starts with '#{pfx[:full]}' prefix!"
+          fail unless pfx[:full].empty? or
+                      PROTECTED_NAMES.include? downcase
+        end
+      }
+    }
+  end
+
+  selector :abbreviation
+  alias short abbreviation
 
   class << self
-    # Let us remember that magnitude is a pair [ quantity, number ]. Basic unit of a given quantity is a named magnitude whose number (ie. size) equals to 1.
+    # Basic unit of a given quantity is a chosen SY::Unit instance
+    # whose number equals 1.
     # 
-    # FIXME: Figure out how to denote Ruby code in examples.
+    # FIXME: Read Rdoc documentation and figure whether it is
+    # possible to mark up Ruby code for added prettiness.
+    # 
     # u = Unit.basic of: quantity
     # 
-    def standard **options
-      # FIXME: No mather how I look at it, there should be only
-      # one basic unit object for every quantity. So I should
-      # prevent this constructor from constructing more than
-      # one basic unit. As for other (non-basic) units ...
-      # This reeks of BasicUnit subclass... But I'll let it
-      # slide for the time being, perhaps I had good reasons
-      # for not making basic unit unique...
-      new **options.merge( number: 1 )
+    def basic of:, **named_args
+      new **named_args.update( number: 1, quantity: of )
     end
-  end
 
-  # PREFIX_TABLE.map{|e| e[:full] }.each{ |full_pfx|
-  #   eval( "def #{full_pfx}\n" +
-  #         "self * #{PREFIXES[full_pfx][:factor]}\n" +
-  #         "end" ) unless full_pfx.empty?
-  # }
+    # FIXME: Write the description.
+    # FIXME: Write the tests for this method.
+    # 
+    def of quantity, **named_args
+      new **named_args.update( quantity: of )
+    end
 
-  # Units have names and abbreviations. Necessary assets for unit names are
-  # already provided by NameMagic module. Selectors for abbreviations are
-  # defined below.
-  #
-  # selector :abbreviation
-  # # FIXME: Consider the following aliases:
-  # # alias short abbreviation
-  # # alias symbol abbreviation
-  # # alias abbr abbreviation
+    # This is the core constructor of +SY::Unit+ class. It takes
+    # mandatory named argument +:quantity+, optional named argument
+    # +:number+ (defaults to 1) and optional arguments to set the
+    # name and abbreviation of the unit. Naming works as usual for
+    # classes using +NameMagic", abbreviation is set by optional
+    # argument +:short+, alias +:abbreviation+. Abbreviation can be
+    # only given if unit name is given.
+    # 
+    def new quantity:, number: 1.0, **nn
+      self[ quantity, number ].tap { |inst|
+        named_args nn do
+          may_have :short, alias: :abbreviation
+          abbrev = delete( :short )
+          consider_any_remaining_keys_unrecognized
+          » "nameless instances should not have abbreviations"
+          » "abbreviation property is therefore set upon naming"
+          inst.named_exec {
+            instance_variable_set :@abbreviation, abbrev.to_s if
+              abbreviation
+            # Warn about collisions if warnings are on.
+            warn_about_method_collisions_of( self )
+          }
+        end
+      }
+    end
 
-  def initialize of: fail( ArgumentError, "Parameter :of must be supplied!" ),
-                 **options
-    super
-  #   super
-  #   # abbreviation can be introduced by multiple keywords
-  #   @abbr = oj[:short] || oj[:abbreviation] || oj[:abbr] || oj[:symbol]
-  #   if @name then
-  #     # no prefixed names, otherwise there will be multiple prefixes!
-  #     @name = @name.to_s              # convert to string
-  #     # the unit name is entered into the UNITS_WITHOUT_PREFIX table:
-  #     UNITS_WITHOUT_PREFIX[@name] = self
-  #     # and FAV_UNITS table keys are updated:
-  #     FAV_UNITS[quantity] = FAV_UNITS[quantity] + [ self ]
-  #   end
-  #   if @abbr then
-  #     raise ArgumentError unless @name.present? # name must be given if abbreviation is given
-  #     # no prefixed abbrevs, otherwise there will be multiple prefixes!
-  #     @abbr = @abbr.to_s           # convert to string
-  #     # the unit abbrev is entered into the UNITS_WITHOUT_PREFIX table
-  #     UNITS_WITHOUT_PREFIX[abbr] = self
-  #   end
-  end
+    # Checks the existing instance methods of the user classes of
+    # SY::ExpressibleInUnits and warns about method collisions for
+    # a specifc newly-defined unit given as an argument.
+    # 
+    def warn_about_method_collisions_of( unit )
+      return nil # TODO: Warnings are not implemented yet.
+    end
+  end # class << self
 
   # # #abs absolute value - Magnitude with number.abs
   # def abs; Magnitude.of quantity, number: n.abs end

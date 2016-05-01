@@ -1,10 +1,9 @@
 #! /usr/bin/ruby
 # encoding: utf-8
 
-# **************************************************************************
-# Acceptance tests for SY general features and concrete definitions of
-# quantities and units in SY module.
-# **************************************************************************
+# *****************************************************************
+# Acceptance tests for SY at large.
+# *****************************************************************
 
 require_relative 'test_loader'
 
@@ -74,6 +73,8 @@ describe "standard dimensionless quantity" do
   end
 
   it "must have standard unit named UNIT" do
+    SY::UNIT.must_be_kind_of SY::Unit
+    SY::UNIT.quantity.must_be_kind_of SY::Quantity
     SY::UNIT.quantity.must_equal SY::Amount
     SY::UNIT.number.must_equal 1
     skip

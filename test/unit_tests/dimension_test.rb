@@ -39,7 +39,8 @@ describe "sy/dimension.rb" do
   it "should define basic physical dimensions" do
     SY::Dimension::BASE.to_a.sort
       .must_equal [ [:L, :LENGTH], [:M, :MASS], [:T, :TIME],
-                    [:Q, :ELECTRIC_CHARGE], [:Θ, :TEMPERATURE] ].sort
+                    [:Q, :ELECTRIC_CHARGE], [:Θ, :TEMPERATURE]
+                  ].sort
   end
 
   it "should have the registry of instances" do

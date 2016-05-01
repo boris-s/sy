@@ -1,12 +1,11 @@
 # encoding: utf-8
 
 # This class represents a product of a number of quantities raised
-# to certain exponents. Represented as a hash subclass, whose keys
-# are quantities and values are exponents. Please note that not all
-# quantities can form products with other quantities. In order to
-# be suitable for multiplication with other quantities, the
-# function of a quantity needs to be a simple ratio
-# (SY::Quantity::Ratio class).
+# to certain exponents. It is a hash subclass, whose keys are
+# quantities and values exponents. Not every quantity can form
+# products with other quantities. It is required that the function
+# of the quantity be of SY::Quantity::Ratio subclass in order to be
+# able of multiplication with other quantities.
 #
 class SY::Quantity::Term < Hash
   require_relative 'term/multiplication_table'
@@ -15,44 +14,65 @@ class SY::Quantity::Term < Hash
   require_relative 'term/binary'
 
   class << self
-    # Presents class-owned instances (array)
+    # Class Term keeps a registry of its instances. It is an array
+    # stored in @instances variable available via this selector.
     # 
     def instances
       return @instances ||= []
     end
-    
+
     undef_method :new
-    
+
     # A constructor of +SY::Quantity::Term+. Always returns the
     # same object for the same combination of quantities and their
     # exponents.
     # 
-    def [] *ordered_args, **hash
+    def [] *ordered, **named
       # Validate arguments and enable variable input.
-      input = if ordered_args.size == 0 then hash_args
-              elsif ordered_args.size > 1 then
-                fail ArgumentError, "SY::Quantity::Term[] " +
-                  "constructor admits at most 1 ordered argument!"
-              else ordered[0] end
+      input = ordered_args ordered do
+        case size
+        when 0 then named
+        when 1 then fetch 0
+        else
+          fail "Quantity term .[] constructor admits at most " +
+               "1 ordered argument."
+        end
+      end
+
       # If input is a Term instance, return it unchanged.
       return input if input.is_a? self
-      # It is assumed that input is a hash of pairs { quantity => exponent }.
-      # Let's get rid of the edge case:
-      return empty if input.size == 0
-      # If there is only one quantity with exponent 1, return its base term.
-      if input.size == 1 then
-        quantity, exp = input.to_a.first
-        return base( quantity ) if exp == 1
-      end
 
-      # FIXME: Now we have to ensure that all quantities have ratio-type
-      # functions. Let's just assume they do for now.
+      # If input is a Quantity instance, return its base term.
+      return input.base_term if input.is_a? SY::Quantity
+      # # Alternatively:
+      # return base( input ) if input.is_a? SY::Quantity
 
+      # From now on, we assume input is a hash { quantity => exp }
+      # 
+      # FIXME: It would seem we have to ensure that all quantities
+      # have ratio-type functions. It is defined that in SY,
+      # quantities with other than ratio-type functions cannot
+      # form products with other quantities, and thus also cannot
+      # take part in quantity terms. The question is to what extent
+      # would duck typing take care of this problem at this
+      # particular spot. I have tendency to perform type checking
+      # here, but since I'm just exploring how to establish the
+      # abstraction of the elusive concept of "quantity", I'll just
+      # assume the supplied term is OK. For now, that is. That's
+      # why that FIXME shines on the top of this paragraph.
+
+      # Let's make sure we don't construct more than one term for
+      # the same combinations of quantities and their exponents.
       instance = instances.find { |i| i == input }
-      unless instance
+
+      unless instance           # If instance wasn't found...
+        # ... take use of the constructor inherited from Hash.
         instance = super input
+        # And insert the instance to the registry.
         instances << instance
       end
+
+      # Whether found or constructed, return the instance.
       return instance
     end
 
@@ -65,16 +85,9 @@ class SY::Quantity::Term < Hash
     # end
   end
 
-  # Base terms consist of only one quantity with exponent 1.
-  # FIXME: Or do they consist of only one *standard* quantity with exponent 1?
-  # 
-  def base?
-    fail NotImplementedError
-  end
-
   # Negates hash exponents.
   # 
-  def -@
+  def invert
     fail NotImplementedError
   end
 

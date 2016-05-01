@@ -1,15 +1,17 @@
-#encoding: utf-8
+# coding: utf-8
 
-# require 'y_support/flex_coerce'
-# require 'y_support/unicode'
-
-# Magnitude of a metrological quantity. A magnitude is basically a pair [
-# quantity, number ], which behaves as a number with respect to relevand
-# mathematical operations, while retaining its affiliation to the quantity.
+# Magnitude is a number expressing amount of a physical
+# quantity. It is basically pair [ quantity, number ] capable, with
+# certain specifics, of mathematical operations typical for Numeric
+# class. The distinctions are eg. that magnitudes of different
+# quantities can't be added or subtracted, or SY::Quantity::Error
+# is raised. Multiplication of two magnitudes results in a
+# magnitude of a quantity that is the product of the factors'
+# quantities.
 # 
 class SY::Magnitude < Struct.new :quantity, :number
   # ★ ExpressibleInUnits
-  # ★ Comparable
+  ★ Comparable
   ★ FlexCoerce
 
   coerces Numeric, :* do |o1, o2| o2 * o1 end
@@ -19,10 +21,10 @@ class SY::Magnitude < Struct.new :quantity, :number
   class Error < TypeError; end
 
   class << self
-    # This constructor expects a quantity and a named parameter +:number+.
+    # This constructor expects a quantity and a named parameter
+    # +:number+.
     # 
-    def of quantity,
-           number: fail( ArgumentError, "Number not given!" )
+    def of quantity, number:
       self[ quantity, number ]
     end
   end
@@ -40,11 +42,31 @@ class SY::Magnitude < Struct.new :quantity, :number
 #     # idea: for more complicated units (offsetted, logarithmic etc.),
 #     # conversion closures from_basic_unit, to_basic_unit
 
-#     # SAME QUANTITY magnitudes compare by their numbers
-#     def <=> other
-#       aE_same_quantity( other )
-#       self.n <=> other.n
-#     end
+  # Same quantity magnitudes compare by their numbers. Related
+  # quantities are first converted to the same quantity using their
+  # functions, and compared thereafter.
+  # 
+  def <=> other
+    # TODO: This method just might call coerce.
+    if quantity == other.quantity then
+      number <=> other.number
+    else
+      number <=> ( quantity << other.quantity ).( other.number )
+    end
+  end
+
+  def aE_same_quantity other
+    raise ArgumentError unless other.kind_of? Magnitude
+    unless self.dimension == other.dimension
+      raise ArgumentError, "Magnitudes not of the same " +
+        "dimension (#{dimension} vs. #{other.dimension})."
+    end
+    unless self.quantity == other.quantity
+      raise ArgumentError, "Although the dimensions of the " +
+        "magnitudes match, they are not the same quantity " +
+        "(#{quantity.inspect} vs. #{other.quantity.inspect})."
+    end
+  end
 
 #     # #abs absolute value - Magnitude with number.abs
 #     def abs; self.class.of quantity, number: n.abs end
@@ -72,22 +94,24 @@ class SY::Magnitude < Struct.new :quantity, :number
     # self.class.of( quantity, n: self.n - other.n )
   end
 
-  # Multiplication. A magnitude can be multiplied by a number or another
-  # magnitude (of arbitrary quantity).
+  # Multiplication. A magnitude can be multiplied by a number or
+  # another magnitude.
   # 
   def * other
     case other
-    when SY::Magnitude
-      self.class[ quantity * other.quantity, number * other.number ]
+    when SY::Magnitude then
+      self.class[ quantity * other.quantity,
+                  number * other.number ]
     when Numeric then
       self.class[ quantity, number * other ]
     else
-      fail ArgumentError, "Magnitudes only multiply with magnitudes and numbers!"
+      fail ArgumentError, "Magnitudes only multiply with " +
+                          "magnitudes and numbers!"
     end
   end
 
-  # Division. A magnitude can only be divided by a number or another
-  # magnitude (of arbitrary quantity).
+  # Division. A magnitude can only be divided by a number or
+  # another magnitude (of arbitrary quantity).
   # 
   def / other
     # case other
@@ -100,9 +124,11 @@ class SY::Magnitude < Struct.new :quantity, :number
     # end
   end
 
-  # Raising to a power. A magnitude can (thus far) only be raised to a number (Numeric class)
+  # Raising to a power. A magnitude can (thus far) only be raised
+  # to a number (Numeric class).
+  # 
   def ** arg
-    # raise ArgumentError unless arg.is_a? Numeric
+    argument arg do must.be_a Numeric end
     # self.class.of( quantity ** arg, n: self.n ** arg )
     # # return case arg
     # #        when Magnitude then self.n ** arg.n
@@ -193,27 +219,48 @@ class SY::Magnitude < Struct.new :quantity, :number
 #       case other
 #         when Magnitude then 
 
-#     def aE_same_quantity other
-#       raise ArgumentError unless other.kind_of? Magnitude
-#       unless self.dimension == other.dimension
-#         raise ArgumentError, "Magnitudes not of the same dimension " +
-#           "(#{dimension} vs. #{other.dimension})."
-#       end
-#       unless self.quantity == other.quantity
-#         raise ArgumentError, "Although the dimensions of the magnitudes " +
-#           "match, they are not the same quantity " +
-#           "(#{quantity.inspect} vs. #{other.quantity.inspect})."
-#       end
-#     end
-#     alias :aE_same_quantity :aE_same_quantity
-#   end # class Magnitude
+  # Legacy method used to assert that another magnitude is of the
+  # same quantity as the receiver.
+  # 
+  # def aE_same_quantity other
+  #   raise ArgumentError unless other.kind_of? Magnitude
+  #   unless self.dimension == other.dimension
+  #     raise ArgumentError, "Magnitudes not of the same " +
+  #       "dimension (#{dimension} vs. #{other.dimension})."
+  #   end
+  #   unless self.quantity == other.quantity
+  #     raise ArgumentError, "Although the dimensions of the " +
+  #       "magnitudes match, they are not the same quantity " +
+  #       "(#{quantity.inspect} vs. #{other.quantity.inspect})."
+  #   end
+  # end
+end # class SY::Magnitude
   
-#   # SignedMagnitude allows its number to be negative
-#   class SignedMagnitude < Magnitude
-#     def initialize oo
-#       @quantity = oo[:quantity] || oo[:of]
-#       raise ArgumentError unless @quantity.kind_of? Quantity
-#       @number = oo[:number] || oo[:n]
-#     end
-#   end
+# SignedMagnitude is a legacy class that allowed its number to be
+# negative. Ordinary Magnitude class was only allowed to be
+# positive. At this moment, SY::Magnitude allows its number to be
+# both positive and negative. There might be some use for
+# positive-only variety of Magnitudes, such as for expressing
+# Temperature. (I'm aware of the possibility of negative
+# temperatures, but this is too advanced a concept for SY.)
+# Main use for absolute magnitudes in the earlier version of SY was
+# as units, since negative amount of something cannot physically
+# exist.
+#
+# TODO: I would de-emphasize absolute magnitudes. SY::Unit class
+# should be simply a named subclass of SY::Magnitude. Absolute
+# magnitudes would be constructed occassionally, such as with
+# mass or temperature, their constructors would complain should a
+# negative number be given to them. Connected to this are possible
+# other constraints of constructed magnitudes. Constraints on
+# magnitudes are low priority and would – if taken with sufficient
+# seriousness – introduce great complication into quantity
+# arithmethics.
+# 
+class SY::SignedMagnitude < SY::Magnitude
+  # def initialize oo
+  #   @quantity = oo[:quantity] || oo[:of]
+  #   raise ArgumentError unless @quantity.kind_of? Quantity
+  #   @number = oo[:number] || oo[:n]
+  # end
 end # SY::Magnitude
