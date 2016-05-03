@@ -4,7 +4,7 @@
 # 
 class SY::Unit < SY::Magnitude
   require_relative 'unit/sps'
-  ★ NameMagic
+  ★ NameMagic and permanent_names!
 
   # Since kilogram is officially the basic unit of mass, it would
   # be somehow stupid to disallow this unit name on the grounds
@@ -18,16 +18,22 @@ class SY::Unit < SY::Magnitude
   # 
   naming_exec do |ɴ|
     "unit name".( ɴ.to_s ).raises( NameError ).try {
-      « "must be either all upper case or all lower case"
-      fail unless self == upcase || self == downcase
-      « "must not start with a full prefix (kilo, mili, mega...)"
-      SY::PREFIXES.each { |pfx|
-        if downcased_version.starts_with? pfx[:full] then
-          « "starts with '#{pfx[:full]}' prefix!"
-          fail unless pfx[:full].empty? or
-                      PROTECTED_NAMES.include? downcase
-        end
-      }
+      puts "Hello from naming_exec.try! Self is '#{self}'."
+      puts "#{nameless_instances.size} nameless instances."
+
+      fail "#{subject} must not be empty!" if empty?
+      upcase, downcase = upcase(), downcase()
+      unless self == upcase || self == downcase
+        « "must be either all upper case or all lower case"
+        fail "Name '#{self}' is not acceptable!"
+      end
+      « "must not start with a full prefix (mili, mega...)"
+      SY::PREFIXES.each { |full:, **_|
+        fail "Name '#{self} starts with prefix '#{full}'!" if
+          downcase.starts_with? full unless
+          full.empty? or PROTECTED_NAMES.include? downcase
+      }.tap { |x| puts "PREFIXES class is #{x.class}." }
+      upcase
     }
   end
 
@@ -36,31 +42,28 @@ class SY::Unit < SY::Magnitude
 
   class << self
     # Basic unit of a given quantity is a chosen SY::Unit instance
-    # whose number equals 1.
+    # whose number equals 1. Example:
     # 
-    # FIXME: Read Rdoc documentation and figure whether it is
-    # possible to mark up Ruby code for added prettiness.
-    # 
-    # u = Unit.basic of: quantity
+    #   NEWTON = Unit.basic of: Force, short: "N"
     # 
     def basic of:, **named_args
       new **named_args.update( number: 1, quantity: of )
     end
 
-    # FIXME: Write the description.
-    # FIXME: Write the tests for this method.
+    # Unit of a given quantity. Example:
+    #
+    #   MINUTE = Unit.of Time, number: 60, abbreviation: "min"
     # 
     def of quantity, **named_args
-      new **named_args.update( quantity: of )
+      new **named_args.update( quantity: quantity )
     end
 
-    # This is the core constructor of +SY::Unit+ class. It takes
-    # mandatory named argument +:quantity+, optional named argument
-    # +:number+ (defaults to 1) and optional arguments to set the
-    # name and abbreviation of the unit. Naming works as usual for
-    # classes using +NameMagic", abbreviation is set by optional
-    # argument +:short+, alias +:abbreviation+. Abbreviation can be
-    # only given if unit name is given.
+    # The core constructor of +SY::Unit+ class. Has mandatory
+    # parameter +:quantity+, optional parameter +:number+ (defaults
+    # to 1) and optional parameter +:abbreviation+ alias +:short+.
+    # Naming parameters work as usual for constructors of classes
+    # that include +NameMagic+. Abbreviation can only be set if the
+    # unit has a name. (Most units are expected to have one.)
     # 
     def new quantity:, number: 1.0, **nn
       self[ quantity, number ].tap { |inst|
@@ -71,21 +74,14 @@ class SY::Unit < SY::Magnitude
           » "nameless instances should not have abbreviations"
           » "abbreviation property is therefore set upon naming"
           inst.named_exec {
+            puts "Hello from named_exec of #{self}!"
             instance_variable_set :@abbreviation, abbrev.to_s if
               abbreviation
             # Warn about collisions if warnings are on.
-            warn_about_method_collisions_of( self )
+            warn_about_method_collisions
           }
         end
       }
-    end
-
-    # Checks the existing instance methods of the user classes of
-    # SY::ExpressibleInUnits and warns about method collisions for
-    # a specifc newly-defined unit given as an argument.
-    # 
-    def warn_about_method_collisions_of( unit )
-      return nil # TODO: Warnings are not implemented yet.
     end
   end # class << self
 
@@ -140,4 +136,18 @@ class SY::Unit < SY::Magnitude
 
   # # #basic? inquirer
   # def basic?; @number == 1 end
+
+  private
+
+  # Checks the existing instance methods of the classes that
+  # include SY::Units and warns about method collisions for this
+  # unit (if the warnings are on). This method may be invoked only
+  # after the receiver unit has obtained name and abbreviation, but
+  # before any of the user classes has had chance to define a unit
+  # method through activation of SY::Units#method_missing.
+  # 
+  def warn_about_method_collisions
+    return nil
+    # TODO: Warnings are not implemented yet.
+  end
 end # class SY::Unit

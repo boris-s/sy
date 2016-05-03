@@ -10,11 +10,9 @@ unless defined? SY::UNIT_TEST
   require 'y_support/literate'
 
   require 'active_support/core_ext/module/delegation'
-  # require 'active_support/core_ext/array/extract_options'
-  # require 'active_support/core_ext/string/starts_ends_with'
+  require 'active_support/core_ext/string/starts_ends_with'
 
   require_relative 'sy/version'
-  require_relative 'expressible_in_units'
   require_relative 'sy/prefixes'
   require_relative 'sy/se'
   require_relative 'sy/sps'
@@ -22,6 +20,7 @@ unless defined? SY::UNIT_TEST
   require_relative 'sy/quantity'
   require_relative 'sy/magnitude'
   require_relative 'sy/unit'
+  require_relative 'sy/units'
   # require_relative 'sy/matrix'
 end
 
@@ -79,7 +78,8 @@ end
 #
 module SY
   AUTOINCLUDE = true unless defined? SY::AUTOINCLUDE
-  Numeric.class_exec { ★ ExpressibleInUnits } if SY::AUTOINCLUDE
+  Numeric.class_exec { ★ SY::Units } if SY::AUTOINCLUDE
+  Unit.class_exec { ★ SY::Units }
 
   # === Dimensionless quantities
 
@@ -95,7 +95,9 @@ module SY
   # Amount.disposable! # This method should work only for
   #                    # dimensionless quantities
 
+=begin
   UNIT = Unit.basic of: Amount
+  Unit.const_magic
   
   Nᴀ = AVOGADRO_CONSTANT = 6.02214e23
 
@@ -112,7 +114,9 @@ module SY
   Mass = Quantity.standard of: Dimension[ :MASS ]
   KILOGRAM = Unit.basic of: Mass, short: "kg"
   # FIXME: Make sure magnitudes coerce Numerics.
-  GRAM = Unit 0.001 * KILOGRAM, short: "g"
+  # GRAM = Unit 0.001 * KILOGRAM, short: "g"
+=end
+
 =begin
   TON = Unit 1000 * KILOGRAM, short: "t"
   DALTON = Unit 1.66053892173e-27 * KILOGRAM, short: "Da"

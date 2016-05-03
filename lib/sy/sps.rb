@@ -2,41 +2,42 @@
 
 # require 'y_support/core_ext/class'
 
-# This class represents a product (multiplication) of some symbols
-# (such as "meter", "joule", "second") with some prefixes (such as
-# "kilo", "mega", "giga") expressed as a string. The factors may be
-# raised to exponents expressed as superscript digits.  Examples:
-# "kg.m.s⁻²", "L.θ⁻¹", "LENGTH.TIME⁻¹", "a⁻¹b²"...
+# Sps string expresses a product of a certain number of symbols
+# raised to certain exponents. Multiplication is expressed by the
+# '.' (period) character, exponentiation is expressed by digits
+# in Unicode superscript (⁰, ¹, ⁻¹, ², ⁻², ...). Symbols can be any
+# strings, but since this class is an ancestor of SY::Units::Sps
+# and SY::Dimension::Sps, the symbols will typically be units
+# ("metre", "kilojoule", "milisecond", ...) or dimensions
+# ("L.T⁻¹", ...). No exponent means that exponent is 1. Prefixes
+# ("kilo", "mili", ...) can be given to the constructor separately
+# from the basic set of symbols.
 # 
 class SY::Sps < String
   class << self
     # The argument can be constructed either from an array of
-    # tuples representing the Sps factors, or an array of pairs
-    # representing the same, or a hash, or, alternatively, a valid
-    # string form can be given.
-    #
-    # Examples:
-    # [[ :k, :m, 1 ], [ '', 'h', -1 ]] #=> "km.h⁻¹"
-    # { km: 1, h: -1 } #=> "km.h⁻¹"
-    # "km.h⁻¹" #=> "km.h⁻¹"
+    # triples [ prefix, symbol, exponent ], or pairs [ symbol,
+    # exponent ], or a hash of pairs { symbol => exponent }, or
+    # a string that can be understood as a valid Sps.
     # 
-    def new( arg,
-             symbols: fail( ArgumentError, "Symbols not given!" ),
-             prefixes: [] )
-      fail ArgumentError, "Nil argument not acceptable!" if
-        arg.nil?
-      # Construct the superscripted string from the input.
-      str = case arg
-            when Array, Hash then # It is a collection of tuples.
-              to_sps( arg )     # Convert to string.
-            else String arg end # It is assumed to be a string.
-      # Normalize the input and construct the instance from it.
-      triples = parse( str,
-                       symbols: symbols,
-                       prefixes: prefixes )
-      validate_triples( triples,
-                        symbols: symbols,
-                        prefixes: prefixes )
+    def new( arg, symbols:, prefixes: [] )
+      arg = argument( arg ).must.not_be_nil
+      case arg
+      str = when Array, Hash then
+          "collection".( arg ).try "to convert to an sps" do
+            
+            to_sps( self )
+        else
+          « "was assumed to indicate a valid Sps"
+          String( arg )
+        end
+      end
+      # Parse the supplied or implied sps into triples.
+      triples = parse( str, symbols: symbols, prefixes: prefixes )
+      # Make sure the triples are OK.
+      validate_triples triples, symbols: symbols, prefixes: prefixes
+      # Convert the triples again to an Sps.
+      
       instance = super to_sps triples
       # Customize, validate and return the instance.
       customize( instance,
@@ -53,8 +54,7 @@ class SY::Sps < String
     # ], where prefix and symbol are strings, and exponent is an
     # integer.
     #
-    def parse( string, symbols:,
-               prefixes: [] )
+    def parse( string, symbols:, prefixes: [] )
       symbols = symbols.map &:to_s
       prefixes = ( prefixes.map( &:to_s ) << '' ).uniq
       sections = string.split '.' # Split the string into factors.
@@ -113,14 +113,13 @@ class SY::Sps < String
         .map( &:join ).join '.' # join the resulting string with dots
     end
 
-    # Normalizes an array of triples representing the factors of an Sps. Each
-    # triple must be of form [ prefix, symbol, exponent ], where prefix and
-    # symbol are strings, and exponent is an integer.
+    # Normalizes an array of triples denoting the sps factors. Each
+    # triple must be of form [ prefix, symbol, exponent ], where
+    # prefix and symbol are strings and exponent an integer.
     #
-    def validate_triples triples,
-                         symbols: fail( ArgumentError, "Symbols not given!" ),
-                         prefixes: fail( ArgumentError, "Prefixes not given!" )
-      hash = triples.each_with_object Hash.new do |(pfx, sym, exp), o|
+    def validate_triples( triples, symbols:, prefixes: )
+      hash = triples.each_with_object Hash.new do
+        |(pfx, sym, exp), o|
         ß = normalize_symbol( sym )
         o.merge!( { ß => [ pfx, exp ] } ) { |ß, _, _|
           fail TypeError, "Double occurence of symbol '#{sym}'!"

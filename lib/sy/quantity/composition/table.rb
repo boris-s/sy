@@ -1,8 +1,8 @@
 # encoding: utf-8
 
-# This class represents a table of quantity compositions. It is
-# a hash whose keys are named (!) quantities and values are
-# corresponding terms of the compositions.
+# Represents multiplication table of quantity compositions. It is
+# a hash whose keys are distinguished composed quantities, and
+# values are terms that define these composed quantities.
 #
 class SY::Quantity::Composition::Table < Hash
   # FIXME: Write the tests!

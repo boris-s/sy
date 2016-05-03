@@ -28,6 +28,7 @@ require_relative '../../lib/sy/quantity.rb'
 require_relative 'quantity/function_test'
 require_relative 'quantity/ratio_test'
 require_relative 'quantity/term_test'
+require_relative 'quantity/table_test'
 
 # FIXME: See to it that the tests of all subordinate assets
 # of quantity are invoked by the above statements.

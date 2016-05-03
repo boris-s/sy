@@ -14,23 +14,27 @@ require_relative '../../../lib/sy/quantity/composition.rb'
 
 describe "sy/quantity/composition" do
   before do
-    @c = SY::Quantity::Composition
+    @C = SY::Quantity::Composition
   end
 
-  describe "instance methods" do
-    it "must have basic instance methods" do
-      flunk "Quantity::Composition unit tests not written!"
-    end
-  end
-
-
-  describe "sy/quantity/composition/table" do
+  describe SY::Quantity::Composition::Table do
     before do
-      @t = SY::Quantity::Composition::Table
+      @T = @C::Table
     end
 
-    it "..." do
+    it "is a subclass of Hash" do
+      assert @T < Hash
+    end
+
+    it "should have tests written" do
       flunk "Tests for composition table not written!"
     end
   end
+
+  describe "instance methods" do
+    it "should have tests written" do
+      flunk "Tests of instance methods not written!"
+    end
+  end
+
 end

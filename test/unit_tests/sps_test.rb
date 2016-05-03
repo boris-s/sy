@@ -1,16 +1,14 @@
 #! /usr/bin/ruby
 # encoding: utf-8
 
-# **************************************************************************
+# *****************************************************************
 # Unit tests for file sy/sps.rb.
 #
-# File sps.rb defines class SY::Sps (superscripted product string), which
-# represents strings such as "a².b⁻²", "foobar.foobaz²", "kg.m", "kg.m.s⁻²",
-# "LENGTH.TIME⁻¹" etc. This class is a mother class of SY::Dimension::Sps
-# used to express metrological dimensions, as well as other classes used to
-# represent metrological quantities and units. Specification of its features
-# follows.
-# **************************************************************************
+# File sps.rb defines class SY::Sps (superscripted product string),
+# which represents strings such as "a².b⁻²", "foobar.baz²",
+# "kg.m", "kg.m.s⁻²", "LENGTH.TIME⁻¹" etc. A mother class of
+# SY::Dimension::Sps and SY::Unit::Sps.
+# *****************************************************************
 
 require_relative 'test_loader'
 # Require the external libraries needed by the tested component.

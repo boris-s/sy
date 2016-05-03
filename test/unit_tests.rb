@@ -14,5 +14,5 @@ require_relative 'unit_tests/dimension_test'
 require_relative 'unit_tests/quantity_test'
 require_relative 'unit_tests/magnitude_test'
 require_relative 'unit_tests/unit_test'
-require_relative 'unit_tests/expressible_in_units_test.rb'
+require_relative 'unit_tests/units_test.rb'
 

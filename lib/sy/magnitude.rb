@@ -10,7 +10,6 @@
 # quantities.
 # 
 class SY::Magnitude < Struct.new :quantity, :number
-  # ★ ExpressibleInUnits
   ★ Comparable
   ★ FlexCoerce
 

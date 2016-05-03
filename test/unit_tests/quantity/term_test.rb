@@ -10,7 +10,6 @@
 # ****************************************************************
 
 require_relative 'test_loader'
-# Require the external libraries needed by the tested component.
 # Require the tested component itself.
 require_relative '../../../lib/sy/quantity/term'
 
@@ -53,4 +52,4 @@ describe "sy/quantity/term" do
         .must_equal SY::Quantity::Term[ @Length => 1, @Time => -1 ]
     end
   end
-end
+end # describe "sy/quantity/term"

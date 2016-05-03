@@ -76,14 +76,35 @@ class SY::Quantity::Term < Hash
       return instance
     end
 
-    # def base quantity
-    #   fail NotImplementedError
-    # end
+    # Constructs a base quantity term (unary term with exponent 1).
+    # 
+    def base quantity
+      # FIXME: Write the tests.
+      self[ quantity => 1 ]
+    end
+    alias simple base
 
-    # def empty
-    #   fail NotImplementedError
-    # end
+    # Constructs a null (empty) quantity term.
+    def empty
+      # FIXME: Write the tests.
+      self[ {} ]
+    end
+    alias null empty
   end
+
+  # Inquirer whether the term is simple. The terms are simple when
+  # they are of arity 1 (consist of only one quantity) and their
+  # exponent is 1.
+  # 
+  def simple?
+    size == 1 and first[1] == 1
+  end
+  alias base? simple?
+
+  # Inquire whether the term is nullary, ie. empty.
+  # 
+  alias nullary? empty?
+  alias null? nullary?
 
   # Negates hash exponents.
   # 
@@ -91,40 +112,94 @@ class SY::Quantity::Term < Hash
     fail NotImplementedError
   end
 
-  # For each term, there is at least one way of reducing it to
-  # quantity. Empty term reduces to the standard dimensionless
-  # quantity. Base terms reduce to their component quantity (they
-  # have only one). And as for other terms, if no better reduction
-  # is available, they reduce to the quantity implied by the sum of
-  # their dimensions and the product of their functions (which must
-  # be of Quantity::Ratio type).
-  #
-  # Sometimes, better reductions are available. These are implied
-  # by quantity compositions.
+  # For each term, infinitely many equivalent terms can be found,
+  # but some are better than others. Conversion of mathematical
+  # expressions into the preferrable form is generally called
+  # "simplification", and therefrom comes the name of this method.
+  # It does not mean that an apparently more complex term may never
+  # be preferred to its apparently simpler equivalent.
   # 
-  def reduce_to_quantity
+  # For example, quantity term "Mass.Length².Time⁻²" is equivalent
+  # to "Force.Length" or "Power.Time", but the simplest way to
+  # express it is by "Energy". But this only holds if a composed
+  # quantity named energy is already defined. Otherwise, we do not
+  # want to wantonly simplify "Mass.Length².Time⁻² into
+  # "Force.Length" or "Momentum.Time⁻¹.Length" just because the sum
+  # of their exponents is smaller. If the term can't be simplified
+  # all the way down to "Energy", the version consisting of the
+  # standard quantities of the base dimensions is preferred.
+  #
+  # FIXME: It seems that simplification of quantity terms is no
+  # simple matter and we'll have to proceed by writing the examples
+  # and precedents into acceptance tests and hacking and tweaking
+  # this method until it complies with as many of such tests as we
+  # dare to write.
+  # 
+  def simplify
     return SY::Dimension.zero.standard_quantity if empty?
     return to_a.first.first if base?
     quantity_compositions.each { |composition|
-     try_it_on self, :both_ways # that's depth 1 search
-     # FIXME: more in-depth search is possible
-     # the search is also not overly difficult.
-     # Search is cached, but as soon as new quantity composition
-     # is added, the cache should be cleared.
+      try_it_on self, :both_ways # that's depth 1 search
+      # FIXME: more in-depth search is possible
+      # the search is also not overly difficult.
+      # Search is cached, but as soon as new quantity composition
+      # is added, the cache should be cleared.
 
-     # quantity compositions are added ... upon creation
-     # of non-disposable (ie. named) quantities by quantity
-     # multiplication or division, both by another quantity
-     # and a number.
-     #
-     # ie. quantity compositions are created upon naming.
-     # as soon as new quantity composition is defined,
-     # caches need to be cleared (both Term reduce cache
-     # and Quantity multiplication table).
+      # quantity compositions are added ... upon creation
+      # of non-disposable (ie. named) quantities by quantity
+      # multiplication or division, both by another quantity
+      # and a number.
+      #
+      # ie. quantity compositions are created upon naming.
+      # as soon as new quantity composition is defined,
+      # caches need to be cleared (both Term reduce cache
+      # and Quantity multiplication table).
     }
   end
 
-  def arity
-    fail NotImplementedError
+  # Every term can be converted to a composed quantity using itself
+  # as the quantity composition. This is done by this
+  # method. However, simple terms (consisting of only one quantity
+  # with exponent 1) are converted directly to that quantity.
+  # 
+  def to_quantity
+    # FIXME: Write tests for this method!
+    if simple? then first.first
+    elsif null? then SY::Amount
+    else
+      # Call that constructor of composed quantities, which I have
+      # not either written or even thought about what its exact
+      # syntax would be.
+      fail NotImplementedError
+    end
   end
-end
+
+  # This method defines the complexity function is defined on the
+  # domain of quantity terms. Intuitively, it would seem that the
+  # sum of the absolute values of the exponents is a good initial
+  # approximation of the term's complexity.
+  #
+  # FIXME: Surely, this complexity function will have to be
+  # improved.
+  # 
+  def complexity
+    # FIXME: Define this function better and write the tests.
+    return 1
+  end
+
+  # Goodness function to choose between equivalent terms.
+  # Generally, the simpler the term the better. Therefore, goodness
+  # is for now defined as the negative value of complexity.
+  # 
+  def goodness
+    # FIXME: Write the tests tests tests.
+    -complexity
+  end
+
+  # Arity of the term is the number of its factors.
+  # 
+  def arity
+    # FIXME: Write the tests.
+    size
+  end
+end # SY::Quantity::Term

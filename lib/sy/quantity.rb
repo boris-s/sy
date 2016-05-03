@@ -84,7 +84,7 @@ class SY::Quantity
   require_relative 'quantity/ratio'
   require_relative 'quantity/term'
   require_relative 'quantity/composition'
-  require_relative 'quantity/multiplication_table'
+  require_relative 'quantity/table'
 
   # Exception to indicate incompatible quantities.
   # 
