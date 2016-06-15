@@ -10,8 +10,11 @@
 # ****************************************************************
 
 require_relative 'test_loader'
+# Require the dependency.
+require_relative '../../../lib/sy'
 # Require the tested component itself.
 require_relative '../../../lib/sy/quantity/term'
+
 
 describe "sy/quantity/term" do
   before do
@@ -22,7 +25,10 @@ describe "sy/quantity/term" do
 
   describe ".instances class method" do
     it "is a selector of @instances class-owned variable" do
-      @Term.instances.must_equal []
+      @Term.instances.must_be_kind_of Array
+      assert @Term.instances.all? { |i|
+        i.kind_of? SY::Quantity::Term
+      }
     end
   end
 
@@ -38,7 +44,7 @@ describe "sy/quantity/term" do
     end
 
     it "when given a quantity, returns its base term" do
-      t = SY::Quantity::Term[ "LENGTH.TIME⁻¹" ]
+      t = SY::Quantity::Term[ "Length.Time⁻¹" ]
       t.must_equal( { @Length => 1, @Time => -1 } )
     end
   end

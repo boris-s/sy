@@ -23,58 +23,60 @@ class SY::Quantity::Term < Hash
 
     undef_method :new
 
-    # A constructor of +SY::Quantity::Term+. Always returns the
-    # same object for the same combination of quantities and their
-    # exponents.
+    # The main constructor of +SY::Quantity::Term+. Always returns
+    # the same object for the same combination of quantities and
+    # their exponents.
     # 
     def [] *ordered, **named
-      # Validate arguments and enable variable input.
       input = ordered_args ordered do
+        » "processing arguments of constructor Quantity::Term#[]"
         case size
-        when 0 then named
-        when 1 then fetch 0
+        when 0 then
+          » "the input was a hash assumed to consist of pairs " +
+            "{ quantity => exp}, indicating a valid quantity term"
+          "a quantity term expressed as a hash".( named )
+        when 1 then
+          » "the input was a single ordered argument"
+          "arg. of Quantity::Term#[] constructor".( fetch 0 )
         else
           fail "Quantity term .[] constructor admits at most " +
                "1 ordered argument."
         end
+      end.try do
+        case self
+        when SY::Quantity::Term then return itself
+        when SY::Quantity then return base_term # or base( itself )
+        when String then
+          » "the arg. was found to be a string and assumed " +
+            "to be a valid superscripted product string" 
+          SY::Quantity::Sps.parse( itself )
+        else
+          » "the argument was assumed to be non-hash collection " +
+            "of pairs indicating a quantity term"
+          itself
+        end
       end
-
-      # If input is a Term instance, return it unchanged.
-      return input if input.is_a? self
-
-      # If input is a Quantity instance, return its base term.
-      return input.base_term if input.is_a? SY::Quantity
-      # # Alternatively:
-      # return base( input ) if input.is_a? SY::Quantity
-
-      # From now on, we assume input is a hash { quantity => exp }
-      # 
+      # Make sure the same instance is returned for the same input.
+      instance = instances.find { |i| i == input }
+      # If no instance is found, create it and register it.
+      if instance.nil? then
+        instance = super input
+        instances << instance
+      end
+      # Whether found or created, return the instance.
+      return instance
       # FIXME: It would seem we have to ensure that all quantities
       # have ratio-type functions. It is defined that in SY,
-      # quantities with other than ratio-type functions cannot
-      # form products with other quantities, and thus also cannot
-      # take part in quantity terms. The question is to what extent
+      # quantities with other than ratio-type functions cannot form
+      # products with other quantities, and thus also cannot take
+      # part in quantity terms. The question is to what extent
       # would duck typing take care of this problem at this
       # particular spot. I have tendency to perform type checking
       # here, but since I'm just exploring how to establish the
       # abstraction of the elusive concept of "quantity", I'll just
       # assume the supplied term is OK. For now, that is. That's
       # why that FIXME shines on the top of this paragraph.
-
-      # Let's make sure we don't construct more than one term for
-      # the same combinations of quantities and their exponents.
-      instance = instances.find { |i| i == input }
-
-      unless instance           # If instance wasn't found...
-        # ... take use of the constructor inherited from Hash.
-        instance = super input
-        # And insert the instance to the registry.
-        instances << instance
-      end
-
-      # Whether found or constructed, return the instance.
-      return instance
-    end
+    end # def []
 
     # Constructs a base quantity term (unary term with exponent 1).
     # 
@@ -90,7 +92,7 @@ class SY::Quantity::Term < Hash
       self[ {} ]
     end
     alias null empty
-  end
+  end # class << self
 
   # Inquirer whether the term is simple. The terms are simple when
   # they are of arity 1 (consist of only one quantity) and their

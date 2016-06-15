@@ -83,6 +83,7 @@ class SY::Quantity
   require_relative 'quantity/function'
   require_relative 'quantity/ratio'
   require_relative 'quantity/term'
+  require_relative 'quantity/sps'
   require_relative 'quantity/composition'
   require_relative 'quantity/table'
 

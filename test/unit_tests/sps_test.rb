@@ -27,37 +27,45 @@ describe "sy/sps.rb - superscripted product string" do
     @p2 = ["X", "y", "z"]
   end
 
+  it "should be a subclass of String" do
+    SY::Sps.ancestors.must_include String
+  end
+
   it "should have .parse class method" do
     SY::Sps.private_methods.must_include :parse
     m = SY::Sps.method :parse
-    m.( "a.b⁻¹", symbols: [:a, :b] ).must_equal [["", "a", 1], ["", "b", -1]]
+    m.( "a.b⁻¹", symbols: [:a, :b] )
+      .must_equal [["", "a", 1], ["", "b", -1]]
     m.( "Xa.yb⁻¹.zc².d",
-        symbols: ["a", "b", "c", "d", "e"], prefixes: ["X", "y", "z"] )
-      .must_equal [["X", "a", 1 ], ["y", "b", -1], ["z", "c", 2], ["", "d", 1]]
+        symbols: ["a", "b", "c", "d", "e"],
+        prefixes: ["X", "y", "z"]
+      ).must_equal [["X", "a", 1 ],
+                    ["y", "b", -1],
+                    ["z", "c", 2],
+                    ["", "d", 1]]
     -> { m.( "foo" ) }.must_raise ArgumentError
     -> { m.( "foo", symbols: ["a"] ) }.must_raise TypeError
-    -> { m.( "xa.yb⁻¹", symbols: ["a", "b"], prefixes: ["X", "y", "z"] ) }
-      .must_raise TypeError
-  end
-
-  it "should have .customize private class method for customizing instances" do
-    SY::Sps.private_methods.must_include :customize
-  end
-  
-  it "should have .normalize_symbol private class method" do
-    SY::Sps.private_methods.must_include :normalize_symbol
+    -> { m.( "xa.yb⁻¹", symbols: ["a", "b"],
+             prefixes: ["X", "y", "z"] ) }.must_raise TypeError
   end
 
   describe "constructors" do
     before do
-      @sps1 = SY::Sps.new( @a1, symbols: @s1 )
-      @sps2 = SY::Sps.new( @a2, symbols: @s2, prefixes: @p2 )
+      @sps1 = SY::Sps.new( "a.b⁻¹", symbols: [:a, :b] )
+      @sps1 = SY::Sps.new( [[:a, 1], [:b, -1]], symbols: [:a, :b] )
+      # @sps1 = SY::Sps.new( @a1, symbols: @s1 )
+      @sps2 = SY::Sps.new( "Xa.yb⁻¹.zc².d",
+                           symbols: ["a", "b", "c", "d", "e"],
+                           prefixes: ["X", "y", "z"] )
+      # @sps2 = SY::Sps.new( @a2, symbols: @s2, prefixes: @p2 )
     end
 
-    describe "SY::Sps.new constructor" do
+    describe ".new" do
       it "should accept variable input" do
-        SY::Sps.new( { a: 1, b: -1 }, symbols: @s1 ).must_equal @sps1
-        SY::Sps.new( [[:a, 1], [:b, -1]], symbols: @s1 ).must_equal @sps1
+        SY::Sps.new( { a: 1, b: -1 }, symbols: @s1 )
+          .must_equal @sps1
+        SY::Sps.new( [[:a, 1], [:b, -1]], symbols: @s1 )
+          .must_equal @sps1
         SY::Sps.new( "a.b⁻¹", symbols: @s1 ).must_equal @sps1
         SY::Sps.new( "a¹.b⁻¹", symbols: @s1 ).must_equal @sps1
         SY::Sps.new( { Xa: 1, yb: -1, zc: 2, d: 1 },
@@ -71,21 +79,37 @@ describe "sy/sps.rb - superscripted product string" do
       end
 
       it "should reject zero exponents" do
-        SY::Sps.new( { a: 0, b: 2 }, symbols: @s1 ).must_equal 'b²'
-        -> { SY::Sps.new( "a⁰b²", symbols: @s1 ) }.must_raise TypeError
+        SY::Sps.new( { a: 0, b: 2 }, symbols: @s1 )
+          .must_equal 'b²'
+        -> { SY::Sps.new( "a⁰b²", symbols: @s1 ) }
+          .must_raise TypeError
       end
 
       it "should reject same symbol occuring twice" do
-        -> { SY::Sps.new [[:a, 1], [:a, 1]], symbols: @s1 }.must_raise TypeError
+        -> { SY::Sps.new [[:a, 1], [:a, 1]], symbols: @s1 }
+          .must_raise TypeError
         -> { SY::Sps.new( { a: 1, xa: 1 },
                           symbols: @s1,
-                          prefixes: [ :x ] ) }.must_raise TypeError
-        -> { SY::Sps.new "a¹.b.a", symbols: @s1 }.must_raise TypeError
-        -> { SY::Sps.new "km.m⁻²", symbols: [ :m ], prefixes: [ :k ] }
+                          prefixes: [ :x ] ) }
           .must_raise TypeError
-        -> { SY::Sps.new "ft².ft⁻²", symbols: [ :ft ] }.must_raise TypeError
+        -> { SY::Sps.new "a¹.b.a", symbols: @s1 }
+          .must_raise TypeError
+        -> { SY::Sps.new "km.m⁻²", symbols: [ :m ],
+                         prefixes: [ :k ] }
+          .must_raise TypeError
+        -> { SY::Sps.new "ft².ft⁻²", symbols: [ :ft ] }
+          .must_raise TypeError
       end
-    end
+    end # describe ".new"
+  end # describe "constructors"
+
+  it "should have .customize private class method for " +
+     "customizing instances" do
+    SY::Sps.private_methods.must_include :customize
+  end
+  
+  it "should have .normalize_symbol private class method" do
+    SY::Sps.private_methods.must_include :normalize_symbol
   end
 
   describe "instance methods" do
@@ -108,8 +132,10 @@ describe "sy/sps.rb - superscripted product string" do
     end
 
     it "should have #to_hash method" do
-      @sps1.to_hash.must_equal( { "a" => 1, "b" => -1 } )
-      @sps2.to_hash.must_equal( { "Xa" => 1, "yb" => -1, "zc" => 2, "d" => 1 } )
+      assert @sps1.to_hash ==
+        { "a" => 1, "b" => -1 }
+      assert @sps2.to_hash ==
+        { "Xa" => 1, "yb" => -1, "zc" => 2, "d" => 1 }
     end
 
     it "should have #validate method" do

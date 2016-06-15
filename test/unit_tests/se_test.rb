@@ -1,14 +1,15 @@
 #! /usr/bin/ruby
 # encoding: utf-8
 
-# **************************************************************************
+# *****************************************************************
 # Unit tests for file sy/se.rb.
 #
-# File se.rb defines class Se (superscripted exponent), which is used in
-# construction of Sps (superscripted product string), such as "kg.m.s⁻²".
-# Se is a subclass of String, which represents strings such as "⁰", "¹",
-# "²", "⁴²", "⁻⁴²". Specification of its main features is below.
-# **************************************************************************
+# File se.rb defines class Se (superscripted exponent), which is
+# used in construction of Sps (superscripted product string), such
+# as "kg.m.s⁻²".  Se is a subclass of String, which represents
+# strings such as "⁰", "¹", "²", "⁴²", "⁻⁴²". Specification of its
+# main features follows below.
+# *****************************************************************
 
 require_relative 'test_loader'
 # Require the tested component itself.

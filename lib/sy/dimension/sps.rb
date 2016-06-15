@@ -1,7 +1,4 @@
-#encoding: utf-8
-
-# require 'y_support/core_ext/class'
-# require 'active_support/core_ext/module/delegation'
+# coding: utf-8
 
 # Superscripted product string of a metrological dimension, such as
 # "L.θ⁻¹" or "MASS.LENGTH⁻²".
@@ -19,8 +16,8 @@ class SY::Dimension::Sps < SY::Sps
 
     private
 
-    # No customization is needed for the instances of SY::Dimension::Sps, since
-    # the class itself is already properly customized subclass of SY::Sps.
+    # No customization is needed for the instances of
+    # SY::Dimension::Sps, no customized instances are needed.
     #
     def customize( *args ); end
 
@@ -32,4 +29,4 @@ class SY::Dimension::Sps < SY::Sps
   end
 
   delegate :symbols, :prefixes, to: "self.class"
-end # class SY::Sps
+end # class SY::Dimension::Sps
