@@ -2,6 +2,15 @@
 
 require 'matrix'
 
+class << WILDCARD_ZERO = Object.new
+  def + other; other end
+  def - other; -other end
+  def * other; self end
+  def / other; self end
+  def ** exp; self end
+  def coerce other; return self, other end
+end
+
 # As a matter of fact, current version of the Matrix class (by Marc-Andre
 # Lafortune) does not work with physical magnitudes. It is a feature of the
 # physical magnitudes, that they do not allow themselves summed with plain
