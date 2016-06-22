@@ -11,8 +11,8 @@ module SY::Unit
     # 
     def instance arg
       begin
-        super # let's first try the original method
-      rescue NameError # if we fail...
+        super # let's first try the original method.
+      rescue NameError => err # if we fail...
         begin # ... let's try the abbreviation
           super instances.find { |unit_inst|
             unit_inst.short.to_s == arg.to_s if unit_inst.short

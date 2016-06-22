@@ -255,8 +255,9 @@ class SY::Quantity
   # Constructs a new unit of this quantity.
   # 
   def unit **nn
-    Unit().new( nn.update( of: self ) )
-      .tap { |u| ( units << u ).uniq! } # add it to the @units array
+    u = Unit().new( nn.update( of: self ) )
+    ( units << u ).uniq! # Add it to @units array.
+    return u
   end
 
   # Constructor of a new standard unit (replacing current @standard_unit).

@@ -16,7 +16,6 @@ require './../lib/sy'
 # *****************************************************************
 # THE SPECIFICATIONS START HERE
 # *****************************************************************
-
 describe SY do
   it "should have basic assets" do
     # Basic physical dimensions:
