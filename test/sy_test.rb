@@ -1,9 +1,9 @@
 #! /usr/bin/ruby
 # encoding: utf-8
 
-# **************************************************************************
+# *****************************************************************
 # THIS IS SPEC-STYLE TEST FILE FOR SY PHYSICAL UNITS LIBRARY
-# **************************************************************************
+# *****************************************************************
 
 # The following will load Ruby spec-style library
 require 'mathn'
@@ -13,9 +13,9 @@ require 'minitest/autorun'
 # require 'sy'
 require './../lib/sy'
 
-# **************************************************************************
+# *****************************************************************
 # THE SPECIFICATIONS START HERE
-# **************************************************************************
+# *****************************************************************
 
 describe SY do
   it "should have basic assets" do
@@ -253,7 +253,7 @@ describe SY::Quantity, SY::Magnitude do
       1.mm.to_s.must_equal "0.001.m"
       1.mm.inspect.must_equal "#<±Magnitude: 0.001.m >"
       1.µs.inspect.must_equal "#<±Magnitude: 1e-06.s >"
-      
+
       SY::Area.dimension.must_equal SY.Dimension( :L² )
       SY::Area.composition.must_equal SY::Composition[ SY::Length => 2 ]
       
@@ -298,7 +298,7 @@ describe SY::Quantity, SY::Magnitude do
       
       q1.relative?.must_equal true
       q2.relative?.must_equal true
-      
+
       q1.object_id.must_equal q2.object_id
       ( 1.s⁻¹ ).quantity.object_id.must_equal ( 1 / 1.s ).quantity.object_id
       ( 1 / 1.s ).must_equal 1.s⁻¹
@@ -314,7 +314,8 @@ describe SY::Quantity, SY::Magnitude do
       end.must_include :M
       SY::Unit.instances.names( false ).must_include :MOLE
       # Avogadro's number is defined directly in SY
-      1.mol.quantity.object_id.must_equal SY::Nᴀ.unit.( SY::MoleAmount ).quantity.object_id
+      1.mol.quantity.object_id
+        .must_equal SY::Nᴀ.unit.( SY::MoleAmount ).quantity.object_id
       SY::Nᴀ.unit.( SY::MoleAmount ).must_equal 1.mol
       0.7.mol.l⁻¹.amount.must_equal 0.7
       1.M.must_equal 1.mol.l⁻¹.( SY::Molarity )
@@ -324,7 +325,6 @@ describe SY::Quantity, SY::Magnitude do
       
       # Avogadro's number is defined directly in SY
       1.mol.must_equal SY::Nᴀ.unit.( SY::MoleAmount )
-      
       
       0.7.M.must_equal 0.7.mol.l⁻¹.( SY::Molarity )
       # (if #is_actually! conversion method is not used, current
@@ -353,10 +353,17 @@ describe SY::Quantity, SY::Magnitude do
       # watt
       ( 1.V * 1.A ).( SY::Power ).must_be_within_epsilon 1.W, 1e-9
 
-      # pretty representation
-      ( 1.m / 3.s ).to_s.must_equal( "0.333.m.s⁻¹" )
-      ( 1.m / 7.01e7.s ).to_s.must_equal( "1.43e-08.m.s⁻¹" )
+      # Custom unit creation
+      XOXO = SY::Unit.of SY::Volume, amount: 1.l
+      assert_equal 1.l.( SY::Volume ), 1.xoxo.( SY::Volume )
 
+      # TRIPLE_POINT_OF_WATER
+      assert_equal SY::TRIPLE_POINT_OF_WATER, 0.°C.( SY::Temperature )
+      assert_equal 273.15, 0.°C.in( :K )
+      assert_equal SY::Unit.instance( :SECOND ), SY::Unit.instance( :second )
+      assert_equal SY::TRIPLE_POINT_OF_WATER, 0.°C # coercion behavior
+
+      # other tests
       assert_equal 1.m, 1.s * 1.m.s⁻¹
       assert_equal 1.µM.s⁻¹, 1.µM / 1.s
       assert_equal 1.m.s⁻¹, 1.m.s( -1 )
@@ -367,30 +374,39 @@ describe SY::Quantity, SY::Magnitude do
       assert_equal SY::Amount( 1 ), 1.µM / ( 1.µM + 0.µM )
       assert_equal 1.µM, 1.µM * 1.µM / ( 1.µM + 0.µM )
       assert_in_epsilon 1.µM, 1.µmol / 1.dm( 3 ).( SY::LitreVolume )
-
+      
       assert_equal SY::Molarity.relative, 1.mol.l⁻¹.quantity
       assert_equal SY::MoleAmount.relative, 1.M.l.quantity
+      
       
       assert_equal 1 / SY::Time, 1 / SY::Time
       assert_equal 1 / SY::Time.relative, 1 / SY::Time
       assert_equal ( 1 / SY::Time.relative ), 1.mol.s⁻¹.( 1 / SY::Time ).quantity
       assert_equal ( 1 / SY::Time ).object_id,
-      ( 1.0.µmol.min⁻¹.mg⁻¹ * 100.kDa ).( 1 / SY::Time ).quantity.object_id
+                   ( 1.0.µmol.min⁻¹.mg⁻¹ * 100.kDa ).( 1 / SY::Time ).quantity.object_id
       assert_equal SY::Time.magnitude( 1 ), SY::SECOND
-      assert_equal Matrix[[60.mM], [60.mM]], Matrix[[1e-03.s⁻¹.M], [1e-3.s⁻¹.M]] * 60.s
+    end
+
+    describe "pretty representation" do
+      it "should" do
+        ( 1.0.m / 3.s ).to_s.must_be_kind_of String
+        ( 1.0.m / 3.s ).to_s.must_equal "0.333.m.s⁻¹"
+
+        ( 1.m / 7.01e7.s ).to_s.must_equal( "1.43e-08.m.s⁻¹" )
+      end
+    end
+
+    describe "matrix integration" do
+      it "should" do
+        assert_equal Matrix[[60.mM], [60.mM]], Matrix[[1e-03.s⁻¹.M], [1e-3.s⁻¹.M]] * 60.s
       
-      assert_equal Matrix[[5.m]], Matrix[[1.m.s⁻¹, 2.m.s⁻¹]] * Matrix.column_vector( [1.s, 2.s] )
-      assert_equal Matrix[[2.m, 3.m], [4.m, 5.m]],
-      Matrix[[1.m, 2.m], [3.m, 4.m]] + Matrix[[1.m, 1.m], [1.m, 1.m]]
-      assert_equal Matrix[[5.µM]], Matrix[[1.µM]] + Matrix[[2.µM.s⁻¹]] * Matrix[[2.s]]
-      assert_equal Matrix[[1.s]], Matrix[[1]] * 1.s
-      assert_equal Matrix[[1.s]], 1.s * Matrix[[1]]
-      XOXO = SY::Unit.of SY::Volume, amount: 1.l
-      assert_equal 1.l.( SY::Volume ), 1.xoxo.( SY::Volume )
-      assert_equal SY::TRIPLE_POINT_OF_WATER, 0.°C.( SY::Temperature )
-      assert_equal 273.15, 0.°C.in( :K )
-      assert_equal SY::Unit.instance( :SECOND ), SY::Unit.instance( :second )
-      assert_equal SY::TRIPLE_POINT_OF_WATER, 0.°C # coercion behavior
+        assert_equal Matrix[[5.m]], Matrix[[1.m.s⁻¹, 2.m.s⁻¹]] * Matrix.column_vector( [1.s, 2.s] )
+        assert_equal Matrix[[2.m, 3.m], [4.m, 5.m]],
+                     Matrix[[1.m, 2.m], [3.m, 4.m]] + Matrix[[1.m, 1.m], [1.m, 1.m]]
+        assert_equal Matrix[[5.µM]], Matrix[[1.µM]] + Matrix[[2.µM.s⁻¹]] * Matrix[[2.s]]
+        assert_equal Matrix[[1.s]], Matrix[[1]] * 1.s
+        assert_equal Matrix[[1.s]], 1.s * Matrix[[1]]
+      end
     end
   end
 end

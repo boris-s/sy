@@ -5,7 +5,6 @@ require 'y_support/name_magic'
 require 'y_support/core_ext/hash'
 require 'y_support/typing'
 require 'y_support/unicode'
-require 'y_support/abstract_algebra'
 
 require 'active_support/core_ext/module/delegation'
 require 'active_support/core_ext/array/extract_options'
