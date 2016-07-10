@@ -28,6 +28,11 @@ class SY::Quantity::Term < Hash
     # their exponents.
     # 
     def [] *ordered, **named
+      # Note: The code below uses Literate (y_support/literate).
+      # The first block is executed in the context of "ordered"
+      # variable and outputs a so-called literate object. Then,
+      # Literate#try method is called and within its block, the
+      # method argument is parsed, if necessary.
       input = ordered_args ordered do
         » "processing arguments of constructor Quantity::Term#[]"
         case size
@@ -49,18 +54,19 @@ class SY::Quantity::Term < Hash
         when String then
           » "the arg. was found to be a string and assumed " +
             "to be a valid superscripted product string" 
-          SY::Quantity::Sps.parse( itself )
+          SY::Quantity::Sps.new( self ).to_hash
         else
           » "the argument was assumed to be non-hash collection " +
             "of pairs indicating a quantity term"
           itself
         end
       end
-      # Make sure the same instance is returned for the same input.
-      instance = instances.find { |i| i == input }
+      hash = input.with_keys do |k| SY::Quantity.instance k end
+      # Make sure same instance is returned for the same input.
+      instance = instances.find { |i| i == hash }
       # If no instance is found, create it and register it.
       if instance.nil? then
-        instance = super input
+        instance = super hash
         instances << instance
       end
       # Whether found or created, return the instance.
@@ -111,7 +117,7 @@ class SY::Quantity::Term < Hash
   # Negates hash exponents.
   # 
   def invert
-    fail NotImplementedError
+    self.class[ keys >> values.map( &:-@ ) ]
   end
 
   # For each term, infinitely many equivalent terms can be found,

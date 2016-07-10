@@ -16,15 +16,20 @@
 # *****************************************************************
 
 require_relative 'test_loader'
+
 # Require the external libraries needed by the tested component.
 require 'y_support/unicode'
 require 'y_support/name_magic'
 require 'y_support/core_ext/module'
 require 'active_support/core_ext/module/delegation'
-# Require the tested component itself.
-require_relative '../../lib/sy/quantity.rb'
 
-# Test the subordinate assets
+# Require the tested component and everything it needs.
+require_relative 'quantity/test_loader'
+
+# Run the subordinate tests.
+puts SY::Quantity.instances.size
+require_relative 'quantity/sps_test'
+puts SY::Quantity.instances.size
 require_relative 'quantity/function_test'
 require_relative 'quantity/ratio_test'
 require_relative 'quantity/term_test'

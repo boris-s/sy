@@ -5,14 +5,15 @@
 # Unit tests for file sy/dimension.rb.
 #
 # File dimension.rb defines class SY::Dimension, representing
-# physical dimensions, such as LENGTH.TIME⁻¹, or
-# MASS.LENGTH⁻³. Each metrological quantity has its dimension. For
-# example, dimension LENGTH.TIME⁻¹ is best known from quantity
-# "SY::Speed", and dimension "MASS.LENGTH⁻³" from quantity
-# "SY::Density". But a single dimension can have more than one
-# quantity. For example, entropy and thermal capacity have both
-# same dimension, but they are distinct physical quantities.  TODO:
-# Check if I chose this example right.
+# physical dimensions, such as LENGTH.TIME⁻¹, or MASS.LENGTH⁻³.
+# Each metrological quantity has its dimension. For example,
+# dimension LENGTH.TIME⁻¹ is best known from quantity "SY::Speed",
+# and dimension "MASS.LENGTH⁻³" from quantity "SY::Density". But
+# a single dimension can have more than one quantity. For example,
+# entropy and thermal capacity have both same dimension, but they
+# are distinct physical quantities.
+#
+# TODO: Check if I chose this example right.
 # *****************************************************************
 
 require_relative 'test_loader'
