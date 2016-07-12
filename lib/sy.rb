@@ -1,9 +1,9 @@
 # encoding: utf-8
 
-require 'y_support/null_object'
 require 'y_support/name_magic'
 require 'y_support/core_ext/hash'
 require 'y_support/typing'
+require 'y_support/misc/null_object'
 require 'y_support/unicode'
 
 require 'active_support/core_ext/module/delegation'
