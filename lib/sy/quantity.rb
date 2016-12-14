@@ -1,47 +1,33 @@
 # coding: utf-8
 
-# Class Quantity is the key class of SY. Quantity is more important
-# than dimension, because it defines physical meaning and context.
-# Example: quantities SY::Amount and SY::MoleAmount are both
-# dimensionless, but the second one counts in moles and is used in
-# the context of chemistry. Quantities SY::ThermalCapacity and
-# SY::Entropy have both the same physical dimension, but their
-# meaning is different. Quantities in different fields of science
-# abide by different conventions. SY therefore does not try to
-# cover all existing cases out there. Instead, SY::Quantity is
-# designed to cover 80% usecases within a concise abstraction.
-# 
-# Physical quantities typically have dimensions. Time has dimension
-# TIME, Speed has dimension LENGTH.TIME⁻¹, ThermalCapacity has
-# dimension MASS.LENGTH².TIME⁻².TEMPERATURE⁻¹. Amount and
-# MoleAmount are dimensionless – can be considered of zero
-# dimension. Quantities can be multiplied by other quantities, and
-# the result is a composed quantity. Dimensions of the factor
-# quantities are also composed. However, dimensional analysis is
-# not sufficient to simplify quantity terms. Quantity term (reified
-# as SY::Quantity::Term class) is, expectedly, a product of a
-# number of quantities raised to certain exponents. Example:
-# SY::Quantity::Term[ "Length.Time⁻¹" ]. Again, dimension does not
-# suffice to determine that Molarity is not the same thing as
-# Amount.Length⁻³ – both are of dimension LENGTH⁻³. Quantity
-# compositions are reified as class SY::Quantity::Composition.
+# +Quantity+ is the key class of +SY+. Unlike +Dimension+,
+# +Quantity+ defines physical meaning and context.
 #
-# Certain quantities are defined as functions of other quantities
-# (parent quantities). These functions are reified as class
-# SY::Quantity::Function. Examples: CelsiusTemperature is defined
-# as Temperature (measured in kelvins) offset by 273.15.K.
-# MoleAmount is Amount scaled by Avogadro constant. In SY,
-# this function is reified as SY::Quantity::Function.
+# Examples: Quantities +SY::Amount+ and +SY::MoleAmount+ are both
+# dimensionless, but the second one has +1.mol+ as its basic unit
+# and is used in the context of chemistry. Similarly,
+# +SY::ThermalCapacity+ and +SY::Entropy+ both have the same
+# physical dimension, but their meaning is different.
 # 
-# From the above, 4 distinct types of quantities can be identified:
-# standard, nonstandard, scaled and composed:
+# Physical quantities may have dimensions. Time has dimension
+# TIME, Speed has dimension LENGTH.TIME⁻¹, etc. Quantities can be
+# multiplied by other quantities, forming composed quantities.
+# Dimensions of the composed quantities are also composed.
+# However, there can be multiple quantities of the same dimension.
+# Unlike dimension arithmetics, which is simple, quantity
+# arithmetics is quite complicated. For the details, see the
+# descriptions of +SY::Quantity::Term+, +SY::Quantity::Composition+
+# and +SY::Quantity::Function+, used internally by +SY+ to capture
+# the dimension arithmetics.
+#
+# There are 4 distinct types of quantities in +SY+: standard,
+# nonstandard, scaled and composed:
 # 
-# 1. Standard quantities belong to a dimension and their function
-#    is implicitly identity function.
+# 1. <em>Standard quantities</em> are unique to each dimension. Their function is always idendity function. Example:
 # 
 #      Length = Quantity.standard of: Dimension[ :LENGTH ]
 # 
-# 2. Scaled quantities arise from a preexisting quantity (other
+# 2. <em>Scaled quantities</em> arise from a preexisting quantity (other
 #    than a nonstandard quantity) scaled by a ratio.
 # 
 #      Nᴀ = 6.02214e23

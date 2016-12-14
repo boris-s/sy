@@ -1,13 +1,10 @@
 # coding: utf-8
 
-# Quantity::Function serves to define a quantity as a function of
-# another (parent) quantity. For example, CelsiusTemperature is
-# defined as Temperature offset by 273.15. Many quantities are
-# defined as simply scaled versions of their parent quantities
-# (eg. MoleAmount vs. Amount is scaled by Nᴀ). Since two-way
-# conversion between parent and daughter quantities is needed, and
-# since standard Proc fuctions are not easily invertible, instances
-# of Quantity::Function carry both forward and inverse closure.
+# Defines a quantity as a function of another (parent) quantity.
+# Eg. +CelsiusTemperature+  is defined as +Temperature+ minus
+# 273.15, +MoleAmount+ is defined as +Amount+ / +Nᴀ+. Unlike
+# standard +Proc+-type fuctions, +Quantity::Function+ instances
+# are easily invertible.
 #
 class SY::Quantity::Function
   # Scaled quantities have function Quantity::Ratio

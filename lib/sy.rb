@@ -24,7 +24,6 @@ unless defined? SY::UNIT_TEST
   # require_relative 'sy/matrix'
 end
 
-
 # SY is a library of physical units. It defines classes for
 # physical dimensions (SY::Dimension) such as LENGTH, quantities
 # (SY::Quantity) such as Speed, Force or Energy, and units, such as
